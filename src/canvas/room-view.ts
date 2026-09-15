@@ -1,10 +1,10 @@
 /**
  * ─ Room view ─
  *
- * One room on the floor plan: a tinted region with a hairline edge,
- * and its name at the top left, held at one size on screen whatever
- * the zoom, the way a section label behaves in a design tool. From
- * far off the rooms are the plan; up close the name is a small header.
+ * One room on the plan: its floor, and its name at the top left, held
+ * at one size on screen whatever the zoom, the way a section label
+ * behaves in a design tool. From far off the rooms are the plan; up
+ * close the name is a small header.
  * Decision: DECISIONS.md, rooms as grouping on the canvas.
  */
 
@@ -13,8 +13,7 @@ import type { HungRoom } from "../gallery/hang.js";
 import type { PackedColor } from "./css-color.js";
 
 export interface RoomColors {
-  readonly fill: PackedColor;
-  readonly edge: PackedColor;
+  readonly floor: PackedColor;
   readonly name: PackedColor;
 }
 
@@ -24,7 +23,7 @@ const TEXT_PX = 24;
 const NAME_PX = 13;
 const NAME_INSET_CM = 16;
 
-/** One hung room: its region, and its name at a constant screen size. */
+/** One hung room: its floor, and its name at a constant screen size. */
 export class RoomView {
   readonly container = new Container();
   private readonly name: Text;
@@ -32,10 +31,9 @@ export class RoomView {
   constructor(hung: HungRoom, colors: RoomColors) {
     const { rect } = hung;
     this.container.position.set(rect.left, rect.top);
-    const region = new Graphics()
+    const floor = new Graphics()
       .rect(0, 0, rect.right - rect.left, rect.bottom - rect.top)
-      .fill({ color: colors.fill.rgb, alpha: colors.fill.alpha })
-      .stroke({ color: colors.edge.rgb, alpha: colors.edge.alpha, width: 1, pixelLine: true });
+      .fill({ color: colors.floor.rgb, alpha: colors.floor.alpha });
     this.name = new Text({
       text: hung.room.name,
       style: {
@@ -46,7 +44,7 @@ export class RoomView {
       },
     });
     this.name.position.set(NAME_INSET_CM, NAME_INSET_CM);
-    this.container.addChild(region, this.name);
+    this.container.addChild(floor, this.name);
   }
 
   /** Follow the zoom: the name keeps its size on screen. */

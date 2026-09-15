@@ -6,6 +6,7 @@
  * hand; the hang derives every position from these. The pictures are
  * public-domain scans from the holding collections, prepared once
  * into public/works, and images.json says what sizes exist.
+ * The rooms' order is the tour, so each must share a wall with the next.
  * Decision: DECISIONS.md, a gallery with real works.
  */
 
@@ -27,7 +28,7 @@ export interface Work {
 export interface Room {
   readonly id: string;
   readonly name: string;
-  /** Where the room sits on the floor plan, as a cell in a grid of rooms. */
+  /** Where the room sits on the plan, as a cell in a grid of rooms sharing walls. */
   readonly column: number;
   readonly row: number;
   readonly works: readonly Work[];
@@ -41,6 +42,37 @@ const SHEET = "Ink on polyester film, measured drawing";
 const US_WORK = "Public domain, United States government work";
 
 export const ROOMS: readonly Room[] = [
+  { id: "foyer", name: "Foyer", column: 1, row: 1, works: [] },
+  {
+    id: "drawings",
+    name: "Drawings",
+    column: 0,
+    row: 1,
+    works: [
+      {
+        id: "haer-woolsey-bridge",
+        title: "Woolsey Bridge, axonometric from below",
+        artist: `Matthew Swaim, ${HAER}`,
+        year: "20th century",
+        medium: SHEET,
+        widthCm: 91.4,
+        heightCm: 62.6,
+        collection: "Library of Congress, HAER AR-63, sheet 4",
+        source: US_WORK,
+      },
+      {
+        id: "haer-estate-whim-engine",
+        title: "Overhead Crank Steam Engine and Cane Mill, Estate Whim",
+        artist: `Kathleen Hoeft, ${HAER}`,
+        year: "20th century",
+        medium: SHEET,
+        widthCm: 91.4,
+        heightCm: 62.3,
+        collection: "Library of Congress, HAER VI,1-WEST,1C-, sheet 1",
+        source: US_WORK,
+      },
+    ],
+  },
   {
     id: "ukiyo-e",
     name: "Ukiyo-e",
@@ -101,34 +133,5 @@ export const ROOMS: readonly Room[] = [
       },
     ],
   },
-  {
-    id: "drawings",
-    name: "Drawings",
-    column: 0,
-    row: 1,
-    works: [
-      {
-        id: "haer-woolsey-bridge",
-        title: "Woolsey Bridge, axonometric from below",
-        artist: `Matthew Swaim, ${HAER}`,
-        year: "20th century",
-        medium: SHEET,
-        widthCm: 91.4,
-        heightCm: 62.6,
-        collection: "Library of Congress, HAER AR-63, sheet 4",
-        source: US_WORK,
-      },
-      {
-        id: "haer-estate-whim-engine",
-        title: "Overhead Crank Steam Engine and Cane Mill, Estate Whim",
-        artist: `Kathleen Hoeft, ${HAER}`,
-        year: "20th century",
-        medium: SHEET,
-        widthCm: 91.4,
-        heightCm: 62.3,
-        collection: "Library of Congress, HAER VI,1-WEST,1C-, sheet 1",
-        source: US_WORK,
-      },
-    ],
-  },
+  { id: "studio", name: "Studio", column: 2, row: 0, works: [] },
 ];

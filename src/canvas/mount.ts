@@ -8,7 +8,7 @@
  */
 
 import { CameraInput, type Camera, type ViewSize } from "../camera/index.js";
-import { hangGallery } from "../gallery/hang.js";
+import { hangGallery, SPACING } from "../gallery/hang.js";
 import images from "../gallery/images.json";
 import { ROOMS } from "../gallery/works.js";
 import { DotGrid } from "./dot-grid.js";
@@ -43,18 +43,20 @@ export async function mountCanvas(
   const muted = tokenColor("--color-muted", { rgb: 0x777a86, alpha: 1 });
   const line = tokenColor("--color-line", { rgb: 0xd9dade, alpha: 1 });
   const surface = tokenColor("--color-surface", { rgb: 0xffffff, alpha: 1 });
-  const hang = hangGallery(ROOMS);
+  const plan = hangGallery(ROOMS);
   const gallery = new GalleryLayer(
     stage.world,
-    hang,
+    plan,
+    SPACING.wallCm,
     images,
     {
-      room: { fill: { ...surface, alpha: 0.55 }, edge: line, name: muted },
+      room: { floor: { ...surface, alpha: 0.85 }, name: muted },
+      wall: { ...ink, alpha: 0.9 },
       work: { edge: line, card: surface, ink, muted },
     },
     requestFrame
   );
-  camera.fit(stage.view, hang.bounds, FIT_PADDING, FIT_ZOOM_MOST);
+  camera.fit(stage.view, plan.bounds, FIT_PADDING, FIT_ZOOM_MOST);
   gallery.follow(camera.current);
   // Made after the fit, so its first cell is drawn for the zoom the view opens at.
   const grid = new DotGrid(
