@@ -75,7 +75,7 @@ export const SPACING: Spacing = {
   unitCm: 100,
   gapCm: 40,
   standoffCm: 15,
-  endMarginCm: 40,
+  endMarginCm: 25,
   headroomCm: 30,
   wallCm: 8,
   doorCm: 70,
