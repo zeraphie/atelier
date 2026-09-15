@@ -4,11 +4,11 @@
  * Everything the canvas needs, put together in one place and taken
  * apart in one place. This module is the canvas chunk's door: the
  * canvas host loads it on demand, so Pixi and the stage arrive after
- * the app and evaluate on their own, as one short stall in the
- * loader's loop rather than a long one before it.
+ * the app and evaluate on their own.
  */
 
 import { CameraInput, type Camera, type ViewSize } from "../camera/index.js";
+import { DotGrid } from "./dot-grid.js";
 import { whenFacesReady } from "./faces.js";
 import { standInWall } from "./placeholder.js";
 import { Stage } from "./stage.js";
@@ -26,7 +26,7 @@ export interface MountedCanvas {
   dispose(): void;
 }
 
-/** Put a stage on `host` that follows `camera`, bind the input to it, and hang the wall. */
+/** Put a stage on `host` that follows `camera`, bind the input to it, and hang the wall over the grid. */
 export async function mountCanvas(
   host: HTMLElement,
   camera: Camera,
@@ -35,15 +35,33 @@ export async function mountCanvas(
   await whenFacesReady();
   const stage = await Stage.create(host, camera);
   const input = new CameraInput(camera, host);
-  const stopResize = stage.onResize(() => view.set(stage.view));
-  view.set(stage.view);
   const wall = standInWall(stage.world, tokenColor("--color-ink", { rgb: 0x2b2b30, alpha: 1 }));
   camera.fit(stage.view, wall.bounds, FIT_PADDING, FIT_ZOOM_MOST);
+  // Made after the fit, so its first cell is drawn for the zoom the view opens at.
+  const grid = new DotGrid(
+    stage.app.renderer,
+    stage.app.stage,
+    {
+      crossing: tokenColor("--color-muted", { rgb: 0x777a86, alpha: 1 }),
+      line: tokenColor("--color-line", { rgb: 0xd9dade, alpha: 1 }),
+    },
+    () => stage.requestFrame(),
+    camera.current,
+    stage.view
+  );
+  const stopFollowing = camera.onChange((state) => grid.follow(state));
+  const stopResize = stage.onResize(() => {
+    view.set(stage.view);
+    grid.resize(stage.view);
+  });
+  view.set(stage.view);
   return {
     firstFrame: stage.firstFrame,
     dispose() {
-      wall.dispose();
       stopResize();
+      stopFollowing();
+      grid.destroy();
+      wall.dispose();
       input.dispose();
       stage.destroy();
     },
