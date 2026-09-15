@@ -1,12 +1,14 @@
 @import "tailwindcss";
+@import "./fonts.css";
 
 /**
  * ─ Tokens ─
  *
- * One place for the palette and the type scale. Tailwind turns each
- * into a utility (bg-canvas, text-ink) and a custom property
- * (--color-canvas) that CSS modules and the Pixi bridge read alike.
- * One light theme over a neutral grey canvas, the design-tool ground.
+ * One place for the palette and the faces. Tailwind turns each into a
+ * utility (bg-canvas, font-display) and a custom property that the
+ * Pixi side reads through one bridge, so the canvas and the DOM are
+ * coloured from the same names. One light theme over a neutral grey
+ * canvas, the design-tool ground.
  */
 @theme {
   --color-canvas: oklch(93% 0.003 260);
@@ -17,4 +19,9 @@
   --color-accent: oklch(58% 0.19 262);
   --color-accent-ink: oklch(100% 0 0);
   --color-resolved: oklch(62% 0.15 150);
+
+  --font-display: "Cinzel Decorative", serif;
+  --font-serif: "EB Garamond", Georgia, serif;
+  --font-sans: "Libertinus Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Fira Code", ui-monospace, monospace;
 }
