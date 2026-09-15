@@ -329,9 +329,10 @@ function place(
 
 // ── Walls ──
 
-// Every room's edges once, each with the doorways on it taken out. A wall
-// ends in a square cap, so a doorway is cut wider by the wall to show its
-// full width between the caps.
+// Every room's edges with the doorways on them taken out, and no piece twice:
+// two rooms of unequal size share a wall as two different edges, and the same
+// doorway cuts the same piece from each. A wall ends in a square cap, so a
+// doorway is cut wider by the wall to show its full width between the caps.
 function wallsOf(
   rects: readonly WorldRect[],
   doorways: readonly Doorway[],
@@ -341,16 +342,17 @@ function wallsOf(
   const walls: Segment[] = [];
   for (const rect of rects) {
     for (const edge of Object.values(edges(rect))) {
-      const key = `${edge.a.x},${edge.a.y}-${edge.b.x},${edge.b.y}`;
-      if (seen.has(key)) {
-        continue;
-      }
-      seen.add(key);
       let pieces = [edge];
       for (const doorway of doorways) {
         pieces = pieces.flatMap((piece) => cut(piece, widen(doorway.gap, spacing.wallCm)));
       }
-      walls.push(...pieces);
+      for (const piece of pieces) {
+        const key = `${piece.a.x},${piece.a.y}-${piece.b.x},${piece.b.y}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          walls.push(piece);
+        }
+      }
     }
   }
   return walls;

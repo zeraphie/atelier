@@ -152,6 +152,12 @@ describe("hangGallery", () => {
     expect(bottomOfA.reduce((sum, w) => sum + length(w), 0)).toBe(100 - 24);
   });
 
+  test("a wall two rooms of unequal size share has no piece listed twice", () => {
+    const { walls } = hangGallery([room("a", 0, 0, 1, 2), room("b", 1, 0, 1, 1)], spacing);
+    const keys = walls.map((w) => `${w.a.x},${w.a.y}-${w.b.x},${w.b.y}`);
+    expect(new Set(keys).size).toBe(keys.length);
+  });
+
   test("finds the work or the room under a point", () => {
     const plan = hangGallery(
       [room("a", 0, 0, 3, 2, [work("w1", 40, 30)]), room("b", 3, 0, 2, 2)],
