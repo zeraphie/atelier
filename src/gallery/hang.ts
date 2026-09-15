@@ -9,12 +9,13 @@
  * the route winds and no door looks straight through to the next. Works hang on the
  * walls, the wall facing the entry first, so the first thing seen
  * through a threshold is a work on the far wall, and the doorways'
- * stretches stay clear. World units are centimetres.
+ * stretches stay clear; a work that names its wall hangs there. World
+ * units are centimetres.
  * Decision: DECISIONS.md, layout from data: the hang.
  */
 
 import type { Point, WorldRect } from "../geometry.js";
-import type { Room, Work } from "./works.js";
+import type { Room, Side, Work } from "./works.js";
 
 export interface Spacing {
   /** One cell of the plan's grid. */
@@ -33,12 +34,12 @@ export interface Spacing {
   readonly doorCm: number;
 }
 
-export type Side = "top" | "right" | "bottom" | "left";
-
 export interface Segment {
   readonly a: Point;
   readonly b: Point;
 }
+
+export type { Side } from "./works.js";
 
 export interface HungWork {
   readonly work: Work;
@@ -203,9 +204,9 @@ function doorAt(wall: Segment, end: "a" | "b", spacing: Spacing): Segment {
 
 // ── Works on walls ──
 
-// The walls in the order they are hung: the one facing the entry, then the
-// two beside it, then the entry wall itself. On each, the longest stretch
-// no doorway breaks, and the works centred on it.
+// Works that name a wall hang there. The rest take the walls in order: the
+// one facing the entry, then the two beside it, then the entry wall itself.
+// On each, the longest stretch no doorway breaks, and the works centred on it.
 function hangWorks(
   room: Room,
   rect: WorldRect,
@@ -216,15 +217,45 @@ function hangWorks(
   const sides = edges(rect);
   const order: Side[] = [OPPOSITE[entry], ...beside(entry), entry];
   const hung: HungWork[] = [];
-  let remaining = [...room.works];
+  const stretchOf = (side: Side): Segment => {
+    const gaps = doorways.map((d) => d.gap).filter((gap) => onWall(sides[side], gap));
+    return shrink(longestFree(sides[side], gaps), spacing.endMarginCm);
+  };
+  const measureOf = (side: Side) => (side === "top" || side === "bottom" ? "width" : "height");
+  for (const side of order) {
+    const named = room.works.filter((work) => work.wall === side);
+    if (named.length === 0) {
+      continue;
+    }
+    const stretch = stretchOf(side);
+    const taken = takeThatFit(
+      named,
+      measureOf(side),
+      distance(stretch.a, stretch.b),
+      spacing.gapCm
+    );
+    if (taken.length < named.length) {
+      throw new Error(
+        `the room "${room.id}" has no space on its ${side} wall for "${named[taken.length]!.id}"`
+      );
+    }
+    hung.push(...place(taken, side, stretch, rect, spacing));
+  }
+  let remaining = room.works.filter((work) => work.wall === undefined);
   for (const side of order) {
     if (remaining.length === 0) {
       break;
     }
-    const gaps = doorways.map((d) => d.gap).filter((gap) => onWall(sides[side], gap));
-    const stretch = shrink(longestFree(sides[side], gaps), spacing.endMarginCm);
-    const measure = side === "top" || side === "bottom" ? "width" : "height";
-    const taken = takeThatFit(remaining, measure, distance(stretch.a, stretch.b), spacing.gapCm);
+    if (hung.some((h) => h.wall === side)) {
+      continue;
+    }
+    const stretch = stretchOf(side);
+    const taken = takeThatFit(
+      remaining,
+      measureOf(side),
+      distance(stretch.a, stretch.b),
+      spacing.gapCm
+    );
     remaining = remaining.slice(taken.length);
     hung.push(...place(taken, side, stretch, rect, spacing));
   }

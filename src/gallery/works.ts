@@ -11,6 +11,8 @@
  * Decision: DECISIONS.md, a gallery with real works.
  */
 
+export type Side = "top" | "right" | "bottom" | "left";
+
 export interface Work {
   /** Names the image set in public/works and the entry in images.json. */
   readonly id: string;
@@ -24,6 +26,8 @@ export interface Work {
   readonly collection: string;
   /** Where the scan came from, and on what terms. */
   readonly source: string;
+  /** The wall to hang it on; left unsaid, the hang picks one facing the entry. */
+  readonly wall?: Side;
 }
 
 export interface Room {
@@ -64,6 +68,7 @@ export const ROOMS: readonly Room[] = [
         heightCm: 62.6,
         collection: "Library of Congress, HAER AR-63, sheet 4",
         source: US_WORK,
+        wall: "top",
       },
       {
         id: "haer-estate-whim-engine",
@@ -75,6 +80,7 @@ export const ROOMS: readonly Room[] = [
         heightCm: 62.3,
         collection: "Library of Congress, HAER VI,1-WEST,1C-, sheet 1",
         source: US_WORK,
+        wall: "top",
       },
     ],
   },
@@ -96,6 +102,7 @@ export const ROOMS: readonly Room[] = [
         heightCm: 25.7,
         collection: "The Metropolitan Museum of Art, JP1847",
         source: MET,
+        wall: "bottom",
       },
       {
         id: "hiroshige-sudden-shower",
@@ -107,6 +114,7 @@ export const ROOMS: readonly Room[] = [
         heightCm: 34,
         collection: "The Metropolitan Museum of Art, JP2522",
         source: MET,
+        wall: "bottom",
       },
     ],
   },
@@ -114,9 +122,9 @@ export const ROOMS: readonly Room[] = [
     id: "meiji-tokyo",
     name: "Meiji Tokyo",
     column: 3,
-    row: 0,
+    row: -1,
     columns: 4,
-    rows: 2,
+    rows: 3,
     works: [
       {
         id: "kiyochika-kudanzaka-night",
@@ -128,6 +136,7 @@ export const ROOMS: readonly Room[] = [
         heightCm: 24,
         collection: "Smithsonian Institution",
         source: COMMONS,
+        wall: "bottom",
       },
       {
         id: "hiroshige-iii-takanawa-railway",
@@ -139,8 +148,9 @@ export const ROOMS: readonly Room[] = [
         heightCm: 35.6,
         collection: "Geographicus Rare Antique Maps",
         source: COMMONS,
+        wall: "right",
       },
     ],
   },
-  { id: "studio", name: "Studio", column: 7, row: 0, columns: 2, rows: 2, works: [] },
+  { id: "studio", name: "Studio", column: 7, row: 0, columns: 2, rows: 3, works: [] },
 ];

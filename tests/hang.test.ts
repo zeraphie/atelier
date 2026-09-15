@@ -119,6 +119,22 @@ describe("hangGallery", () => {
     expect((last.left + last.right) / 2).toBeCloseTo((doorEnd + 20 + 200 - 20) / 2, 6);
   });
 
+  test("a work that names its wall hangs there, and the rest keep to the rule", () => {
+    const named = { ...work("w1", 40, 30), wall: "right" as const };
+    const { rooms } = hangGallery([room("a", 0, 0, 3, 2, [named, work("w2", 20, 50)])], spacing);
+    const [w1, w2] = rooms[0]!.works;
+    expect(w1!.wall).toBe("right");
+    expect(w1!.rect.right).toBe(300 - 5);
+    expect(w2!.wall).toBe("top");
+  });
+
+  test("a work that names a wall with no space for it is a fault", () => {
+    const named = { ...work("w1", 400, 30), wall: "top" as const };
+    expect(() => hangGallery([room("a", 0, 0, 3, 2, [named])], spacing)).toThrow(
+      /no space on its top wall/
+    );
+  });
+
   test("a room with no wall left for a work is a fault", () => {
     const many = Array.from({ length: 12 }, (_, i) => work(`w${i}`, 60, 60));
     expect(() => hangGallery([room("a", 0, 0, 2, 2, many)], spacing)).toThrow(/no wall left/);
