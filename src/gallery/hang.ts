@@ -355,6 +355,30 @@ function wallsOf(
   return walls;
 }
 
+// ── Finding ──
+
+/** The work under a world point, if any. */
+export function workAt(plan: Plan, point: Point): HungWork | undefined {
+  for (const room of plan.rooms) {
+    const hit = room.works.find((hung) => contains(hung.rect, point));
+    if (hit !== undefined) {
+      return hit;
+    }
+  }
+  return undefined;
+}
+
+/** The room under a world point, if any. */
+export function roomAt(plan: Plan, point: Point): HungRoom | undefined {
+  return plan.rooms.find((room) => contains(room.rect, point));
+}
+
+function contains(rect: WorldRect, point: Point): boolean {
+  return (
+    point.x >= rect.left && point.x <= rect.right && point.y >= rect.top && point.y <= rect.bottom
+  );
+}
+
 // ── Geometry ──
 
 function edges(rect: WorldRect): Record<Side, Segment> {

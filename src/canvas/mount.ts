@@ -7,8 +7,8 @@
  * the app and evaluate on their own.
  */
 
-import { CameraInput, type Camera, type ViewSize } from "../camera/index.js";
-import { hangGallery, SPACING } from "../gallery/hang.js";
+import { CameraInput, glide, type Camera, type ViewSize } from "../camera/index.js";
+import { hangGallery, roomAt, SPACING, workAt } from "../gallery/hang.js";
 import images from "../gallery/images.json";
 import { ROOMS } from "../gallery/works.js";
 import { DotGrid } from "./dot-grid.js";
@@ -22,6 +22,8 @@ import type { ValueStore } from "./value-store.js";
 const FIT_PADDING = 48;
 // Never open closer than life size, however small the gallery.
 const FIT_ZOOM_MOST = 1;
+// How long a move to a work, a room or the whole plan takes.
+const GLIDE_MS = 600;
 
 export interface MountedCanvas {
   /** Resolves once the stage has drawn its first frame. */
@@ -71,6 +73,14 @@ export async function mountCanvas(
     grid.follow(state);
     gallery.follow(state);
   });
+  // A double tap fills the view with what is under it: a work, else its
+  // room, else the whole plan. Reduced motion jumps instead of gliding.
+  const stopDoubleTap = input.onDoubleTap((at) => {
+    const point = camera.toWorld(at);
+    const target = workAt(plan, point)?.rect ?? roomAt(plan, point)?.rect ?? plan.bounds;
+    const ms = matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : GLIDE_MS;
+    glide(camera, camera.fitted(stage.view, target, FIT_PADDING), stage.view, ms);
+  });
   const stopResize = stage.onResize(() => {
     view.set(stage.view);
     grid.resize(stage.view);
@@ -79,6 +89,7 @@ export async function mountCanvas(
   return {
     firstFrame: stage.firstFrame,
     dispose() {
+      stopDoubleTap();
       stopResize();
       stopFollowing();
       grid.destroy();

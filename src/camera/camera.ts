@@ -55,7 +55,12 @@ export class Camera {
    * pixels clear and the zoom no closer than `most`.
    */
   fit(view: ViewSize, rect: WorldRect, padding = 0, most?: number): void {
-    this.set(fitToRect(view, rect, this.limits, padding, most));
+    this.set(this.fitted(view, rect, padding, most));
+  }
+
+  /** The state `fit` would move to, for a move over time. */
+  fitted(view: ViewSize, rect: WorldRect, padding = 0, most?: number): CameraState {
+    return fitToRect(view, rect, this.limits, padding, most);
   }
 
   /** Replace the whole state, for example at the end of an animated move. */

@@ -3,9 +3,10 @@
  *
  * Maps pointer and wheel events on the canvas element to camera calls,
  * for mouse, touch and pen alike: the wheel zooms about the cursor, one
- * pointer pans, two pinch. Pins are DOM above the canvas, so a press on
- * one never reaches the canvas element, and the camera only ever moves
- * from empty canvas. The element must set `touch-action: none`, or the
+ * pointer pans, two pinch, and a tap or a double tap on nothing is
+ * reported. Pins are DOM above the canvas, so a press on one never
+ * reaches the canvas element, and the camera only ever moves from
+ * empty canvas. The element must set `touch-action: none`, or the
  * browser takes touch gestures for itself.
  */
 
@@ -18,6 +19,9 @@ const LEFT_BUTTON = 0;
 const MIDDLE_BUTTON = 1;
 // Pointer travel under this is a tap on the canvas rather than a pan.
 const TAP_THRESHOLD_PX = 4;
+// A second tap this soon and this close to the first is a double tap.
+const DOUBLE_TAP_MS = 300;
+const DOUBLE_TAP_PX = 24;
 
 /**
  * Called when a press on empty canvas ends without travelling: a click on
@@ -32,6 +36,8 @@ export class CameraInput {
   private readonly pointers = new Map<number, Point>();
   private readonly pressOrigins = new Map<number, Point>();
   private readonly tapListeners = new Set<CanvasTapListener>();
+  private readonly doubleTapListeners = new Set<CanvasTapListener>();
+  private lastTap: { readonly at: Point; readonly time: number } | undefined;
 
   constructor(camera: Camera, target: HTMLElement) {
     this.camera = camera;
@@ -62,6 +68,14 @@ export class CameraInput {
     this.tapListeners.add(listener);
     return () => {
       this.tapListeners.delete(listener);
+    };
+  }
+
+  /** Subscribe to double taps on empty canvas; returns the unsubscribe function. */
+  onDoubleTap(listener: CanvasTapListener): () => void {
+    this.doubleTapListeners.add(listener);
+    return () => {
+      this.doubleTapListeners.delete(listener);
     };
   }
 
@@ -129,7 +143,13 @@ export class CameraInput {
     if (isTap) {
       const rect = this.target.getBoundingClientRect();
       const at = { x: event.clientX - rect.left, y: event.clientY - rect.top };
-      for (const listener of this.tapListeners) {
+      const last = this.lastTap;
+      const isDouble =
+        last !== undefined &&
+        event.timeStamp - last.time < DOUBLE_TAP_MS &&
+        Math.hypot(at.x - last.at.x, at.y - last.at.y) < DOUBLE_TAP_PX;
+      this.lastTap = isDouble ? undefined : { at, time: event.timeStamp };
+      for (const listener of isDouble ? this.doubleTapListeners : this.tapListeners) {
         listener(at);
       }
     }

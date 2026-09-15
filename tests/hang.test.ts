@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { hangGallery, type Segment, type Spacing } from "../src/gallery/hang.js";
+import { hangGallery, roomAt, workAt, type Segment, type Spacing } from "../src/gallery/hang.js";
 import type { Room, Work } from "../src/gallery/works.js";
 
 const spacing: Spacing = {
@@ -147,6 +147,20 @@ describe("hangGallery", () => {
     expect(100 - shared.reduce((sum, w) => sum + length(w), 0)).toBe(20 + 4);
     const bottomOfA = walls.filter((w) => w.a.y === 100 && w.b.y === 100 && w.b.x <= 100);
     expect(bottomOfA.reduce((sum, w) => sum + length(w), 0)).toBe(100 - 24);
+  });
+
+  test("finds the work or the room under a point", () => {
+    const plan = hangGallery(
+      [room("a", 0, 0, 3, 2, [work("w1", 40, 30)]), room("b", 3, 0, 2, 2)],
+      spacing
+    );
+    const w1 = plan.rooms[0]!.works[0]!;
+    const inside = { x: (w1.rect.left + w1.rect.right) / 2, y: (w1.rect.top + w1.rect.bottom) / 2 };
+    expect(workAt(plan, inside)?.work.id).toBe("w1");
+    expect(roomAt(plan, inside)?.room.id).toBe("a");
+    expect(workAt(plan, { x: 400, y: 100 })).toBeUndefined();
+    expect(roomAt(plan, { x: 400, y: 100 })?.room.id).toBe("b");
+    expect(roomAt(plan, { x: 900, y: 900 })).toBeUndefined();
   });
 
   test("the bounds wrap every room", () => {
