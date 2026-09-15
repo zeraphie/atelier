@@ -10,6 +10,8 @@
 
 ### Rooms as grouping on the canvas
 
+### A route through the rooms
+
 ### Adding a comment: a button and a menu, not a bare tap
 
 ### Threads: a root and its replies
