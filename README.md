@@ -1,10 +1,10 @@
 # Atelier
 
-Atelier is an infinite canvas style gallery project, mimicking a visitor's journey through an art gallery. The visitor's journey through a gallery usually has a tourguide that accompanies them, and some back and forth to talk about the artwork can also happen. Atelier demos the gallery utilising credited artwork under public domain.
+Atelier is an infinite canvas style gallery project, mimicking a visitor's journey through an art gallery. The visitor's journey through a gallery usually has a tour guide that accompanies them, and some back and forth to talk about the artwork can also happen. Atelier demos the gallery utilising credited artwork under public domain.
 
-On the tech side, this is uses PixiJS for rendering the infinite canvas; TypeScript/React/Tailwind/Radix for the UI; Zustand for state management; Bun for running, Vite for building and GitHub Pages for a static site; my repo tablewright/tablewright has been used as inspiration for camera/interactions.
+On the tech side, this uses PixiJS for rendering the infinite canvas; TypeScript/React/Tailwind/Radix for the UI; Zustand for state management; Bun for running, Vite for building and GitHub Pages for a static site; my repo tablewright/tablewright has been used as inspiration for camera/interactions.
 
-Future improvements: Trystero for utilising WebRTC for sharing comments with other users; Design pass to add texture; 3d interactions on images to make it feel more immersive (i.e. doom style navigation)
+Future improvements: Trystero for utilising WebRTC for sharing comments with other users; Design pass to add texture; 3D interactions on images to make it feel more immersive (i.e. doom style navigation)
 
 Live demo: https://izelya.me/atelier
 Video walkthrough: <!-- link -->
