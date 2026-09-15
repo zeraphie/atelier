@@ -60,10 +60,11 @@
         right: 0;
       }
       #loading svg {
-        width: min(40vw, 260px);
+        width: min(70vw, 440px);
       }
       /* pathLength makes each outline one unit long whatever its real
-         length, so both letters draw in step without measuring either.
+         length, so every letter draws at one pace without measuring any, each
+         a beat after the one before.
          The stroke is set on the use and inherited by the path it
          stands for. The draw runs once, from the first paint, and holds:
          a mark cut off half-drawn reads as a fault rather than as a
@@ -77,10 +78,8 @@
         stroke-linejoin: round;
         stroke-dasharray: 1;
         stroke-dashoffset: 1;
-        animation: draw 800ms ease-in-out forwards;
-      }
-      #loading .l {
-        animation-delay: 180ms;
+        animation: draw 700ms ease-in-out forwards;
+        animation-delay: calc(var(--i) * 110ms);
       }
       /* Under the mark, from the first paint: the word, with three of
          its letters rolling like a drum for as long as the wait lasts,
@@ -188,12 +187,12 @@
   </head>
   <body>
     <div id="root"></div>
-    <!-- The A and L of Cinzel Decorative as outlines rather than as text,
-         so the loader owes nothing to a face that has yet to load. Lifted
+    <!-- The name in Cinzel Decorative as outlines rather than as text, so
+         the loader owes nothing to a face that has yet to load. Lifted
          once from src/fonts/cinzel-decorative-700.woff2 and set as the
-         face kerns the pair; the copy to look at and to work on is
-         brand/wordmark.svg. Changing the heading face means redrawing
-         these two paths.
+         face kerns it, a swash capital and small caps; the copy to look
+         at and to work on is brand/wordmark.svg. Changing the heading
+         face means redrawing these paths.
 
          The mark is drawn once and worn twice: each half of the curtain
          holds the whole window and clips it to its own side, so the seam
@@ -202,33 +201,73 @@
     <div id="loading">
       <svg class="marks" aria-hidden="true">
         <defs>
-          <g id="mark-a">
+          <g id="mark-0" transform="translate(0 0)">
             <path
               pathLength="1"
               d="M965 183Q856 238 744 201Q625 163 539 39Q493 -27 460 -114L428 -199L192 -199L139 -73Q134 -60 134 -52Q134 -44 137.5 -34.5Q141 -25 152.5 -17.5Q164 -10 178 -10L186 -10L186 0L-28 0L-28 -10L-19 -10Q4 -10 26.5 -23.5Q49 -37 64 -64L287 -573Q248 -661 204 -694Q167 -722 133.5 -722Q100 -722 71 -712L69 -722Q141 -759 207 -759Q289 -759 354 -695Q418 -632 467 -513L612 -155Q694 48 780 124Q815 155 852 167Q889 179 914.5 179Q940 179 964 173ZM209 -242L413 -242L343 -427Q338 -441 329 -465.5Q320 -490 317 -500Z"
             />
           </g>
-          <g id="mark-l" transform="translate(697 0)">
+          <g id="mark-1" transform="translate(600 0)">
             <path
               pathLength="1"
-              d="M854 139Q958 139 1022 98L1029 106Q943 225 815 238Q788 241 768.5 241Q749 241 723.5 239.5Q698 238 652 226Q606 214 571 201.5Q536 189 490 168.5Q444 148 414 132.5Q384 117 342.5 95.5Q301 74 270 59Q239 44 210 33Q128 0 42 0L42 -10L55 -10Q81 -10 99.5 -28Q118 -46 119 -73L119 -627Q118 -654 99.5 -672Q81 -690 55 -690L42 -690L42 -700L346 -700L345 -690L335 -690Q297 -690 278 -659Q269 -645 269 -627L269 -47Q269 -14 282 -1.5Q295 11 311 16Q687 139 854 139Z"
+              d="M409 -659L409 -72Q410 -46 428.5 -28Q447 -10 473 -10L485 -10L486 0L182 0L182 -10L195 -10Q220 -10 238.5 -28Q257 -46 259 -71L259 -659L124 -659Q78 -658 51 -630Q24 -602 24 -557L24 -545L14 -545L14 -719Q28 -713 64.5 -707Q101 -701 132 -701L535 -701Q584 -702 615 -709Q646 -716 653 -719L653 -545L643 -545L643 -557Q643 -602 616 -630Q589 -658 543 -659Z"
+            />
+          </g>
+          <g id="mark-2" transform="translate(1266 0)">
+            <path
+              pathLength="1"
+              d="M55 -10Q81 -10 99.5 -28.5Q118 -47 119 -73L119 -630Q116 -665 86 -682Q71 -690 55 -690L42 -690L42 -700L425 -700Q456 -700 493 -706Q530 -712 545 -718L545 -543L535 -543L535 -555Q535 -600 508.5 -627.5Q482 -655 437 -657L269 -657L269 -366L401 -366Q438 -367 462 -391.5Q486 -416 486 -452L486 -461L496 -461L496 -230L486 -230L486 -238Q486 -288 446 -312Q426 -323 402 -324L269 -324L269 -43L400 -43Q473 -43 522.5 -85Q572 -127 596 -204L606 -204L560 0L42 0L42 -10Z"
+            />
+          </g>
+          <g id="mark-3" transform="translate(1893 0)">
+            <path
+              pathLength="1"
+              d="M55 -10Q81 -10 99.5 -28.5Q118 -47 119 -73L119 -627Q118 -653 99.5 -671.5Q81 -690 55 -690L42 -690L42 -700L346 -700L345 -690L333 -690Q307 -690 288 -671.5Q269 -653 269 -627L269 -43L400 -43Q473 -43 522.5 -85Q572 -127 596 -204L606 -204L560 0L42 0L42 -10Z"
+            />
+          </g>
+          <g id="mark-4" transform="translate(2503 0)">
+            <path
+              pathLength="1"
+              d="M55 -10Q81 -10 99.5 -28.5Q118 -47 119 -73L119 -628Q118 -654 99.5 -672Q81 -690 55 -690L42 -690L42 -700L346 -700L345 -690L333 -690Q307 -690 288 -672Q269 -654 269 -628L269 -73Q269 -47 288 -28.5Q307 -10 333 -10L345 -10L346 0L42 0L42 -10Z"
+            />
+          </g>
+          <g id="mark-5" transform="translate(2889 0)">
+            <path
+              pathLength="1"
+              d="M55 -10Q81 -10 99.5 -28.5Q118 -47 119 -73L119 -630Q116 -665 86 -682Q71 -690 55 -690L42 -690L42 -700L425 -700Q456 -700 493 -706Q530 -712 545 -718L545 -543L535 -543L535 -555Q535 -600 508.5 -627.5Q482 -655 437 -657L269 -657L269 -366L401 -366Q438 -367 462 -391.5Q486 -416 486 -452L486 -461L496 -461L496 -230L486 -230L486 -238Q486 -288 446 -312Q426 -323 402 -324L269 -324L269 -43L400 -43Q473 -43 522.5 -85Q572 -127 596 -204L606 -204L560 0L42 0L42 -10Z"
+            />
+          </g>
+          <g id="mark-6" transform="translate(3516 0)">
+            <path
+              pathLength="1"
+              d="M318 -656L275 -656Q273 -656 272 -656L272 -73Q273 -36 304 -18Q319 -10 336 -10L349 -10L349 0L45 0L45 -10L58 -10Q94 -10 113 -41Q121 -55 122 -72L122 -627Q121 -653 102.5 -671.5Q84 -690 58 -690L45 -690L45 -700L388 -700Q485 -700 552 -658Q586 -637 606 -599.5Q626 -562 626 -514.5Q626 -467 609.5 -427Q593 -387 554.5 -357Q516 -327 462 -321Q520 -302 564 -233Q672 -60 724 -27Q750 -11 789 -10L789 0L691 0Q606 0 549 -23.5Q492 -47 456 -104Q438 -133 410 -191.5Q382 -250 373 -275Q346 -335 305 -342L305 -352L336 -352Q381 -352 415.5 -379Q450 -406 462 -467Q466 -488 466 -500Q466 -582 433 -618.5Q400 -655 348 -656Q338 -656 318 -656Z"
             />
           </g>
         </defs>
       </svg>
       <div class="half left">
         <div class="pane">
-          <svg viewBox="-60 -800 1830 1090" role="img" aria-label="Atelier is opening">
-            <use class="a" href="#mark-a" />
-            <use class="l" href="#mark-l" />
+          <svg viewBox="-56 -787 4389 1030.9" role="img" aria-label="Atelier is opening">
+            <use href="#mark-0" style="--i: 0" />
+            <use href="#mark-1" style="--i: 1" />
+            <use href="#mark-2" style="--i: 2" />
+            <use href="#mark-3" style="--i: 3" />
+            <use href="#mark-4" style="--i: 4" />
+            <use href="#mark-5" style="--i: 5" />
+            <use href="#mark-6" style="--i: 6" />
           </svg>
         </div>
       </div>
       <div class="half right" aria-hidden="true">
         <div class="pane">
-          <svg viewBox="-60 -800 1830 1090">
-            <use class="a" href="#mark-a" />
-            <use class="l" href="#mark-l" />
+          <svg viewBox="-56 -787 4389 1030.9">
+            <use href="#mark-0" style="--i: 0" />
+            <use href="#mark-1" style="--i: 1" />
+            <use href="#mark-2" style="--i: 2" />
+            <use href="#mark-3" style="--i: 3" />
+            <use href="#mark-4" style="--i: 4" />
+            <use href="#mark-5" style="--i: 5" />
+            <use href="#mark-6" style="--i: 6" />
           </svg>
         </div>
       </div>

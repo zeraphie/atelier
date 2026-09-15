@@ -13,11 +13,11 @@
  * Decision: DECISIONS.md, a loader that draws the mark.
  */
 
-// How long a letter takes to draw, the head start the first gives the
-// second, the slowest roll of the loading word, and how long the halves
+// How long a letter takes to draw, the head start the last letter has
+// on the first, the slowest roll of the loading word, and how long the halves
 // take to leave.
-const DRAW_MS = 800;
-const SECOND_LETTER_MS = 180;
+const DRAW_MS = 700;
+const LAST_LETTER_MS = 660;
 const SLOWEST_ROLL_MS = 1500;
 const OPEN_MS = 400;
 
@@ -27,7 +27,7 @@ let isRaised = false;
 
 /** Resolves once the mark has finished drawing; at once when there is no mark or motion is reduced. */
 export function whenMarkDrawn(): Promise<void> {
-  drawn ??= drawnOnce(document.querySelector("#loading .l"));
+  drawn ??= drawnOnce(document.querySelector("#loading use:last-of-type"));
   return drawn;
 }
 
@@ -93,7 +93,7 @@ function drawnOnce(lastLetter: Element | null): Promise<void> {
   return Promise.race([
     animation.finished.then(() => undefined),
     new Promise<void>((resolve) => {
-      setTimeout(resolve, DRAW_MS + SECOND_LETTER_MS + OPEN_MS);
+      setTimeout(resolve, DRAW_MS + LAST_LETTER_MS + OPEN_MS);
     }),
   ]);
 }
