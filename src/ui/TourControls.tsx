@@ -8,16 +8,30 @@ const BUTTON =
 const PILL =
   "absolute bottom-4 left-4 flex overflow-hidden rounded-md border border-line bg-surface shadow-sm";
 
-/** One button to start the tour; on it, previous and next, where it stands, and a way off. */
+/** Start and play the tour; on it, previous and next, where it stands, play or pause, and a way off. */
 export function TourControls() {
   const tour = useTour();
   const at = useSyncExternalStore(
     (listener) => tour?.stop.subscribe(listener) ?? (() => {}),
     () => tour?.stop.current ?? -1
   );
+  const isPlaying = useSyncExternalStore(
+    (listener) => tour?.playing.subscribe(listener) ?? (() => {}),
+    () => tour?.playing.current ?? false
+  );
   if (tour === undefined) {
     return null;
   }
+  const playOrPause = (
+    <button
+      type="button"
+      className={`${BUTTON} border-l border-line`}
+      aria-label={isPlaying ? "Pause the tour" : "Play the tour"}
+      onClick={() => (isPlaying ? tour.pause() : tour.play())}
+    >
+      {isPlaying ? "❚❚" : "▶"}
+    </button>
+  );
   if (at < 0) {
     return (
       <div className={PILL}>
@@ -29,6 +43,7 @@ export function TourControls() {
         >
           Tour
         </button>
+        {playOrPause}
       </div>
     );
   }
@@ -55,6 +70,7 @@ export function TourControls() {
       >
         ›
       </button>
+      {playOrPause}
       <button
         type="button"
         className={`${BUTTON} border-l border-line`}
