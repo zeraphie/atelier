@@ -9,6 +9,8 @@ Future improvements: Trystero for utilising WebRTC for sharing comments with oth
 Live demo: https://izelya.me/atelier
 Video walkthrough: https://www.youtube.com/watch?v=AMCqAsGznyQ
 
+[![The tour, in the video walkthrough](https://img.youtube.com/vi/AMCqAsGznyQ/maxresdefault.jpg)](https://www.youtube.com/watch?v=AMCqAsGznyQ)
+
 ## Develop
 
 Needs [Bun](https://bun.sh).
