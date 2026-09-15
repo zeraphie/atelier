@@ -9,8 +9,7 @@
          frame. Its colours are written out rather than taken from the
          tokens: the stylesheet arrives with the module, and this has to
          be painted before that, or a loader is just another thing to
-         load. They are the canvas, ink, muted and accent tokens of
-         src/index.css. */
+         load. They are the canvas, ink and muted tokens of src/index.css. */
       #loading {
         position: fixed;
         inset: 0;
@@ -103,7 +102,6 @@
         display: inline-block;
       }
       #loading .wait .roll {
-        color: oklch(58% 0.19 262);
         animation: roll var(--pace) linear infinite;
       }
       /* A load that failed: the word gives way to what to do. */
