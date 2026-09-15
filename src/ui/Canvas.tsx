@@ -13,7 +13,7 @@ import { useCanvas } from "./canvas-context.js";
 import { failLoader, raiseCurtain } from "./curtain.js";
 
 export function Canvas() {
-  const { camera, view } = useCanvas();
+  const { camera, view, tour } = useCanvas();
   const hostRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -30,7 +30,11 @@ export function Canvas() {
         mounted.dispose();
         return;
       }
-      teardown = mounted.dispose;
+      teardown = () => {
+        tour.set(undefined);
+        mounted.dispose();
+      };
+      tour.set(mounted.tour);
       void mounted.firstFrame.then(raiseCurtain);
     };
     mount().catch((error: unknown) => {
@@ -41,7 +45,7 @@ export function Canvas() {
       isDisposed = true;
       teardown();
     };
-  }, [camera, view]);
+  }, [camera, view, tour]);
 
   return (
     <div

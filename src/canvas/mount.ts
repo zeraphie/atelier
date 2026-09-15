@@ -9,6 +9,7 @@
 
 import { CameraInput, glide, type Camera, type ViewSize } from "../camera/index.js";
 import { hangGallery, roomAt, SPACING, workAt } from "../gallery/hang.js";
+import { routeThrough } from "../gallery/route.js";
 import images from "../gallery/images.json";
 import { ROOMS } from "../gallery/works.js";
 import { DotGrid } from "./dot-grid.js";
@@ -16,6 +17,7 @@ import { whenFacesReady } from "./faces.js";
 import { GalleryLayer } from "./gallery-layer.js";
 import { Stage } from "./stage.js";
 import { tokenColor } from "./theme.js";
+import { Tour, type TourHandle } from "./tour.js";
 import type { ValueStore } from "./value-store.js";
 
 // Screen pixels kept clear around the gallery when the view first fits it.
@@ -28,6 +30,8 @@ const GLIDE_MS = 600;
 export interface MountedCanvas {
   /** Resolves once the stage has drawn its first frame. */
   readonly firstFrame: Promise<void>;
+  /** The walk along the route. */
+  readonly tour: TourHandle;
   dispose(): void;
 }
 
@@ -45,19 +49,32 @@ export async function mountCanvas(
   const muted = tokenColor("--color-muted", { rgb: 0x777a86, alpha: 1 });
   const line = tokenColor("--color-line", { rgb: 0xd9dade, alpha: 1 });
   const surface = tokenColor("--color-surface", { rgb: 0xffffff, alpha: 1 });
+  const accent = tokenColor("--color-accent", { rgb: 0x5561d6, alpha: 1 });
+  const isMotionReduced = (): boolean => matchMedia("(prefers-reduced-motion: reduce)").matches;
   const plan = hangGallery(ROOMS);
+  const route = routeThrough(plan);
   const gallery = new GalleryLayer(
     stage.world,
     plan,
+    route,
     SPACING.wallCm,
     images,
     {
       room: { floor: { ...surface, alpha: 0.85 }, name: muted },
       wall: { ...ink, alpha: 0.9 },
+      route: { ...accent, alpha: 0.35 },
       work: { edge: line, card: surface, ink, muted },
     },
     requestFrame
   );
+  const tour = new Tour({
+    camera,
+    route,
+    view: () => stage.view,
+    extentOf: (stop) => gallery.extentOf(stop.work),
+    fitPadding: FIT_PADDING,
+    isMotionReduced,
+  });
   camera.fit(stage.view, plan.bounds, FIT_PADDING, FIT_ZOOM_MOST);
   gallery.follow(camera.current);
   // Made after the fit, so its first cell is drawn for the zoom the view opens at.
@@ -81,7 +98,7 @@ export async function mountCanvas(
     const work = workAt(plan, point);
     const target =
       work === undefined ? (roomAt(plan, point)?.rect ?? plan.bounds) : gallery.extentOf(work);
-    const ms = matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : GLIDE_MS;
+    const ms = isMotionReduced() ? 0 : GLIDE_MS;
     glide(camera, camera.fitted(stage.view, target, FIT_PADDING), stage.view, ms);
   });
   const stopResize = stage.onResize(() => {
@@ -91,7 +108,9 @@ export async function mountCanvas(
   view.set(stage.view);
   return {
     firstFrame: stage.firstFrame,
+    tour,
     dispose() {
+      tour.dispose();
       stopDoubleTap();
       stopResize();
       stopFollowing();

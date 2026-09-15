@@ -262,7 +262,8 @@ function hangWorks(
   if (remaining.length > 0) {
     throw new Error(`the room "${room.id}" has no wall left for "${remaining[0]!.id}"`);
   }
-  return hung;
+  // In the order a walk meets them: wall by wall, the far wall first.
+  return order.flatMap((side) => hung.filter((h) => h.wall === side));
 }
 
 function beside(side: Side): Side[] {

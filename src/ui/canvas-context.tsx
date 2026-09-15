@@ -11,12 +11,15 @@
 
 import { createContext, useContext, useState, useSyncExternalStore, type ReactNode } from "react";
 import { Camera, type CameraState, type ViewSize } from "../camera/index.js";
+import type { TourHandle } from "../canvas/tour.js";
 import { ValueStore } from "../canvas/value-store.js";
 
 export interface CanvasSession {
   readonly camera: Camera;
   /** The canvas size in CSS pixels, kept current by the canvas host. */
   readonly view: ValueStore<ViewSize>;
+  /** The tour along the route, once the canvas has mounted. */
+  readonly tour: ValueStore<TourHandle | undefined>;
 }
 
 const CanvasContext = createContext<CanvasSession | undefined>(undefined);
@@ -25,6 +28,7 @@ export function CanvasProvider({ children }: { readonly children: ReactNode }) {
   const [session] = useState<CanvasSession>(() => ({
     camera: new Camera(),
     view: new ValueStore({ width: 0, height: 0 }),
+    tour: new ValueStore<TourHandle | undefined>(undefined),
   }));
   return <CanvasContext value={session}>{children}</CanvasContext>;
 }
@@ -44,6 +48,15 @@ export function useCameraState(): CameraState {
   return useSyncExternalStore(
     (listener) => camera.onChange(listener),
     () => camera.current
+  );
+}
+
+/** The tour, once there is one, re-rendering when it comes or goes. */
+export function useTour(): TourHandle | undefined {
+  const { tour } = useCanvas();
+  return useSyncExternalStore(
+    (listener) => tour.subscribe(listener),
+    () => tour.current
   );
 }
 

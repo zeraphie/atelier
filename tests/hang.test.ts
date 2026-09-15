@@ -122,10 +122,13 @@ describe("hangGallery", () => {
   test("a work that names its wall hangs there, and the rest keep to the rule", () => {
     const named = { ...work("w1", 40, 30), wall: "right" as const };
     const { rooms } = hangGallery([room("a", 0, 0, 3, 2, [named, work("w2", 20, 50)])], spacing);
-    const [w1, w2] = rooms[0]!.works;
-    expect(w1!.wall).toBe("right");
-    expect(w1!.rect.right).toBe(300 - 5);
-    expect(w2!.wall).toBe("top");
+    const w1 = rooms[0]!.works.find((h) => h.work.id === "w1")!;
+    const w2 = rooms[0]!.works.find((h) => h.work.id === "w2")!;
+    expect(w1.wall).toBe("right");
+    expect(w1.rect.right).toBe(300 - 5);
+    expect(w2.wall).toBe("top");
+    // Wall order, the far wall first: the top's work comes before the right's.
+    expect(rooms[0]!.works.map((h) => h.work.id)).toEqual(["w2", "w1"]);
   });
 
   test("a work that names a wall with no space for it is a fault", () => {
