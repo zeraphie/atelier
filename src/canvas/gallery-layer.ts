@@ -9,7 +9,7 @@
  */
 
 import type { Container, Graphics } from "pixi.js";
-import type { CameraState } from "../camera/index.js";
+import type { CameraState, WorldRect } from "../camera/index.js";
 import type { Plan } from "../gallery/hang.js";
 import type { ImageEntry } from "../gallery/tiers.js";
 import type { PackedColor } from "./css-color.js";
@@ -28,6 +28,7 @@ export class GalleryLayer {
   private readonly rooms: RoomView[];
   private readonly walls: Graphics;
   private readonly works: WorkView[];
+  private readonly byId = new Map<string, WorkView>();
 
   constructor(
     world: Container,
@@ -48,9 +49,17 @@ export class GalleryLayer {
         return new WorkView(work, entry, colors.work, requestFrame);
       })
     );
+    for (const [i, hung] of plan.rooms.flatMap((room) => room.works).entries()) {
+      this.byId.set(hung.work.id, this.works[i]!);
+    }
     world.addChild(...this.rooms.map((room) => room.container));
     world.addChild(this.walls);
     world.addChild(...this.works.map((work) => work.container));
+  }
+
+  /** A work and its label together, for a view that fits both; the work's frame alone if unknown. */
+  extentOf(hung: { readonly work: { readonly id: string }; readonly rect: WorldRect }): WorldRect {
+    return this.byId.get(hung.work.id)?.extent() ?? hung.rect;
   }
 
   follow(state: CameraState): void {

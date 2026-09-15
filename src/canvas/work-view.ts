@@ -12,6 +12,7 @@
  */
 
 import { Container, Graphics, Sprite, Text } from "pixi.js";
+import type { WorldRect } from "../camera/index.js";
 import type { HungWork } from "../gallery/hang.js";
 import { imageSizeFor, workTier, type ImageEntry, type WorkTier } from "../gallery/tiers.js";
 import { parseCssColor, type PackedColor } from "./css-color.js";
@@ -79,6 +80,22 @@ export class WorkView {
   destroy(): void {
     this.isDestroyed = true;
     this.container.destroy({ children: true });
+  }
+
+  /** The work and its label together, in world units, for a view that fits both. */
+  extent(): WorldRect {
+    if (this.label === undefined) {
+      this.label = this.makeLabel();
+      this.apply();
+    }
+    const card = this.label.card.getLocalBounds();
+    const { rect } = this.hung;
+    return {
+      left: rect.left + Math.min(0, card.x),
+      top: rect.top,
+      right: rect.left + Math.max(this.width, card.x + card.width),
+      bottom: rect.top + Math.max(this.height, card.y + card.height),
+    };
   }
 
   private get width(): number {

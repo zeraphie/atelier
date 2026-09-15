@@ -73,11 +73,14 @@ export async function mountCanvas(
     grid.follow(state);
     gallery.follow(state);
   });
-  // A double tap fills the view with what is under it: a work, else its
-  // room, else the whole plan. Reduced motion jumps instead of gliding.
+  // A double tap fills the view with what is under it: a work with its
+  // label, else its room, else the whole plan. Reduced motion jumps
+  // instead of gliding.
   const stopDoubleTap = input.onDoubleTap((at) => {
     const point = camera.toWorld(at);
-    const target = workAt(plan, point)?.rect ?? roomAt(plan, point)?.rect ?? plan.bounds;
+    const work = workAt(plan, point);
+    const target =
+      work === undefined ? (roomAt(plan, point)?.rect ?? plan.bounds) : gallery.extentOf(work);
     const ms = matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : GLIDE_MS;
     glide(camera, camera.fitted(stage.view, target, FIT_PADDING), stage.view, ms);
   });
