@@ -7,10 +7,11 @@
  * One place for the palette and the faces. Tailwind turns each into a
  * utility (bg-canvas, font-display) and a custom property that the
  * Pixi side reads through one bridge, so the canvas and the DOM are
- * coloured from the same names. One light theme over a neutral grey
- * canvas, the design-tool ground.
+ * coloured from the same names. Static, so every token reaches the
+ * bridge whether or not a utility uses it. One light theme over a
+ * neutral grey canvas, the design-tool ground.
  */
-@theme {
+@theme static {
   --color-canvas: oklch(93% 0.003 260);
   --color-surface: oklch(100% 0 0);
   --color-ink: oklch(20% 0.01 260);

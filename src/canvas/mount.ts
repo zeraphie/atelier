@@ -42,8 +42,8 @@ export async function mountCanvas(
     stage.app.renderer,
     stage.app.stage,
     {
-      crossing: tokenColor("--color-muted", { rgb: 0x777a86, alpha: 1 }),
-      line: tokenColor("--color-line", { rgb: 0xd9dade, alpha: 1 }),
+      crossing: { ...tokenColor("--color-muted", { rgb: 0x777a86, alpha: 1 }), alpha: 0.85 },
+      line: { ...tokenColor("--color-muted", { rgb: 0x777a86, alpha: 1 }), alpha: 0.4 },
     },
     () => stage.requestFrame(),
     camera.current,

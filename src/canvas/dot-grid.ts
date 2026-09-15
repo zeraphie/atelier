@@ -32,8 +32,10 @@ export interface DotGridColors {
 // How long after the last change of zoom or size the cell is drawn again.
 const SETTLE_MS = 160;
 // Screen pixels: a crossing is twice a line dot, and both keep their size at every zoom.
-const CROSSING_RADIUS = 1.5;
-const LINE_RADIUS = 0.75;
+const CROSSING_RADIUS = 2;
+const LINE_RADIUS = 1;
+// The smallest texture worth making; a cell is never drawn this small anyway.
+const LEAST_TEXTURE_PX = 16;
 
 /** The tiled dot grid under the world, following the camera. */
 export class DotGrid {
@@ -93,10 +95,10 @@ export class DotGrid {
     this.sprite.destroy({ texture: true, textureSource: true });
   }
 
-  // The tile repeats every cell, whatever the texture's own rounded size;
-  // its scale is the cell's screen size over the texture's. The crossing
-  // sits at the cell's centre, so the tile starts half a cell before the
-  // world origin, which then lands on a crossing.
+  // The tile repeats every cell, whatever size the texture is; its scale is
+  // the cell's screen size over the texture's. The crossing sits at the
+  // cell's centre, so the tile starts half a cell before the world origin,
+  // which then lands on a crossing.
   private place(): void {
     const period = gridCellCm(this.tier) * this.state.zoom;
     const scale = period / this.sprite.texture.width;
@@ -120,29 +122,41 @@ export class DotGrid {
     this.requestFrame();
   }
 
-  // One cell at the settled zoom and the device's resolution: the crossing at
-  // its centre, and the line dots along the two centre lines. Nothing sits on
-  // the tile's edge, where it would be cut and joined again by its neighbours.
+  // One cell for the settled zoom: the crossing at its centre, and the line
+  // dots along the two centre lines. Nothing sits on the tile's edge, where
+  // it would be cut and joined again by its neighbours. The texture is a
+  // power of two on a side, at least as many pixels as the cell has on the
+  // device, because the GPU repeats only such textures; anything else it
+  // clamps, and the grid would be one cell at the origin.
   private cellTexture(): Texture {
     const cell = gridCellCm(this.tier) * this.settledZoom;
-    const step = cell / (DOTS_BETWEEN + 1);
+    const size = powerOfTwoAtLeast(cell * window.devicePixelRatio);
+    // Texture pixels per screen pixel of the cell.
+    const density = size / cell;
+    const step = size / (DOTS_BETWEEN + 1);
     const shapes = new Graphics();
     for (let k = 1; k <= DOTS_BETWEEN; k += 1) {
-      const along = (cell / 2 + k * step) % cell;
-      shapes.circle(along, cell / 2, LINE_RADIUS).circle(cell / 2, along, LINE_RADIUS);
+      const along = (size / 2 + k * step) % size;
+      shapes
+        .circle(along, size / 2, LINE_RADIUS * density)
+        .circle(size / 2, along, LINE_RADIUS * density);
     }
     shapes.fill({ color: this.colors.line.rgb, alpha: this.colors.line.alpha });
     shapes
-      .circle(cell / 2, cell / 2, CROSSING_RADIUS)
+      .circle(size / 2, size / 2, CROSSING_RADIUS * density)
       .fill({ color: this.colors.crossing.rgb, alpha: this.colors.crossing.alpha });
     const texture = this.renderer.generateTexture({
       target: shapes,
-      frame: new Rectangle(0, 0, cell, cell),
-      resolution: window.devicePixelRatio,
+      frame: new Rectangle(0, 0, size, size),
+      resolution: 1,
       antialias: true,
     });
     shapes.destroy();
     texture.source.addressMode = "repeat";
     return texture;
   }
+}
+
+function powerOfTwoAtLeast(pixels: number): number {
+  return 2 ** Math.ceil(Math.log2(Math.max(LEAST_TEXTURE_PX, pixels)));
 }
