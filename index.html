@@ -51,6 +51,8 @@
         width: 200%;
         display: grid;
         place-items: center;
+      }
+      #loading.draw .pane {
         animation: breathe 2400ms 980ms ease-in-out infinite;
       }
       #loading .left .pane {
@@ -65,8 +67,11 @@
       /* pathLength makes each outline one unit long whatever its real
          length, so both letters draw in step without measuring either.
          The stroke is set on the use and inherited by the path it
-         stands for. The draw runs once and holds: a mark cut off
-         half-drawn reads as a fault rather than as a wait. */
+         stands for. The draw starts when the app's modules are in
+         (the curtain module adds `draw`), since it runs on the main
+         thread and their evaluation would stall it. It runs once and
+         holds: a mark cut off half-drawn reads as a fault rather than
+         as a wait. */
       #loading use {
         fill: none;
         stroke: oklch(20% 0.01 260);
@@ -75,9 +80,11 @@
         stroke-linejoin: round;
         stroke-dasharray: 1;
         stroke-dashoffset: 1;
+      }
+      #loading.draw use {
         animation: draw 800ms ease-in-out forwards;
       }
-      #loading .l {
+      #loading.draw .l {
         animation-delay: 180ms;
       }
       /* Opened: the halves leave by their own sides, each with its share
@@ -110,8 +117,8 @@
       /* Asked for stillness: the mark stands, drawn, and the curtain
          goes straight off rather than sliding. */
       @media (prefers-reduced-motion: reduce) {
-        #loading .pane,
-        #loading use {
+        #loading.draw .pane,
+        #loading.draw use {
           animation: none;
         }
         #loading use {

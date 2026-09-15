@@ -15,7 +15,7 @@ import { Stage } from "../canvas/stage.js";
 import { tokenColor } from "../canvas/theme.js";
 import type { ValueStore } from "../canvas/value-store.js";
 import { useCanvas } from "./canvas-context.js";
-import { raiseCurtain } from "./curtain.js";
+import { raiseCurtain, whenMarkDrawn } from "./curtain.js";
 
 // Screen pixels kept clear around the wall when the view first fits it.
 const FIT_PADDING = 48;
@@ -61,7 +61,11 @@ async function mount(
   camera: Camera,
   view: ValueStore<ViewSize>
 ): Promise<() => void> {
-  await whenFacesReady();
+  // The faces fetch while the mark draws; the stage, whose setup is heavy
+  // on the main thread, waits for the draw to end so it cannot stall it.
+  const faces = whenFacesReady();
+  await whenMarkDrawn();
+  await faces;
   const stage = await Stage.create(host, world);
   const input = new CameraInput(camera, host);
   const stopFrames = camera.onChange(() => stage.requestFrame());
