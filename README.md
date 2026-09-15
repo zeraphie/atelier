@@ -7,7 +7,7 @@ On the tech side, this uses PixiJS for rendering the infinite canvas; TypeScript
 Future improvements: Trystero for utilising WebRTC for sharing comments with other users; Design pass to add texture; 3D interactions on images to make it feel more immersive (i.e. doom style navigation)
 
 Live demo: https://izelya.me/atelier
-Video walkthrough: <!-- link -->
+Video walkthrough: https://www.youtube.com/watch?v=AMCqAsGznyQ
 
 ## Develop
 
@@ -40,6 +40,8 @@ bun run test     # the logic tests alone
 ## Credits
 
 Every work is in the public domain; each scan comes from the holding collection on the terms it states.
+
+The music in the video is "Unrequited" by Asher Fulero, from the YouTube Audio Library.
 
 | Work                                                        | Artist                                                     | Year       | Collection                                                        | Scan                                       |
 | ----------------------------------------------------------- | ---------------------------------------------------------- | ---------- | ----------------------------------------------------------------- | ------------------------------------------ |
