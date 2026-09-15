@@ -40,9 +40,9 @@ for everything a person does.
 ## House rules
 
 - Bun only — `bun add` / `bun run`; never npm or yarn.
-- **The prose is Izzy's.** README.md and DECISIONS.md are written by
-  Izzy; agents propose structure and supply facts, never the
-  sentences.
+- **The prose is Izzy's.** README.md is written by Izzy; agents
+  propose structure and supply facts, and drafts of DECISIONS.md
+  that Izzy edits.
 - **One camera.** Pixi and the DOM read the same camera state; nothing
   positions itself from a second transform.
 - **Works are data.** The rooms, the hang and the tiers derive from

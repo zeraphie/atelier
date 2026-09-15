@@ -1,8 +1,12 @@
 # Atelier
 
-<!-- One or two sentences in your words: what it is and what it is for. -->
+Atelier is an infinite canvas style gallery project, mimicking a visitor's journey through an art gallery. The visitor's journey through a gallery usually has a tourguide that accompanies them, and some back and forth to talk about the artwork can also happen. Atelier demos the gallery utilising credited artwork under public domain.
 
-Live demo: <!-- link once deployed -->
+On the tech side, this is uses PixiJS for rendering the infinite canvas; TypeScript/React/Tailwind/Radix for the UI; Zustand for state management; Bun for running, Vite for building and GitHub Pages for a static site; my repo tablewright/tablewright has been used as inspiration for camera/interactions.
+
+Future improvements: Trystero for utilising WebRTC for sharing comments with other users; Design pass to add texture; 3d interactions on images to make it feel more immersive (i.e. doom style navigation)
+
+Live demo: https://izelya.me/atelier
 Video walkthrough: <!-- link -->
 
 ## Develop
@@ -15,17 +19,6 @@ bun run dev      # dev server at http://localhost:5173/atelier/
 bun run check    # format, lint, typecheck, tests and build
 bun run test     # the logic tests alone
 ```
-
-## Map of the code
-
-- `src/camera/` — pan and zoom as one transform: pure math, the camera, the input binding
-- `src/canvas/` — the PixiJS stage, drawing on request, the rooms and works on it
-- `src/gallery/` — the works and rooms as data, the hang, the tiers
-- `src/comments/` — the comment model, events, store and persistence
-- `src/ui/` — React, by atomic design: `atoms/`, `molecules/`, `components/`, `utils/`
-- `tests/` — logic tests, one file per module
-- `.ai/` — the working contract for AI collaborators: workflow, style, testing
-- `DECISIONS.md` — product and technical decisions, and why
 
 ## Keyboard
 
