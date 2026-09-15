@@ -26,6 +26,33 @@
       }
     ]
   },
+  "haer-sentinel-bridge": {
+    "color": "#f8f8f8",
+    "width": 14434,
+    "height": 9632,
+    "sizes": [
+      {
+        "px": 512,
+        "width": 512,
+        "height": 342
+      },
+      {
+        "px": 1024,
+        "width": 1024,
+        "height": 683
+      },
+      {
+        "px": 2048,
+        "width": 2048,
+        "height": 1367
+      },
+      {
+        "px": 4096,
+        "width": 4096,
+        "height": 2733
+      }
+    ]
+  },
   "haer-woolsey-bridge": {
     "color": "#f8f8f8",
     "width": 14440,
@@ -143,6 +170,28 @@
         "px": 2048,
         "width": 2048,
         "height": 1318
+      }
+    ]
+  },
+  "kiyochika-sumida-river-night": {
+    "color": "#383838",
+    "width": 2469,
+    "height": 1614,
+    "sizes": [
+      {
+        "px": 512,
+        "width": 512,
+        "height": 335
+      },
+      {
+        "px": 1024,
+        "width": 1024,
+        "height": 669
+      },
+      {
+        "px": 2048,
+        "width": 2048,
+        "height": 1339
       }
     ]
   }
