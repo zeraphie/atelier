@@ -20,6 +20,8 @@ export interface CanvasSession {
   readonly view: ValueStore<ViewSize>;
   /** The tour along the route, once the canvas has mounted. */
   readonly tour: ValueStore<TourHandle | undefined>;
+  /** Whether the dot grid is drawn. */
+  readonly gridShown: ValueStore<boolean>;
 }
 
 const CanvasContext = createContext<CanvasSession | undefined>(undefined);
@@ -29,6 +31,7 @@ export function CanvasProvider({ children }: { readonly children: ReactNode }) {
     camera: new Camera(),
     view: new ValueStore({ width: 0, height: 0 }),
     tour: new ValueStore<TourHandle | undefined>(undefined),
+    gridShown: new ValueStore(true),
   }));
   return <CanvasContext value={session}>{children}</CanvasContext>;
 }
@@ -57,6 +60,15 @@ export function useTour(): TourHandle | undefined {
   return useSyncExternalStore(
     (listener) => tour.subscribe(listener),
     () => tour.current
+  );
+}
+
+/** Whether the grid is drawn, re-rendering when it is switched. */
+export function useGridShown(): boolean {
+  const { gridShown } = useCanvas();
+  return useSyncExternalStore(
+    (listener) => gridShown.subscribe(listener),
+    () => gridShown.current
   );
 }
 

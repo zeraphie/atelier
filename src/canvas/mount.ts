@@ -7,11 +7,10 @@
  * the app and evaluate on their own.
  */
 
-import { CameraInput, glide, type Camera, type ViewSize } from "../camera/index.js";
-import { hangGallery, roomAt, SPACING, workAt } from "../gallery/hang.js";
-import { routeThrough } from "../gallery/route.js";
+import { CameraInput, glide, type Camera, type Point, type ViewSize } from "../camera/index.js";
+import { roomAt, SPACING, workAt } from "../gallery/hang.js";
 import images from "../gallery/images.json";
-import { ROOMS } from "../gallery/works.js";
+import { PLAN, ROUTE } from "../gallery/plan.js";
 import { DotGrid } from "./dot-grid.js";
 import { whenFacesReady } from "./faces.js";
 import { GalleryLayer } from "./gallery-layer.js";
@@ -19,6 +18,13 @@ import { Stage } from "./stage.js";
 import { tokenColor } from "./theme.js";
 import { Tour, type TourHandle } from "./tour.js";
 import type { ValueStore } from "./value-store.js";
+
+export interface MountHooks {
+  /** A tap on empty canvas, as a world point. */
+  readonly onTap: (world: Point) => void;
+  /** Whether the grid is drawn, as the interface switches it. */
+  readonly gridShown: ValueStore<boolean>;
+}
 
 // Screen pixels kept clear around the gallery when the view first fits it.
 const FIT_PADDING = 48;
@@ -39,7 +45,8 @@ export interface MountedCanvas {
 export async function mountCanvas(
   host: HTMLElement,
   camera: Camera,
-  view: ValueStore<ViewSize>
+  view: ValueStore<ViewSize>,
+  hooks: MountHooks
 ): Promise<MountedCanvas> {
   await whenFacesReady();
   const stage = await Stage.create(host, camera);
@@ -50,8 +57,8 @@ export async function mountCanvas(
   const line = tokenColor("--color-line", { rgb: 0xd9dade, alpha: 1 });
   const surface = tokenColor("--color-surface", { rgb: 0xffffff, alpha: 1 });
   const isMotionReduced = (): boolean => matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const plan = hangGallery(ROOMS);
-  const route = routeThrough(plan);
+  const plan = PLAN;
+  const route = ROUTE;
   const gallery = new GalleryLayer(
     stage.world,
     plan,
@@ -101,6 +108,9 @@ export async function mountCanvas(
     const ms = isMotionReduced() ? 0 : GLIDE_MS;
     glide(camera, camera.fitted(stage.view, target, FIT_PADDING), stage.view, ms);
   });
+  const stopTap = input.onTap((at) => hooks.onTap(camera.toWorld(at)));
+  const stopGridSwitch = hooks.gridShown.subscribe((isShown) => grid.show(isShown));
+  grid.show(hooks.gridShown.current);
   const stopResize = stage.onResize(() => {
     view.set(stage.view);
     grid.resize(stage.view);
@@ -111,6 +121,8 @@ export async function mountCanvas(
     tour,
     dispose() {
       tour.dispose();
+      stopGridSwitch();
+      stopTap();
       stopDoubleTap();
       stopResize();
       stopFollowing();

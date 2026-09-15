@@ -47,7 +47,7 @@ export class CameraInput {
     target.addEventListener("pointermove", this.onPointerMove);
     target.addEventListener("pointerup", this.onPointerEnd);
     target.addEventListener("pointercancel", this.onPointerEnd);
-    // A long press on touch would otherwise open the browser context menu mid-gesture.
+    // A long press on touch would otherwise open the browser's own menu mid-pan.
     target.addEventListener("contextmenu", this.onContextMenu);
   }
 
@@ -79,8 +79,12 @@ export class CameraInput {
     };
   }
 
+  // Only while a pointer is held: a right click with nothing held is the
+  // app's to answer with a menu of its own.
   private readonly onContextMenu = (event: Event): void => {
-    event.preventDefault();
+    if (this.pointers.size > 0) {
+      event.preventDefault();
+    }
   };
 
   private readonly onWheel = (event: WheelEvent): void => {

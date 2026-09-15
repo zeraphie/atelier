@@ -83,6 +83,12 @@ export class DotGrid {
     }
   }
 
+  /** Draw the grid, or not. */
+  show(isShown: boolean): void {
+    this.sprite.visible = isShown;
+    this.requestFrame();
+  }
+
   /** Cover the new view size; the display's pixel ratio may have changed with it. */
   resize(view: ViewSize): void {
     this.sprite.width = view.width;
