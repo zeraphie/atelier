@@ -33,7 +33,7 @@ export interface DotGridColors {
 const SETTLE_MS = 160;
 // Screen pixels: a crossing is twice a line dot, and both keep their size at every zoom.
 const CROSSING_RADIUS = 2;
-const LINE_RADIUS = 1;
+const LINE_RADIUS = 1.2;
 // The smallest texture worth making; a cell is never drawn this small anyway.
 const LEAST_TEXTURE_PX = 16;
 
@@ -126,8 +126,8 @@ export class DotGrid {
   // dots along the two centre lines. Nothing sits on the tile's edge, where
   // it would be cut and joined again by its neighbours. The texture is a
   // power of two on a side, at least as many pixels as the cell has on the
-  // device, because the GPU repeats only such textures; anything else it
-  // clamps, and the grid would be one cell at the origin.
+  // device, so every GPU can repeat it; without repeating, the grid would
+  // be one cell at the origin.
   private cellTexture(): Texture {
     const cell = gridCellCm(this.tier) * this.settledZoom;
     const size = powerOfTwoAtLeast(cell * window.devicePixelRatio);
@@ -150,9 +150,10 @@ export class DotGrid {
       frame: new Rectangle(0, 0, size, size),
       resolution: 1,
       antialias: true,
+      // Set at creation: a wrap mode changed afterwards never reaches the sampler.
+      textureSourceOptions: { addressMode: "repeat" },
     });
     shapes.destroy();
-    texture.source.addressMode = "repeat";
     return texture;
   }
 }
