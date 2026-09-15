@@ -15,6 +15,7 @@ import { Stage } from "../canvas/stage.js";
 import { tokenColor } from "../canvas/theme.js";
 import type { ValueStore } from "../canvas/value-store.js";
 import { useCanvas } from "./canvas-context.js";
+import { raiseCurtain } from "./curtain.js";
 
 // Screen pixels kept clear around the wall when the view first fits it.
 const FIT_PADDING = 48;
@@ -68,6 +69,7 @@ async function mount(
   view.set(stage.view);
   const wall = standInWall(world, tokenColor("--color-ink", { rgb: 0x2b2b30, alpha: 1 }));
   camera.fit(stage.view, wall.bounds, FIT_PADDING, FIT_ZOOM_MOST);
+  void stage.firstFrame.then(raiseCurtain);
   return () => {
     wall.dispose();
     stopResize();

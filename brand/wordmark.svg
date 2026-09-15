@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-60 -800 1830 1090" width="520" role="img" aria-label="Atelier">
+  <title>Atelier</title>
+  <desc>
+    The A and L of Cinzel Decorative as outlines rather than as text, lifted
+    once from src/fonts/cinzel-decorative-700.woff2 and set as the face kerns
+    the pair: the A's tail passes under the L, and the L's foot carries over
+    it.
+
+    This is the copy to open and to work on. The app paints its own, inline
+    in index.html, because a loader that has to fetch a file is a loader that
+    has to wait for one. If these two paths change, that copy changes with
+    them.
+
+    Drawn here as the app draws it: once, then held. For a still wordmark,
+    drop the style block and give the paths a fill.
+  </desc>
+  <style>
+    path {
+      fill: none;
+      stroke: oklch(20% 0.01 260);
+      stroke-width: 14;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 1;
+      stroke-dashoffset: 1;
+      animation: draw 800ms ease-in-out forwards;
+    }
+    path + path {
+      animation-delay: 180ms;
+    }
+    @keyframes draw {
+      to {
+        stroke-dashoffset: 0;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      path {
+        animation: none;
+        stroke-dashoffset: 0;
+      }
+    }
+  </style>
+  <path pathLength="1" d="M965 183Q856 238 744 201Q625 163 539 39Q493 -27 460 -114L428 -199L192 -199L139 -73Q134 -60 134 -52Q134 -44 137.5 -34.5Q141 -25 152.5 -17.5Q164 -10 178 -10L186 -10L186 0L-28 0L-28 -10L-19 -10Q4 -10 26.5 -23.5Q49 -37 64 -64L287 -573Q248 -661 204 -694Q167 -722 133.5 -722Q100 -722 71 -712L69 -722Q141 -759 207 -759Q289 -759 354 -695Q418 -632 467 -513L612 -155Q694 48 780 124Q815 155 852 167Q889 179 914.5 179Q940 179 964 173ZM209 -242L413 -242L343 -427Q338 -441 329 -465.5Q320 -490 317 -500Z" />
+  <path pathLength="1" transform="translate(697 0)" d="M854 139Q958 139 1022 98L1029 106Q943 225 815 238Q788 241 768.5 241Q749 241 723.5 239.5Q698 238 652 226Q606 214 571 201.5Q536 189 490 168.5Q444 148 414 132.5Q384 117 342.5 95.5Q301 74 270 59Q239 44 210 33Q128 0 42 0L42 -10L55 -10Q81 -10 99.5 -28Q118 -46 119 -73L119 -627Q118 -654 99.5 -672Q81 -690 55 -690L42 -690L42 -700L346 -700L345 -690L335 -690Q297 -690 278 -659Q269 -645 269 -627L269 -47Q269 -14 282 -1.5Q295 11 311 16Q687 139 854 139Z" />
+</svg>

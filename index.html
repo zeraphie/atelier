@@ -4,9 +4,176 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Atelier</title>
+    <style>
+      /* The mark, and the only thing on screen until the stage has a
+         frame. Its colours are written out rather than taken from the
+         tokens: the stylesheet arrives with the module, and this has to
+         be painted before that, or a loader is just another thing to
+         load. They are the canvas and ink tokens of src/index.css. */
+      #loading {
+        position: fixed;
+        inset: 0;
+        z-index: 999;
+        /* The same ground behind the two halves. On an odd number of
+           pixels they meet on half of one, and the hairline that leaves
+           would show the canvas through it. It goes the moment they part. */
+        background: oklch(93% 0.003 260);
+      }
+      #loading .marks {
+        position: absolute;
+        width: 0;
+        height: 0;
+      }
+      /* Two halves of one curtain. Each is half the window wide and
+         hides what falls outside it. */
+      #loading .half {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 50%;
+        overflow: hidden;
+        background: oklch(93% 0.003 260);
+        transition: transform 400ms cubic-bezier(0.65, 0, 0.35, 1);
+      }
+      #loading .left {
+        left: 0;
+      }
+      #loading .right {
+        right: 0;
+      }
+      /* Inside each half, the whole window. The mark is centred in that,
+         so it lands in the same place on both sides and the seam falls
+         down the middle of the letters. */
+      #loading .pane {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 200%;
+        display: grid;
+        place-items: center;
+        animation: breathe 2400ms 980ms ease-in-out infinite;
+      }
+      #loading .left .pane {
+        left: 0;
+      }
+      #loading .right .pane {
+        right: 0;
+      }
+      #loading svg {
+        width: min(40vw, 260px);
+      }
+      /* pathLength makes each outline one unit long whatever its real
+         length, so both letters draw in step without measuring either.
+         The stroke is set on the use and inherited by the path it
+         stands for. The draw runs once and holds: a mark cut off
+         half-drawn reads as a fault rather than as a wait. */
+      #loading use {
+        fill: none;
+        stroke: oklch(20% 0.01 260);
+        stroke-width: 14;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-dasharray: 1;
+        stroke-dashoffset: 1;
+        animation: draw 800ms ease-in-out forwards;
+      }
+      #loading .l {
+        animation-delay: 180ms;
+      }
+      /* Opened: the halves leave by their own sides, each with its share
+         of the letters. The curtain module takes the node off after the
+         same length. */
+      #loading.done {
+        pointer-events: none;
+        background: transparent;
+      }
+      #loading.done .left {
+        transform: translateX(-100%);
+      }
+      #loading.done .right {
+        transform: translateX(100%);
+      }
+      @keyframes draw {
+        to {
+          stroke-dashoffset: 0;
+        }
+      }
+      @keyframes breathe {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.45;
+        }
+      }
+      /* Asked for stillness: the mark stands, drawn, and the curtain
+         goes straight off rather than sliding. */
+      @media (prefers-reduced-motion: reduce) {
+        #loading .pane,
+        #loading use {
+          animation: none;
+        }
+        #loading use {
+          stroke-dashoffset: 0;
+        }
+        #loading .half {
+          transition: opacity 200ms ease;
+        }
+        #loading.done .half {
+          transform: none;
+          opacity: 0;
+        }
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
+    <!-- The A and L of Cinzel Decorative as outlines rather than as text,
+         so the loader owes nothing to a face that has yet to load. Lifted
+         once from src/fonts/cinzel-decorative-700.woff2 and set as the
+         face kerns the pair; the copy to look at and to work on is
+         brand/wordmark.svg. Changing the heading face means redrawing
+         these two paths.
+
+         The mark is drawn once and worn twice: each half of the curtain
+         holds the whole window and clips it to its own side, so the seam
+         falls down the middle of the letters and each side carries its
+         own half of them away. -->
+    <div id="loading">
+      <svg class="marks" aria-hidden="true">
+        <defs>
+          <g id="mark-a">
+            <path
+              pathLength="1"
+              d="M965 183Q856 238 744 201Q625 163 539 39Q493 -27 460 -114L428 -199L192 -199L139 -73Q134 -60 134 -52Q134 -44 137.5 -34.5Q141 -25 152.5 -17.5Q164 -10 178 -10L186 -10L186 0L-28 0L-28 -10L-19 -10Q4 -10 26.5 -23.5Q49 -37 64 -64L287 -573Q248 -661 204 -694Q167 -722 133.5 -722Q100 -722 71 -712L69 -722Q141 -759 207 -759Q289 -759 354 -695Q418 -632 467 -513L612 -155Q694 48 780 124Q815 155 852 167Q889 179 914.5 179Q940 179 964 173ZM209 -242L413 -242L343 -427Q338 -441 329 -465.5Q320 -490 317 -500Z"
+            />
+          </g>
+          <g id="mark-l" transform="translate(697 0)">
+            <path
+              pathLength="1"
+              d="M854 139Q958 139 1022 98L1029 106Q943 225 815 238Q788 241 768.5 241Q749 241 723.5 239.5Q698 238 652 226Q606 214 571 201.5Q536 189 490 168.5Q444 148 414 132.5Q384 117 342.5 95.5Q301 74 270 59Q239 44 210 33Q128 0 42 0L42 -10L55 -10Q81 -10 99.5 -28Q118 -46 119 -73L119 -627Q118 -654 99.5 -672Q81 -690 55 -690L42 -690L42 -700L346 -700L345 -690L335 -690Q297 -690 278 -659Q269 -645 269 -627L269 -47Q269 -14 282 -1.5Q295 11 311 16Q687 139 854 139Z"
+            />
+          </g>
+        </defs>
+      </svg>
+      <div class="half left">
+        <div class="pane">
+          <svg viewBox="-60 -800 1830 1090" role="img" aria-label="Atelier is opening">
+            <use class="a" href="#mark-a" />
+            <use class="l" href="#mark-l" />
+          </svg>
+        </div>
+      </div>
+      <div class="half right" aria-hidden="true">
+        <div class="pane">
+          <svg viewBox="-60 -800 1830 1090">
+            <use class="a" href="#mark-a" />
+            <use class="l" href="#mark-l" />
+          </svg>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
