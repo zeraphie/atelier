@@ -2,9 +2,10 @@
 
 A gallery on an infinite canvas, with comment threads pinned to it.
 Eight public-domain works hang in five rooms laid out as a floor
-plan; zoom reveals the plan, then the works, then the labels. React + TypeScript on Vite,
-PixiJS for the canvas, DOM for the pins and panels, Tailwind v4 and
-Radix for the UI, zustand for state, trystero last for a shared room.
+plan; zoom reveals the plan, then the works, then the labels. React
++ TypeScript on Vite, PixiJS for the canvas, DOM for the pins and
+panels, Tailwind v4 and Radix for the UI, zustand for state, trystero
+last for a shared room.
 Bun runs everything. Decisions and their reasons live in
 [DECISIONS.md](../DECISIONS.md), which is the design doc here.
 **Local until Izzy pushes:** never create a remote, push, or deploy
