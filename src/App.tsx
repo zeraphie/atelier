@@ -7,7 +7,6 @@ import { PinLayer } from "./ui/PinLayer.js";
 import { useShortcuts } from "./ui/shortcuts.js";
 import { StudioDesk } from "./ui/StudioDesk.js";
 import { ThresholdArrows } from "./ui/ThresholdArrows.js";
-import { Toolbar } from "./ui/Toolbar.js";
 import { TourControls } from "./ui/TourControls.js";
 import { ZoomIndicator } from "./ui/ZoomIndicator.js";
 
@@ -30,7 +29,6 @@ function Workspace() {
       <StudioDesk />
       <ThresholdArrows />
       <PinLayer />
-      <Toolbar />
       <CommentList />
       <TourControls />
       <div className="absolute right-4 bottom-4 flex flex-col items-end gap-2">

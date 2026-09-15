@@ -1,11 +1,12 @@
 /**
  * ─ Comment list ─
  *
- * Every thread in one place, off the canvas: grouped by room in the
- * order the rooms are walked, open or resolved or all, and each one a
- * way there. Choosing a thread glides the view to its pin and opens
- * it, so a comment whose pin is off screen is never lost. The panel
- * folds away behind its button, which keeps the count of open threads.
+ * The comments' corner: one pill with the way to add a comment and
+ * the way to every thread. The list is grouped by room in the order
+ * the rooms are walked, open or resolved or all, and each thread is a
+ * way there: choosing one glides the view to its pin and opens it, so
+ * a comment whose pin is off screen is never lost. The panel folds
+ * away behind its button, which keeps the count of open threads.
  * Decision: DECISIONS.md, finding a comment: the list, the map and the jump.
  */
 
@@ -29,9 +30,12 @@ const FILTERS: readonly { readonly id: ListFilter; readonly label: string }[] = 
   { id: "all", label: "All" },
 ];
 
-const TOGGLE =
-  "flex h-8 items-center gap-2 rounded-md border border-line bg-surface px-3 font-sans text-sm text-ink shadow-sm " +
-  "hover:bg-canvas aria-expanded:bg-canvas focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2";
+const PILL = "flex overflow-hidden rounded-md border border-line bg-surface shadow-sm";
+const TOOL =
+  "flex h-8 items-center gap-2 px-3 font-sans text-sm text-ink hover:bg-canvas active:bg-line " +
+  "focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2";
+const ADD = `${TOOL} min-w-8 px-2 aria-pressed:bg-accent aria-pressed:text-accent-ink aria-pressed:hover:bg-accent`;
+const TOGGLE = `${TOOL} border-l border-line aria-expanded:bg-canvas`;
 const FILTER =
   "rounded px-2 py-1 font-sans text-xs text-muted hover:bg-canvas hover:text-ink " +
   "aria-pressed:bg-ink aria-pressed:text-surface aria-pressed:hover:bg-ink " +
@@ -42,26 +46,48 @@ const ITEM =
 
 export function CommentList() {
   const threads = useCommentsStore((store) => store.threads);
+  const mode = useUiStore((store) => store.mode);
+  const setMode = useUiStore((store) => store.setMode);
   const [isOpen, setOpen] = useState(false);
   const [filter, setFilter] = useState<ListFilter>("open");
+  const isCommenting = mode === "comment";
   const openCount = threads.filter((thread) => !thread.resolved).length;
   const groups = groupByRoom(PLAN, filterThreads(threads, filter));
   return (
     <div className="absolute top-4 right-4 flex flex-col items-end gap-2">
-      <button
-        type="button"
-        className={TOGGLE}
-        aria-expanded={isOpen}
-        aria-controls="comment-list"
-        onClick={() => setOpen(!isOpen)}
-      >
-        Comments
-        {openCount > 0 && (
-          <span className="rounded-full bg-accent px-1.5 font-mono text-xs text-accent-ink tabular-nums">
-            {openCount}
-          </span>
-        )}
-      </button>
+      <div className={PILL}>
+        <button
+          type="button"
+          className={ADD}
+          aria-pressed={isCommenting}
+          aria-label="Add a comment"
+          title="Add a comment (C)"
+          onClick={() => setMode(isCommenting ? "browse" : "comment")}
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path
+              d="M2 2.5h10v7H6l-3 2.5v-2.5H2z"
+              stroke="currentColor"
+              strokeWidth="1.4"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+        <button
+          type="button"
+          className={TOGGLE}
+          aria-expanded={isOpen}
+          aria-controls="comment-list"
+          onClick={() => setOpen(!isOpen)}
+        >
+          Comments
+          {openCount > 0 && (
+            <span className="rounded-full bg-accent px-1.5 font-mono text-xs text-accent-ink tabular-nums">
+              {openCount}
+            </span>
+          )}
+        </button>
+      </div>
       {isOpen && (
         <section
           id="comment-list"
