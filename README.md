@@ -50,7 +50,7 @@ Every work is in the public domain; each scan comes from the holding collection 
 
 | Work                                                        | Artist                                                     | Year       | Collection                                                        | Scan                                       |
 | ----------------------------------------------------------- | ---------------------------------------------------------- | ---------- | ----------------------------------------------------------------- | ------------------------------------------ |
-| Woolsey Bridge, axonometric from below                      | Matthew Swaim, Historic American Engineering Record        | after 1968   | Library of Congress, HAER AR-63, sheet 4                        | United States government work              |
+| Overhead Crank Steam Engine and Cane Mill, Estate Whim      | Kathleen Hoeft, Historic American Engineering Record       | 1977         | Library of Congress, HAER VI,1-WEST,1C-, sheet 1                | United States government work              |
          | Library of Congress, HAER VI,1-WEST,1C-, sheet 1                | United States government work              |
 | Sentinel Bridge over the Merced River, elevation and section | Marie-Claude LeSauteur, Historic American Engineering Record | 1991         | Library of Congress, HAER CAL,22-YOSEM,15-, sheet 1           | United States government work              |
 | Under the Wave off Kanagawa                                 | Katsushika Hokusai                                         | c. 1830–32 | The Metropolitan Museum of Art, JP1847                            | The Met Open Access                        |
