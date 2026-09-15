@@ -1,0 +1,148 @@
+/**
+ * ─ Camera input ─
+ *
+ * Maps pointer and wheel events on the canvas element to camera calls,
+ * for mouse, touch and pen alike: the wheel zooms about the cursor, one
+ * pointer pans, two pinch. Pins are DOM above the canvas, so a press on
+ * one never reaches the canvas element, and the camera only ever moves
+ * from empty canvas. The element must set `touch-action: none`, or the
+ * browser takes touch gestures for itself.
+ */
+
+import type { Point } from "../geometry.js";
+import type { Camera } from "./camera.js";
+import { pinchStep } from "./pinch-math.js";
+import { wheelDeltaToPixels, wheelZoomFactor } from "./wheel-math.js";
+
+const LEFT_BUTTON = 0;
+const MIDDLE_BUTTON = 1;
+// Pointer travel under this is a tap on the canvas rather than a pan.
+const TAP_THRESHOLD_PX = 4;
+
+/**
+ * Called when a press on empty canvas ends without travelling: a click on
+ * nothing, at that point on the canvas element.
+ */
+export type CanvasTapListener = (at: Point) => void;
+
+/** Binds camera gestures to `target` until `dispose` is called. */
+export class CameraInput {
+  private readonly camera: Camera;
+  private readonly target: HTMLElement;
+  private readonly pointers = new Map<number, Point>();
+  private readonly pressOrigins = new Map<number, Point>();
+  private readonly tapListeners = new Set<CanvasTapListener>();
+
+  constructor(camera: Camera, target: HTMLElement) {
+    this.camera = camera;
+    this.target = target;
+    target.addEventListener("wheel", this.onWheel, { passive: false });
+    target.addEventListener("pointerdown", this.onPointerDown);
+    target.addEventListener("pointermove", this.onPointerMove);
+    target.addEventListener("pointerup", this.onPointerEnd);
+    target.addEventListener("pointercancel", this.onPointerEnd);
+    // A long press on touch would otherwise open the browser context menu mid-gesture.
+    target.addEventListener("contextmenu", this.onContextMenu);
+  }
+
+  dispose(): void {
+    this.target.removeEventListener("contextmenu", this.onContextMenu);
+    this.target.removeEventListener("wheel", this.onWheel);
+    this.target.removeEventListener("pointerdown", this.onPointerDown);
+    this.target.removeEventListener("pointermove", this.onPointerMove);
+    this.target.removeEventListener("pointerup", this.onPointerEnd);
+    this.target.removeEventListener("pointercancel", this.onPointerEnd);
+    this.pointers.clear();
+    this.pressOrigins.clear();
+    this.target.removeAttribute("data-camera");
+  }
+
+  /** Subscribe to taps on empty canvas; returns the unsubscribe function. */
+  onTap(listener: CanvasTapListener): () => void {
+    this.tapListeners.add(listener);
+    return () => {
+      this.tapListeners.delete(listener);
+    };
+  }
+
+  private readonly onContextMenu = (event: Event): void => {
+    event.preventDefault();
+  };
+
+  private readonly onWheel = (event: WheelEvent): void => {
+    event.preventDefault();
+    const rect = this.target.getBoundingClientRect();
+    const dy = wheelDeltaToPixels(event.deltaY, event.deltaMode, rect.height);
+    const anchor = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+    this.camera.zoomAt(anchor, wheelZoomFactor(dy));
+  };
+
+  private readonly onPointerDown = (event: PointerEvent): void => {
+    const isPanButton = event.button === LEFT_BUTTON || event.button === MIDDLE_BUTTON;
+    if (event.pointerType === "mouse" && !isPanButton) {
+      return;
+    }
+    // A third finger adds nothing to a pinch and would only confuse it.
+    if (this.pointers.size >= 2) {
+      return;
+    }
+    event.preventDefault();
+    this.target.setPointerCapture(event.pointerId);
+    const at = { x: event.clientX, y: event.clientY };
+    this.pointers.set(event.pointerId, at);
+    this.pressOrigins.set(event.pointerId, at);
+    this.target.setAttribute("data-camera", "panning");
+  };
+
+  private readonly onPointerMove = (event: PointerEvent): void => {
+    const previous = this.pointers.get(event.pointerId);
+    if (previous === undefined) {
+      return;
+    }
+    const current = { x: event.clientX, y: event.clientY };
+    if (this.pointers.size === 1) {
+      this.camera.panBy(current.x - previous.x, current.y - previous.y);
+    } else {
+      this.applyPinch(event.pointerId, previous, current);
+    }
+    this.pointers.set(event.pointerId, current);
+  };
+
+  private readonly onPointerEnd = (event: PointerEvent): void => {
+    if (!this.pointers.delete(event.pointerId)) {
+      return;
+    }
+    const origin = this.pressOrigins.get(event.pointerId);
+    this.pressOrigins.delete(event.pointerId);
+    if (this.target.hasPointerCapture(event.pointerId)) {
+      this.target.releasePointerCapture(event.pointerId);
+    }
+    if (this.pointers.size === 0) {
+      this.target.removeAttribute("data-camera");
+    }
+    // A single pointer that pressed and released in place is a tap on nothing.
+    const isTap =
+      event.type === "pointerup" &&
+      origin !== undefined &&
+      this.pointers.size === 0 &&
+      Math.hypot(event.clientX - origin.x, event.clientY - origin.y) < TAP_THRESHOLD_PX;
+    if (isTap) {
+      const rect = this.target.getBoundingClientRect();
+      const at = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+      for (const listener of this.tapListeners) {
+        listener(at);
+      }
+    }
+  };
+
+  private applyPinch(movedId: number, previous: Point, current: Point): void {
+    const other = [...this.pointers].find(([id]) => id !== movedId);
+    if (other === undefined) {
+      return;
+    }
+    const rect = this.target.getBoundingClientRect();
+    const step = pinchStep([previous, other[1]], [current, other[1]]);
+    this.camera.panBy(step.dx, step.dy);
+    this.camera.zoomAt({ x: step.anchor.x - rect.left, y: step.anchor.y - rect.top }, step.factor);
+  }
+}
