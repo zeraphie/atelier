@@ -82,9 +82,9 @@
       #loading .l {
         animation-delay: 180ms;
       }
-      /* Under the mark, once it has drawn: the word, with three of its
-         letters rolling like a drum for as long as the wait lasts, each
-         at its own pace. Transform and opacity only, which the
+      /* Under the mark, from the first paint: the word, with three of
+         its letters rolling like a drum for as long as the wait lasts,
+         each at its own pace. Transform and opacity only, which the
          compositor animates on its own, so the chunks running meanwhile
          on the main thread cannot stall it. */
       #loading .wait {
@@ -99,8 +99,6 @@
         letter-spacing: 0.18em;
         text-transform: uppercase;
         color: oklch(50% 0.01 260);
-        opacity: 0;
-        animation: appear 300ms 980ms ease-out forwards;
       }
       #loading .wait span {
         display: inline-block;
@@ -149,11 +147,6 @@
           stroke-dashoffset: 0;
         }
       }
-      @keyframes appear {
-        to {
-          opacity: 1;
-        }
-      }
       /* Out through the bottom, fading, then straight back in from the top. */
       @keyframes roll {
         0% {
@@ -177,15 +170,11 @@
          still, and the curtain goes straight off rather than sliding. */
       @media (prefers-reduced-motion: reduce) {
         #loading use,
-        #loading .wait,
         #loading .wait span {
           animation: none;
         }
         #loading use {
           stroke-dashoffset: 0;
-        }
-        #loading .wait {
-          opacity: 1;
         }
         #loading .half {
           transition: opacity 200ms ease;

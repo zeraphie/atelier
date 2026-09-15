@@ -4,10 +4,10 @@
  * The mark covers the window from the first byte until the stage has
  * a frame. It draws itself once, the moment the page paints, and the
  * app's chunks wait to run until it is done, since they run on the
- * same thread and would stall it; the word under the mark then moves
- * on the compositor while they run, for one full roll at least. The
- * curtain opens at the later of that and the first frame, and the two
- * halves part with their share of the letters. A load that fails says
+ * same thread and would stall it; the word under the mark moves on
+ * the compositor throughout, for one full roll at least. The curtain
+ * opens at the latest of the draw, the roll and the first frame, and
+ * the two halves part with their share of the letters. A load that fails says
  * so under the mark. The lengths are written down twice: here, and in
  * the rules and markup of index.html.
  * Decision: DECISIONS.md, a loader that draws the mark.
@@ -31,21 +31,27 @@ export function whenMarkDrawn(): Promise<void> {
   return drawn;
 }
 
-// The word appears as the draw ends and stays for one full roll of its
-// slowest letter at least, so a fast load never flashes it. Under reduced
-// motion the word stands still and there is no roll to wait for.
+// The word is up from the first paint and stays for one full roll of its
+// slowest letter at least, so a fast load never flashes it. That letter's
+// own animation clock says how much of the roll is left; under reduced
+// motion there is no animation, and nothing to wait for.
 function whenWordRolled(): Promise<void> {
-  rolled ??= whenMarkDrawn().then(
-    () =>
-      new Promise((resolve) => {
-        setTimeout(resolve, isMotionReduced() ? 0 : SLOWEST_ROLL_MS);
-      })
-  );
+  rolled ??= new Promise((resolve) => {
+    const clock = slowestRoll()?.currentTime;
+    const elapsed = clock === undefined || clock === null ? SLOWEST_ROLL_MS : Number(clock);
+    setTimeout(resolve, Math.max(0, SLOWEST_ROLL_MS - elapsed));
+  });
   return rolled;
 }
 
-function isMotionReduced(): boolean {
-  return matchMedia("(prefers-reduced-motion: reduce)").matches;
+function slowestRoll(): Animation | undefined {
+  const letters = [...document.querySelectorAll<HTMLElement>("#loading .roll")];
+  const animations = letters.flatMap((letter) => letter.getAnimations());
+  return animations.reduce<Animation | undefined>((slowest, animation) => {
+    const duration = Number(animation.effect?.getTiming().duration ?? 0);
+    const best = Number(slowest?.effect?.getTiming().duration ?? 0);
+    return duration > best ? animation : slowest;
+  }, undefined);
 }
 
 /** Open the curtain once the mark has drawn. Safe to call more than once; the first call counts. */
@@ -58,7 +64,7 @@ export function raiseCurtain(): void {
   if (loading === null) {
     return;
   }
-  void whenWordRolled().then(() => {
+  void Promise.all([whenMarkDrawn(), whenWordRolled()]).then(() => {
     loading.classList.add("done");
     // Taken off on a timer rather than on transitionend, which does not
     // fire while the page is not being painted, and the curtain would
