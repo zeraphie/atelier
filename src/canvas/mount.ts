@@ -15,10 +15,12 @@ import {
   type Camera,
   type Point,
   type ViewSize,
+  type WorldRect,
 } from "../camera/index.js";
-import { roomAt, SPACING, workAt } from "../gallery/hang.js";
+import { SPACING } from "../gallery/hang.js";
 import images from "../gallery/images.json";
 import { PLAN, ROUTE } from "../gallery/plan.js";
+import { targetAt, type Target } from "../gallery/targets.js";
 import { DotGrid } from "./dot-grid.js";
 import { whenFacesReady } from "./faces.js";
 import { GalleryLayer } from "./gallery-layer.js";
@@ -57,6 +59,7 @@ export async function mountCanvas(
   const muted = tokenColor("--color-muted", { rgb: 0x777a86, alpha: 1 });
   const line = tokenColor("--color-line", { rgb: 0xd9dade, alpha: 1 });
   const surface = tokenColor("--color-surface", { rgb: 0xffffff, alpha: 1 });
+  const accent = tokenColor("--color-accent", { rgb: 0x3b5bdb, alpha: 1 });
   const plan = PLAN;
   const route = ROUTE;
   const gallery = new GalleryLayer(
@@ -68,6 +71,8 @@ export async function mountCanvas(
       room: { floor: { ...surface, alpha: 0.85 }, name: muted },
       wall: { ...ink, alpha: 0.9 },
       work: { edge: line, card: surface, ink, muted },
+      outline: accent,
+      shadow: { ...ink, alpha: 0.18 },
     },
     requestFrame
   );
@@ -99,16 +104,33 @@ export async function mountCanvas(
   // A double tap fills the view with what is under it: a work with its
   // label, joining the tour there, else its room, else the whole plan.
   // Reduced motion jumps instead of gliding.
-  const stopDoubleTap = input.onDoubleTap((at) => {
-    const point = camera.toWorld(at);
-    const work = workAt(plan, point);
-    if (work !== undefined) {
-      tour.enterAt(work.work.id);
+  const rectOf = (target: Target): WorldRect => {
+    if (target.kind === "work") {
+      return gallery.extentOf(target.work);
     }
-    const target =
-      work === undefined ? (roomAt(plan, point)?.rect ?? plan.bounds) : gallery.extentOf(work);
-    moveTo(camera, camera.fitted(stage.view, target, FIT_PADDING), stage.view);
+    return target.kind === "room" ? target.room.rect : plan.bounds;
+  };
+  const stopDoubleTap = input.onDoubleTap((at) => {
+    const target = targetAt(plan, camera.toWorld(at));
+    if (target.kind === "work") {
+      tour.enterAt(target.work.work.id);
+    }
+    moveTo(camera, camera.fitted(stage.view, rectOf(target), FIT_PADDING), stage.view);
   });
+  // Under a pointer at rest, the same target is shown, so what lights up is
+  // what a double tap would fill the view with. A held pointer is panning,
+  // and the world under it is moving, so it shows nothing.
+  const onHover = (event: PointerEvent): void => {
+    if (event.buttons !== 0) {
+      return;
+    }
+    const rect = host.getBoundingClientRect();
+    const at = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+    gallery.highlight(targetAt(plan, camera.toWorld(at)));
+  };
+  const onLeave = (): void => gallery.highlight(undefined);
+  host.addEventListener("pointermove", onHover);
+  host.addEventListener("pointerleave", onLeave);
   const stopTap = input.onTap((at) => hooks.onTap(camera.toWorld(at)));
   const stopGridSwitch = hooks.gridShown.subscribe((isShown) => grid.show(isShown));
   grid.show(hooks.gridShown.current);
@@ -125,6 +147,8 @@ export async function mountCanvas(
       stopGridSwitch();
       stopTap();
       stopDoubleTap();
+      host.removeEventListener("pointermove", onHover);
+      host.removeEventListener("pointerleave", onLeave);
       stopResize();
       stopFollowing();
       grid.destroy();
