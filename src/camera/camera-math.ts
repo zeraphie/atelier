@@ -98,3 +98,10 @@ export function fitToRect(
     zoom,
   };
 }
+
+/** The world rect the view shows: its corners, unprojected. */
+export function visibleRect(camera: CameraState, view: ViewSize): WorldRect {
+  const topLeft = screenToWorld(camera, { x: 0, y: 0 });
+  const bottomRight = screenToWorld(camera, { x: view.width, y: view.height });
+  return { left: topLeft.x, top: topLeft.y, right: bottomRight.x, bottom: bottomRight.y };
+}

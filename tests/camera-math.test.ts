@@ -3,6 +3,7 @@ import {
   clampZoom,
   pan,
   screenToWorld,
+  visibleRect,
   worldToScreen,
   zoomAbout,
   type CameraState,
@@ -72,5 +73,17 @@ describe("zoomAbout", () => {
 
   test("a factor of one changes nothing", () => {
     expect(zoomAbout(camera, anchor, 1, limits)).toEqual(camera);
+  });
+});
+
+describe("visibleRect", () => {
+  test("is the view's corners in the world, at the zoom", () => {
+    const camera: CameraState = { x: -100, y: -50, zoom: 2 };
+    expect(visibleRect(camera, { width: 800, height: 600 })).toEqual({
+      left: 50,
+      top: 25,
+      right: 450,
+      bottom: 325,
+    });
   });
 });

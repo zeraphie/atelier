@@ -7,7 +7,16 @@
  * the app and evaluate on their own.
  */
 
-import { CameraInput, glide, type Camera, type Point, type ViewSize } from "../camera/index.js";
+import {
+  CameraInput,
+  FIT_PADDING,
+  isMotionReduced,
+  LIFE_SIZE,
+  moveTo,
+  type Camera,
+  type Point,
+  type ViewSize,
+} from "../camera/index.js";
 import { roomAt, SPACING, workAt } from "../gallery/hang.js";
 import images from "../gallery/images.json";
 import { PLAN, ROUTE } from "../gallery/plan.js";
@@ -25,13 +34,6 @@ export interface MountHooks {
   /** Whether the grid is drawn, as the interface switches it. */
   readonly gridShown: ValueStore<boolean>;
 }
-
-// Screen pixels kept clear around the gallery when the view first fits it.
-const FIT_PADDING = 48;
-// Never open closer than life size, however small the gallery.
-const FIT_ZOOM_MOST = 1;
-// How long a move to a work, a room or the whole plan takes.
-const GLIDE_MS = 600;
 
 export interface MountedCanvas {
   /** Resolves once the stage has drawn its first frame. */
@@ -56,7 +58,6 @@ export async function mountCanvas(
   const muted = tokenColor("--color-muted", { rgb: 0x777a86, alpha: 1 });
   const line = tokenColor("--color-line", { rgb: 0xd9dade, alpha: 1 });
   const surface = tokenColor("--color-surface", { rgb: 0xffffff, alpha: 1 });
-  const isMotionReduced = (): boolean => matchMedia("(prefers-reduced-motion: reduce)").matches;
   const plan = PLAN;
   const route = ROUTE;
   const gallery = new GalleryLayer(
@@ -79,7 +80,7 @@ export async function mountCanvas(
     fitPadding: FIT_PADDING,
     isMotionReduced,
   });
-  camera.fit(stage.view, plan.bounds, FIT_PADDING, FIT_ZOOM_MOST);
+  camera.fit(stage.view, plan.bounds, FIT_PADDING, LIFE_SIZE);
   gallery.follow(camera.current);
   // Made after the fit, so its first cell is drawn for the zoom the view opens at.
   const grid = new DotGrid(
@@ -105,8 +106,7 @@ export async function mountCanvas(
     }
     const target =
       work === undefined ? (roomAt(plan, point)?.rect ?? plan.bounds) : gallery.extentOf(work);
-    const ms = isMotionReduced() ? 0 : GLIDE_MS;
-    glide(camera, camera.fitted(stage.view, target, FIT_PADDING), stage.view, ms);
+    moveTo(camera, camera.fitted(stage.view, target, FIT_PADDING), stage.view);
   });
   const stopTap = input.onTap((at) => hooks.onTap(camera.toWorld(at)));
   const stopGridSwitch = hooks.gridShown.subscribe((isShown) => grid.show(isShown));

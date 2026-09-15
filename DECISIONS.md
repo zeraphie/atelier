@@ -12,6 +12,8 @@
 
 ### A route through the rooms
 
+### Finding a comment: the list, the map and the jump
+
 ### Adding a comment: a button and a menu, not a bare tap
 
 ### Threads: a root and its replies

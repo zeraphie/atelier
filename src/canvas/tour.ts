@@ -11,7 +11,14 @@
  * Decision: DECISIONS.md, a route through the rooms.
  */
 
-import { glide, type Camera, type Frame, type ViewSize, type WorldRect } from "../camera/index.js";
+import {
+  glide,
+  MOVE_MS,
+  type Camera,
+  type Frame,
+  type ViewSize,
+  type WorldRect,
+} from "../camera/index.js";
 import type { Route, Stop } from "../gallery/route.js";
 import { ValueStore } from "./value-store.js";
 
@@ -48,8 +55,7 @@ export interface TourOptions {
   readonly isMotionReduced: () => boolean;
 }
 
-// How long a move to a work takes, and how long play stays at each.
-const GLIDE_MS = 600;
+// How long play stays at each work.
 const DWELL_MS = 4000;
 
 /** The works in route order, with next and previous. */
@@ -138,7 +144,7 @@ export class Tour implements TourHandle {
       camera,
       there,
       view,
-      isMotionReduced() ? 0 : GLIDE_MS,
+      isMotionReduced() ? 0 : MOVE_MS,
       this.options.frame ?? requestAnimationFrame
     );
   }
