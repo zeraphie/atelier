@@ -64,10 +64,10 @@
       /* pathLength makes each outline one unit long whatever its real
          length, so both letters draw in step without measuring either.
          The stroke is set on the use and inherited by the path it
-         stands for. The draw runs from the first paint and alternates,
-         drawing and undrawing, for as long as the wait lasts: how long
-         that is nobody knows in advance. The curtain module brings
-         each letter to rest drawn (`drawn`) before the halves part. */
+         stands for. The draw runs once, from the first paint, and holds:
+         a mark cut off half-drawn reads as a fault rather than as a
+         wait. It runs on the main thread, so the app's chunks wait to
+         run until it is done; downloading meanwhile costs it nothing. */
       #loading use {
         fill: none;
         stroke: oklch(20% 0.01 260);
@@ -76,17 +76,36 @@
         stroke-linejoin: round;
         stroke-dasharray: 1;
         stroke-dashoffset: 1;
-        animation: draw 800ms ease-in-out infinite alternate;
+        animation: draw 800ms ease-in-out forwards;
       }
       #loading .l {
         animation-delay: 180ms;
       }
-      #loading use.drawn {
-        animation: none;
-        stroke-dashoffset: 0;
+      /* Under the mark, once it has drawn: the word, each letter lifting
+         in turn for as long as the wait lasts. Transform and opacity
+         only, which the compositor animates on its own, so the chunks
+         running meanwhile on the main thread cannot stall it. */
+      #loading .wait {
+        position: absolute;
+        inset: calc(50% + 96px) 0 auto 0;
+        margin: 0;
+        text-align: center;
+        font:
+          700 13px/1 "Libertinus Sans",
+          system-ui,
+          sans-serif;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: oklch(50% 0.01 260);
+        opacity: 0;
+        animation: appear 300ms 980ms ease-out forwards;
       }
-      /* A load that failed: the loop stops where it is and the line
-         below the mark says what to do. */
+      #loading .wait span {
+        display: inline-block;
+        animation: lift 1400ms ease-in-out infinite;
+        animation-delay: calc(980ms + var(--i) * 70ms);
+      }
+      /* A load that failed: the word gives way to what to do. */
       #loading .trouble {
         display: none;
         position: absolute;
@@ -99,11 +118,11 @@
           sans-serif;
         color: oklch(50% 0.01 260);
       }
+      #loading[data-state="failed"] .wait {
+        display: none;
+      }
       #loading[data-state="failed"] .trouble {
         display: block;
-      }
-      #loading[data-state="failed"] use {
-        animation-play-state: paused;
       }
       /* Opened: the halves leave by their own sides, each with its share
          of the letters. The curtain module takes the node off after the
@@ -118,17 +137,44 @@
       #loading.done .right {
         transform: translateX(100%);
       }
+      #loading.done .wait {
+        display: none;
+      }
       @keyframes draw {
         to {
           stroke-dashoffset: 0;
         }
       }
-      /* Asked for stillness: the mark stands, drawn, and the curtain
-         goes straight off rather than sliding. */
+      @keyframes appear {
+        to {
+          opacity: 1;
+        }
+      }
+      @keyframes lift {
+        0%,
+        60%,
+        100% {
+          transform: translateY(0);
+          opacity: 0.45;
+        }
+        30% {
+          transform: translateY(-3px);
+          opacity: 1;
+        }
+      }
+      /* Asked for stillness: the mark stands drawn, the word stands
+         still, and the curtain goes straight off rather than sliding. */
       @media (prefers-reduced-motion: reduce) {
-        #loading use {
+        #loading use,
+        #loading .wait,
+        #loading .wait span {
           animation: none;
+        }
+        #loading use {
           stroke-dashoffset: 0;
+        }
+        #loading .wait {
+          opacity: 1;
         }
         #loading .half {
           transition: opacity 200ms ease;
@@ -186,6 +232,15 @@
           </svg>
         </div>
       </div>
+      <p class="wait" role="status" aria-label="Loading">
+        <span aria-hidden="true" style="--i: 0">L</span
+        ><span aria-hidden="true" style="--i: 1">o</span
+        ><span aria-hidden="true" style="--i: 2">a</span
+        ><span aria-hidden="true" style="--i: 3">d</span
+        ><span aria-hidden="true" style="--i: 4">i</span
+        ><span aria-hidden="true" style="--i: 5">n</span
+        ><span aria-hidden="true" style="--i: 6">g</span>
+      </p>
       <p class="trouble" role="alert">Something did not load. Reload the page to try again.</p>
     </div>
     <script type="module" src="/src/main.ts"></script>
