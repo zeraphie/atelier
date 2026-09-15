@@ -9,8 +9,7 @@
          frame. Its colours are written out rather than taken from the
          tokens: the stylesheet arrives with the module, and this has to
          be painted before that, or a loader is just another thing to
-         load. They are the canvas, ink and muted tokens of src/index.css,
-         the muted one thinned for the track. */
+         load. They are the canvas, ink and muted tokens of src/index.css. */
       #loading {
         position: fixed;
         inset: 0;
@@ -86,21 +85,20 @@
         animation: draw 700ms ease-in-out forwards;
         animation-delay: calc(var(--i) * 110ms);
       }
-      /* Under the last three letters, from the first paint: a hairline
-         track, and a third of it sweeping from end to end and back for
-         as long as the wait lasts. Placed by the mark's own proportions:
-         the I, E and R run from 59% to 99% of its width, and the line
-         sits a little under the baseline, at 87% of its height. Transform
-         only, which the compositor animates on its own, so the chunks
-         running meanwhile on the main thread cannot stall it. */
+      /* Under the last three letters, from the first paint: a bar a
+         third of their width, sweeping from end to end and back for as
+         long as the wait lasts. Placed by the mark's own proportions:
+         the I, E and R run from 59% to 99% of its width, the bar sits a
+         little under the baseline at 87% of its height, and it is as
+         thick as the letters' stroke, 14 of the mark's 1031 units.
+         Transform only, which the compositor animates on its own, so the
+         chunks running meanwhile on the main thread cannot stall it. */
       #loading .wait {
         position: absolute;
         top: 87%;
         left: 59.3%;
         width: 40.1%;
-        height: 1px;
-        overflow: hidden;
-        background: oklch(50% 0.01 260 / 0.35);
+        height: 1.36%;
       }
       #loading .sweep {
         width: calc(100% / 3);
