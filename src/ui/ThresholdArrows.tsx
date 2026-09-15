@@ -13,11 +13,12 @@ import { FIT_PADDING, moveTo, worldToScreen, type Point } from "../camera/index.
 import { PLAN } from "../gallery/plan.js";
 import { thresholdsOf, type Threshold } from "../gallery/thresholds.js";
 import { useCameraState, useCanvas } from "./canvas-context.js";
+import { Placed } from "./Placed.js";
 
 const THRESHOLDS = thresholdsOf(PLAN);
 
 const ARROW =
-  "pointer-events-auto absolute -translate-x-1/2 -translate-y-1/2 flex size-9 items-center justify-center " +
+  "pointer-events-auto flex size-9 items-center justify-center " +
   "rounded-full border-2 border-accent bg-surface text-accent shadow-md " +
   "transition-[scale,background-color,color] hover:scale-110 hover:bg-accent hover:text-accent-ink " +
   "focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2";
@@ -48,39 +49,35 @@ function Arrow({ threshold, at }: { readonly threshold: Threshold; readonly at: 
     moveTo(camera, camera.fitted(view.current, to.rect, FIT_PADDING), view.current);
   };
   return (
-    <Tooltip.Root>
-      <Tooltip.Trigger asChild>
-        <button
-          type="button"
-          className={ARROW}
-          style={{ transform: `translate(${at.x}px, ${at.y}px)` }}
-          aria-label={`Go to ${to.room.name}`}
-          onClick={go}
-        >
-          <svg
-            className={GLYPH}
-            data-direction={direction}
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="none"
-            aria-hidden="true"
-          >
-            <path
-              d="M3 8h10M9 4l4 4-4 4"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
-      </Tooltip.Trigger>
-      <Tooltip.Portal>
-        <Tooltip.Content className={TIP} side="top" sideOffset={8}>
-          To {to.room.name}
-        </Tooltip.Content>
-      </Tooltip.Portal>
-    </Tooltip.Root>
+    <Placed at={at}>
+      <Tooltip.Root>
+        <Tooltip.Trigger asChild>
+          <button type="button" className={ARROW} aria-label={`Go to ${to.room.name}`} onClick={go}>
+            <svg
+              className={GLYPH}
+              data-direction={direction}
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M3 8h10M9 4l4 4-4 4"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        </Tooltip.Trigger>
+        <Tooltip.Portal>
+          <Tooltip.Content className={TIP} side="top" sideOffset={8}>
+            To {to.room.name}
+          </Tooltip.Content>
+        </Tooltip.Portal>
+      </Tooltip.Root>
+    </Placed>
   );
 }
