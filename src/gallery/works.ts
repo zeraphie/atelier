@@ -6,7 +6,8 @@
  * hand; the hang derives every position from these. The pictures are
  * public-domain scans from the holding collections, prepared once
  * into public/works, and images.json says what sizes exist.
- * The rooms' order is the tour, so each must share a wall with the next.
+ * The rooms' order is the tour, so each must share a wall with the next,
+ * and a room's walls must have space for its works.
  * Decision: DECISIONS.md, a gallery with real works.
  */
 
@@ -28,9 +29,11 @@ export interface Work {
 export interface Room {
   readonly id: string;
   readonly name: string;
-  /** Where the room sits on the plan, as a cell in a grid of rooms sharing walls. */
+  /** Where the room sits on the plan's grid of metres, and how many cells it spans. */
   readonly column: number;
   readonly row: number;
+  readonly columns: number;
+  readonly rows: number;
   readonly works: readonly Work[];
 }
 
@@ -42,12 +45,14 @@ const SHEET = "Ink on polyester film, measured drawing";
 const US_WORK = "Public domain, United States government work";
 
 export const ROOMS: readonly Room[] = [
-  { id: "foyer", name: "Foyer", column: 1, row: 1, works: [] },
+  { id: "foyer", name: "Foyer", column: 5, row: 4, columns: 3, rows: 2, works: [] },
   {
     id: "drawings",
     name: "Drawings",
     column: 0,
-    row: 1,
+    row: 2,
+    columns: 5,
+    rows: 4,
     works: [
       {
         id: "haer-woolsey-bridge",
@@ -78,6 +83,8 @@ export const ROOMS: readonly Room[] = [
     name: "Ukiyo-e",
     column: 0,
     row: 0,
+    columns: 3,
+    rows: 2,
     works: [
       {
         id: "hokusai-great-wave",
@@ -106,8 +113,10 @@ export const ROOMS: readonly Room[] = [
   {
     id: "meiji-tokyo",
     name: "Meiji Tokyo",
-    column: 1,
+    column: 3,
     row: 0,
+    columns: 4,
+    rows: 2,
     works: [
       {
         id: "kiyochika-kudanzaka-night",
@@ -133,5 +142,5 @@ export const ROOMS: readonly Room[] = [
       },
     ],
   },
-  { id: "studio", name: "Studio", column: 2, row: 0, works: [] },
+  { id: "studio", name: "Studio", column: 7, row: 0, columns: 2, rows: 2, works: [] },
 ];
