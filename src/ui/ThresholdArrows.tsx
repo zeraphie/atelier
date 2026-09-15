@@ -5,7 +5,7 @@
  * pointing through to the next, placed by the same camera as the
  * pins. Pressing one glides the view to fill with the next room, so a
  * visitor can walk the plan door by door with no zoom out and in.
- * Decision: DECISIONS.md, arriving: the Foyer, and an arrow at each threshold.
+ * Decision: DECISIONS.md, arriving: the Foyer, a plaque, and an arrow at each threshold.
  */
 
 import { Tooltip } from "radix-ui";

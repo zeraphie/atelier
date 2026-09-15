@@ -5,7 +5,7 @@
  * out of and pointing through to the next: the way on, for someone
  * who would rather follow than find. The entrance has none, since
  * nobody stands outside. Derived from the plan alone.
- * Decision: DECISIONS.md, arriving: the Foyer, and an arrow at each threshold.
+ * Decision: DECISIONS.md, arriving: the Foyer, a plaque, and an arrow at each threshold.
  */
 
 import type { Point } from "../geometry.js";

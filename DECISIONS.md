@@ -12,7 +12,7 @@
 
 ### A route through the rooms
 
-### Arriving: the Foyer, and an arrow at each threshold
+### Arriving: the Foyer, a plaque, and an arrow at each threshold
 
 ### Finding a comment: the list, the map and the jump
 

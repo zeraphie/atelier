@@ -2,6 +2,7 @@ import { Tooltip } from "radix-ui";
 import { Canvas } from "./ui/Canvas.js";
 import { CanvasProvider } from "./ui/canvas-context.js";
 import { CommentList } from "./ui/CommentList.js";
+import { FoyerPlaque } from "./ui/FoyerPlaque.js";
 import { MiniMap } from "./ui/MiniMap.js";
 import { PinLayer } from "./ui/PinLayer.js";
 import { useShortcuts } from "./ui/shortcuts.js";
@@ -27,6 +28,7 @@ function Workspace() {
     <main className="relative h-dvh overflow-hidden bg-canvas text-ink">
       <Canvas />
       <StudioDesk />
+      <FoyerPlaque />
       <ThresholdArrows />
       <PinLayer />
       <CommentList />
