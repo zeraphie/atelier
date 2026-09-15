@@ -7,11 +7,12 @@
  * popover answers Escape. C makes the next tap place a comment;
  * Escape backs out of whatever is furthest forward: a draft, an open
  * thread, comment mode, then the tour. The arrows step along the
- * tour and Shift+1 fits the plan, as the design tools have it.
+ * tour; plus, minus, Shift+0 and Shift+1 zoom in, out, to life size and
+ * to the whole plan, as the design tools have them.
  */
 
 import { useEffect } from "react";
-import { FIT_PADDING, LIFE_SIZE, moveTo } from "../camera/index.js";
+import { FIT_PADDING, LIFE_SIZE, moveTo, ZOOM_STEP } from "../camera/index.js";
 import { useUiStore } from "../comments/ui-store.js";
 import { PLAN } from "../gallery/plan.js";
 import { useCanvas } from "./canvas-context.js";
@@ -50,6 +51,11 @@ export function useShortcuts(): void {
         walk.next();
       }
     };
+    // The zoom keys work about the middle of the view, as the zoom buttons do.
+    const zoomBy = (factor: number): void => {
+      const { width, height } = view.current;
+      camera.zoomAt({ x: width / 2, y: height / 2 }, factor);
+    };
     const onKeyDown = (event: KeyboardEvent): void => {
       if (event.defaultPrevented || isTyping(event.target)) {
         return;
@@ -72,6 +78,15 @@ export function useShortcuts(): void {
           break;
         case "previous":
           tour.current?.previous();
+          break;
+        case "zoomIn":
+          zoomBy(ZOOM_STEP);
+          break;
+        case "zoomOut":
+          zoomBy(1 / ZOOM_STEP);
+          break;
+        case "actualSize":
+          zoomBy(1 / camera.current.zoom);
           break;
         case "fit":
           moveTo(

@@ -1,7 +1,5 @@
+import { ZOOM_STEP } from "../camera/index.js";
 import { useCameraState, useCanvas, useViewSize } from "./canvas-context.js";
-
-// A quarter per press, the step Figma's zoom buttons take.
-const ZOOM_STEP = 1.25;
 
 const BUTTON =
   "h-8 min-w-8 px-2 font-mono text-sm text-ink hover:bg-canvas active:bg-line " +

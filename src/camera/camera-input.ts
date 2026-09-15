@@ -2,8 +2,8 @@
  * ─ Camera input ─
  *
  * Maps pointer and wheel events on the canvas element to camera calls,
- * for mouse, touch and pen alike: the wheel zooms about the cursor, one
- * pointer pans, two pinch, and a tap or a double tap on nothing is
+ * for mouse, touch and pen alike: the wheel pans and with Ctrl zooms
+ * about the cursor, one pointer pans, two pinch, and a tap or a double tap on nothing is
  * reported. Pins are DOM above the canvas, so a press on one never
  * reaches the canvas element, and the camera only ever moves from
  * empty canvas. The element must set `touch-action: none`, or the
@@ -13,7 +13,7 @@
 import type { Point } from "../geometry.js";
 import type { Camera } from "./camera.js";
 import { pinchStep } from "./pinch-math.js";
-import { wheelDeltaToPixels, wheelZoomFactor } from "./wheel-math.js";
+import { wheelIntent } from "./wheel-math.js";
 
 const LEFT_BUTTON = 0;
 const MIDDLE_BUTTON = 1;
@@ -90,9 +90,13 @@ export class CameraInput {
   private readonly onWheel = (event: WheelEvent): void => {
     event.preventDefault();
     const rect = this.target.getBoundingClientRect();
-    const dy = wheelDeltaToPixels(event.deltaY, event.deltaMode, rect.height);
-    const anchor = { x: event.clientX - rect.left, y: event.clientY - rect.top };
-    this.camera.zoomAt(anchor, wheelZoomFactor(dy));
+    const intent = wheelIntent(event, { width: rect.width, height: rect.height });
+    if (intent.kind === "zoom") {
+      const anchor = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+      this.camera.zoomAt(anchor, intent.factor);
+    } else {
+      this.camera.panBy(intent.dx, intent.dy);
+    }
   };
 
   private readonly onPointerDown = (event: PointerEvent): void => {

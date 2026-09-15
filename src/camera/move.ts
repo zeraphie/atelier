@@ -31,3 +31,6 @@ export function isMotionReduced(): boolean {
 export function moveTo(camera: Camera, to: CameraState, view: ViewSize): () => void {
   return glide(camera, to, view, isMotionReduced() ? 0 : MOVE_MS);
 }
+
+/** A quarter per press of a zoom key or button, the step Figma's zoom buttons take. */
+export const ZOOM_STEP = 1.25;

@@ -3,12 +3,20 @@
  *
  * Which key means what, as a table with no side effects: the
  * shortcuts hook turns a key press into a name here and acts on the
- * name there. Letters match the character typed, so a layout that
- * puts C elsewhere still has C; the fit key matches the key's
- * position, since Shift changes what a digit key types.
+ * name there. Letters and signs match the character typed, so a
+ * layout that puts them elsewhere still has them; the digit keys
+ * match their position, since Shift changes what a digit key types.
  */
 
-export type KeyAction = "comment" | "escape" | "next" | "previous" | "fit";
+export type KeyAction =
+  | "comment"
+  | "escape"
+  | "next"
+  | "previous"
+  | "zoomIn"
+  | "zoomOut"
+  | "actualSize"
+  | "fit";
 
 /** The parts of a keyboard event the table reads. */
 export interface KeyPress {
@@ -26,7 +34,13 @@ export function keyActionFor(press: KeyPress): KeyAction | undefined {
     return undefined;
   }
   if (press.shiftKey) {
-    return press.code === "Digit1" ? "fit" : undefined;
+    if (press.code === "Digit1") {
+      return "fit";
+    }
+    if (press.code === "Digit0") {
+      return "actualSize";
+    }
+    return press.key === "+" ? "zoomIn" : undefined;
   }
   switch (press.key) {
     case "c":
@@ -38,6 +52,11 @@ export function keyActionFor(press: KeyPress): KeyAction | undefined {
       return "next";
     case "ArrowLeft":
       return "previous";
+    case "+":
+    case "=":
+      return "zoomIn";
+    case "-":
+      return "zoomOut";
     default:
       return undefined;
   }
