@@ -3,3 +3,6 @@ dist/
 .claude/
 .plan/
 .DS_Store
+
+# Recordings stay out of the history; they are linked from the README.
+*.mp4
