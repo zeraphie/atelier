@@ -49,7 +49,7 @@ const SHEET = "Ink on polyester film, measured drawing";
 const US_WORK = "Public domain, United States government work";
 
 export const ROOMS: readonly Room[] = [
-  { id: "foyer", name: "Foyer", column: 5, row: 4, columns: 3, rows: 2, works: [] },
+  { id: "foyer", name: "Foyer", column: 5, row: 4, columns: 3, rows: 3, works: [] },
   {
     id: "drawings",
     name: "Drawings",

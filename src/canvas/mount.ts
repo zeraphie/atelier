@@ -11,7 +11,6 @@ import {
   CameraInput,
   FIT_PADDING,
   isMotionReduced,
-  LIFE_SIZE,
   moveTo,
   type Camera,
   type Point,
@@ -80,7 +79,9 @@ export async function mountCanvas(
     fitPadding: FIT_PADDING,
     isMotionReduced,
   });
-  camera.fit(stage.view, plan.bounds, FIT_PADDING, LIFE_SIZE);
+  // The view opens on the first room, the Foyer, with the way on in sight.
+  const first = plan.rooms[0];
+  camera.fit(stage.view, first === undefined ? plan.bounds : first.rect, FIT_PADDING);
   gallery.follow(camera.current);
   // Made after the fit, so its first cell is drawn for the zoom the view opens at.
   const grid = new DotGrid(

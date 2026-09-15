@@ -6,6 +6,7 @@ import { MiniMap } from "./ui/MiniMap.js";
 import { PinLayer } from "./ui/PinLayer.js";
 import { useShortcuts } from "./ui/shortcuts.js";
 import { StudioDesk } from "./ui/StudioDesk.js";
+import { ThresholdArrows } from "./ui/ThresholdArrows.js";
 import { Toolbar } from "./ui/Toolbar.js";
 import { TourControls } from "./ui/TourControls.js";
 import { ZoomIndicator } from "./ui/ZoomIndicator.js";
@@ -27,6 +28,7 @@ function Workspace() {
     <main className="relative h-dvh overflow-hidden bg-canvas text-ink">
       <Canvas />
       <StudioDesk />
+      <ThresholdArrows />
       <PinLayer />
       <Toolbar />
       <CommentList />
