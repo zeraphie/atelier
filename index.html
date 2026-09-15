@@ -9,7 +9,8 @@
          frame. Its colours are written out rather than taken from the
          tokens: the stylesheet arrives with the module, and this has to
          be painted before that, or a loader is just another thing to
-         load. They are the canvas, ink and muted tokens of src/index.css. */
+         load. They are the canvas, ink, muted and accent tokens of
+         src/index.css. */
       #loading {
         position: fixed;
         inset: 0;
@@ -81,10 +82,11 @@
       #loading .l {
         animation-delay: 180ms;
       }
-      /* Under the mark, once it has drawn: the word, each letter lifting
-         in turn for as long as the wait lasts. Transform and opacity
-         only, which the compositor animates on its own, so the chunks
-         running meanwhile on the main thread cannot stall it. */
+      /* Under the mark, once it has drawn: the word, with three of its
+         letters rolling like a drum for as long as the wait lasts, each
+         at its own pace. Transform and opacity only, which the
+         compositor animates on its own, so the chunks running meanwhile
+         on the main thread cannot stall it. */
       #loading .wait {
         position: absolute;
         inset: calc(50% + 96px) 0 auto 0;
@@ -102,8 +104,10 @@
       }
       #loading .wait span {
         display: inline-block;
-        animation: lift 1400ms ease-in-out infinite;
-        animation-delay: calc(980ms + var(--i) * 70ms);
+      }
+      #loading .wait .roll {
+        color: oklch(58% 0.19 262);
+        animation: roll var(--pace) linear infinite;
       }
       /* A load that failed: the word gives way to what to do. */
       #loading .trouble {
@@ -150,15 +154,22 @@
           opacity: 1;
         }
       }
-      @keyframes lift {
-        0%,
-        60%,
+      /* Out through the bottom, fading, then straight back in from the top. */
+      @keyframes roll {
+        0% {
+          transform: translateY(0);
+          opacity: 1;
+        }
+        50% {
+          transform: translateY(100%);
+          opacity: 0;
+        }
+        51% {
+          transform: translateY(-100%);
+          opacity: 0;
+        }
         100% {
           transform: translateY(0);
-          opacity: 0.45;
-        }
-        30% {
-          transform: translateY(-3px);
           opacity: 1;
         }
       }
@@ -233,13 +244,12 @@
         </div>
       </div>
       <p class="wait" role="status" aria-label="Loading">
-        <span aria-hidden="true" style="--i: 0">L</span
-        ><span aria-hidden="true" style="--i: 1">o</span
-        ><span aria-hidden="true" style="--i: 2">a</span
-        ><span aria-hidden="true" style="--i: 3">d</span
-        ><span aria-hidden="true" style="--i: 4">i</span
-        ><span aria-hidden="true" style="--i: 5">n</span
-        ><span aria-hidden="true" style="--i: 6">g</span>
+        <span aria-hidden="true">
+          <span>L</span><span class="roll" style="--pace: 1500ms">o</span
+          ><span class="roll" style="--pace: 1000ms">a</span
+          ><span class="roll" style="--pace: 1250ms">d</span><span>i</span><span>n</span
+          ><span>g</span>
+        </span>
       </p>
       <p class="trouble" role="alert">Something did not load. Reload the page to try again.</p>
     </div>
