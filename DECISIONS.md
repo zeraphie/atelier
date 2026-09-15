@@ -28,6 +28,8 @@
 
 ### The canvas draws on request
 
+### A dot grid in metres
+
 ### Levels of detail by zoom
 
 ### Layout from data: the hang
@@ -37,6 +39,8 @@
 ### Persistence
 
 ### Tailwind v4 tokens and Radix primitives
+
+### Type: four faces, and which one a thing is set in
 
 ### Tests
 
