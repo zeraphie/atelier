@@ -4,9 +4,9 @@
  * Where everything goes, from the data alone, as a floor plan. A room
  * is a cell on a grid of metres, spanning as many as its data says,
  * sharing walls with its neighbours. The rooms' order is the tour:
- * each pair in turn gets a doorway in the wall they share, set near
- * the end farthest from the doorway before it, so the route winds and
- * no door looks straight through to the next. Works hang on the
+ * each pair in turn gets a doorway in the wall they share, a third of
+ * the way along from the end farthest from the doorway before it, so
+ * the route winds and no door looks straight through to the next. Works hang on the
  * walls, the wall facing the entry first, so the first thing seen
  * through a threshold is a work on the far wall, and the doorways'
  * stretches stay clear. World units are centimetres.
@@ -21,15 +21,16 @@ export interface Spacing {
   readonly unitCm: number;
   /** Between two works on a wall. */
   readonly gapCm: number;
-  /** How far a hung work stands off its wall, and from the wall's ends. */
-  readonly paddingCm: number;
+  /** How far a hung work stands off its wall. */
+  readonly standoffCm: number;
+  /** How far the works on a wall keep from its ends. */
+  readonly endMarginCm: number;
   /** Extra room under the top wall, where the room's name sits. */
   readonly headroomCm: number;
   /** How thick the walls are drawn. */
   readonly wallCm: number;
-  /** How wide a doorway is, and how far its near edge sits from the corner. */
+  /** How wide a doorway is. */
   readonly doorCm: number;
-  readonly doorMarginCm: number;
 }
 
 export type Side = "top" | "right" | "bottom" | "left";
@@ -72,11 +73,11 @@ export interface Plan {
 export const SPACING: Spacing = {
   unitCm: 100,
   gapCm: 40,
-  paddingCm: 50,
-  headroomCm: 40,
+  standoffCm: 15,
+  endMarginCm: 40,
+  headroomCm: 30,
   wallCm: 8,
-  doorCm: 100,
-  doorMarginCm: 40,
+  doorCm: 70,
 };
 
 const OPPOSITE: Record<Side, Side> = { top: "bottom", bottom: "top", left: "right", right: "left" };
@@ -178,24 +179,25 @@ function touches(edge: Segment, rect: WorldRect): boolean {
   );
 }
 
-// A doorway near the end of `wall` farthest from `point`, a margin in from the corner.
+// A doorway a third of the way along `wall` from the end farthest from `point`.
 function doorFar(wall: Segment, point: Point, spacing: Spacing): Segment {
   const nearA = distance(wall.a, point) <= distance(wall.b, point);
   return doorAt(wall, nearA ? "b" : "a", spacing);
 }
 
-// A doorway near the end of `wall` nearest to `point`.
+// A doorway a third of the way along `wall` from the end nearest to `point`.
 function doorNear(wall: Segment, point: Point, spacing: Spacing): Segment {
   const nearA = distance(wall.a, point) <= distance(wall.b, point);
   return doorAt(wall, nearA ? "a" : "b", spacing);
 }
 
-// The doorway at one end of a wall, or in the middle of a wall too short for the margin.
+// The doorway a third of the way along a wall from one end: off centre, so a
+// door never looks straight through the room, and clear of the corner.
 function doorAt(wall: Segment, end: "a" | "b", spacing: Spacing): Segment {
   const total = distance(wall.a, wall.b);
   const width = Math.min(spacing.doorCm, total);
-  const inset = spacing.doorMarginCm + width / 2;
-  const at = inset + width / 2 > total ? total / 2 : end === "a" ? inset : total - inset;
+  const third = Math.min(Math.max(total / 3, width / 2), total - width / 2);
+  const at = end === "a" ? third : total - third;
   return { a: along(wall, at - width / 2), b: along(wall, at + width / 2) };
 }
 
@@ -220,7 +222,7 @@ function hangWorks(
       break;
     }
     const gaps = doorways.map((d) => d.gap).filter((gap) => onWall(sides[side], gap));
-    const stretch = shrink(longestFree(sides[side], gaps), spacing.paddingCm);
+    const stretch = shrink(longestFree(sides[side], gaps), spacing.endMarginCm);
     const measure = side === "top" || side === "bottom" ? "width" : "height";
     const taken = takeThatFit(remaining, measure, distance(stretch.a, stretch.b), spacing.gapCm);
     remaining = remaining.slice(taken.length);
@@ -257,7 +259,7 @@ function takeThatFit(
   return taken;
 }
 
-// The works centred along their stretch of wall, standing off it by the padding.
+// The works centred along their stretch of wall, standing off it a little.
 function place(
   works: readonly Work[],
   side: Side,
@@ -276,16 +278,16 @@ function place(
   return works.map((work) => {
     let hungRect: WorldRect;
     if (side === "top") {
-      const top = rect.top + spacing.headroomCm + spacing.paddingCm;
+      const top = rect.top + spacing.headroomCm + spacing.standoffCm;
       hungRect = { left: at, top, right: at + work.widthCm, bottom: top + work.heightCm };
     } else if (side === "bottom") {
-      const bottom = rect.bottom - spacing.paddingCm;
+      const bottom = rect.bottom - spacing.standoffCm;
       hungRect = { left: at, top: bottom - work.heightCm, right: at + work.widthCm, bottom };
     } else if (side === "left") {
-      const left = rect.left + spacing.paddingCm;
+      const left = rect.left + spacing.standoffCm;
       hungRect = { left, top: at, right: left + work.widthCm, bottom: at + work.heightCm };
     } else {
-      const right = rect.right - spacing.paddingCm;
+      const right = rect.right - spacing.standoffCm;
       hungRect = { left: right - work.widthCm, top: at, right, bottom: at + work.heightCm };
     }
     at += (isHorizontal ? work.widthCm : work.heightCm) + spacing.gapCm;
