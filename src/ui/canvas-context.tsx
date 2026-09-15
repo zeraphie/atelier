@@ -1,22 +1,19 @@
 /**
  * ─ Canvas session ─
  *
- * One world, one camera and one view size for the whole app, made
- * once and handed down by context. The camera is a plain class with
- * its own listeners, so React subscribes to it rather than copying
- * its state; the canvas mounts a stage onto the same world and the
- * pins in the DOM read the same camera.
+ * One camera and one view size for the whole app, made once and
+ * handed down by context. The camera is a plain class with its own
+ * listeners, so React subscribes to it rather than copying its state;
+ * the stage follows the same camera, and so will the pins in the DOM.
+ * Nothing here imports a renderer, so the app chunk stays free of one.
  * Decision: DECISIONS.md, one camera for canvas and DOM.
  */
 
-import { Container } from "pixi.js";
 import { createContext, useContext, useState, useSyncExternalStore, type ReactNode } from "react";
 import { Camera, type CameraState, type ViewSize } from "../camera/index.js";
 import { ValueStore } from "../canvas/value-store.js";
 
 export interface CanvasSession {
-  /** Everything in world space hangs below it; the camera moves it. */
-  readonly world: Container;
   readonly camera: Camera;
   /** The canvas size in CSS pixels, kept current by the canvas host. */
   readonly view: ValueStore<ViewSize>;
@@ -25,10 +22,10 @@ export interface CanvasSession {
 const CanvasContext = createContext<CanvasSession | undefined>(undefined);
 
 export function CanvasProvider({ children }: { readonly children: ReactNode }) {
-  const [session] = useState<CanvasSession>(() => {
-    const world = new Container({ label: "world" });
-    return { world, camera: new Camera(world), view: new ValueStore({ width: 0, height: 0 }) };
-  });
+  const [session] = useState<CanvasSession>(() => ({
+    camera: new Camera(),
+    view: new ValueStore({ width: 0, height: 0 }),
+  }));
   return <CanvasContext value={session}>{children}</CanvasContext>;
 }
 

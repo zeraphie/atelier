@@ -9,7 +9,7 @@
          frame. Its colours are written out rather than taken from the
          tokens: the stylesheet arrives with the module, and this has to
          be painted before that, or a loader is just another thing to
-         load. They are the canvas and ink tokens of src/index.css. */
+         load. They are the canvas, ink and muted tokens of src/index.css. */
       #loading {
         position: fixed;
         inset: 0;
@@ -52,9 +52,6 @@
         display: grid;
         place-items: center;
       }
-      #loading.draw .pane {
-        animation: breathe 2400ms 980ms ease-in-out infinite;
-      }
       #loading .left .pane {
         left: 0;
       }
@@ -67,11 +64,10 @@
       /* pathLength makes each outline one unit long whatever its real
          length, so both letters draw in step without measuring either.
          The stroke is set on the use and inherited by the path it
-         stands for. The draw starts when the app's modules are in
-         (the curtain module adds `draw`), since it runs on the main
-         thread and their evaluation would stall it. It runs once and
-         holds: a mark cut off half-drawn reads as a fault rather than
-         as a wait. */
+         stands for. The draw runs from the first paint and alternates,
+         drawing and undrawing, for as long as the wait lasts: how long
+         that is nobody knows in advance. The curtain module brings
+         each letter to rest drawn (`drawn`) before the halves part. */
       #loading use {
         fill: none;
         stroke: oklch(20% 0.01 260);
@@ -80,12 +76,34 @@
         stroke-linejoin: round;
         stroke-dasharray: 1;
         stroke-dashoffset: 1;
+        animation: draw 800ms ease-in-out infinite alternate;
       }
-      #loading.draw use {
-        animation: draw 800ms ease-in-out forwards;
-      }
-      #loading.draw .l {
+      #loading .l {
         animation-delay: 180ms;
+      }
+      #loading use.drawn {
+        animation: none;
+        stroke-dashoffset: 0;
+      }
+      /* A load that failed: the loop stops where it is and the line
+         below the mark says what to do. */
+      #loading .trouble {
+        display: none;
+        position: absolute;
+        inset: calc(50% + 96px) 0 auto 0;
+        margin: 0;
+        text-align: center;
+        font:
+          15px/1.5 "Libertinus Sans",
+          system-ui,
+          sans-serif;
+        color: oklch(50% 0.01 260);
+      }
+      #loading[data-state="failed"] .trouble {
+        display: block;
+      }
+      #loading[data-state="failed"] use {
+        animation-play-state: paused;
       }
       /* Opened: the halves leave by their own sides, each with its share
          of the letters. The curtain module takes the node off after the
@@ -105,23 +123,11 @@
           stroke-dashoffset: 0;
         }
       }
-      @keyframes breathe {
-        0%,
-        100% {
-          opacity: 1;
-        }
-        50% {
-          opacity: 0.45;
-        }
-      }
       /* Asked for stillness: the mark stands, drawn, and the curtain
          goes straight off rather than sliding. */
       @media (prefers-reduced-motion: reduce) {
-        #loading.draw .pane,
-        #loading.draw use {
-          animation: none;
-        }
         #loading use {
+          animation: none;
           stroke-dashoffset: 0;
         }
         #loading .half {
@@ -180,7 +186,8 @@
           </svg>
         </div>
       </div>
+      <p class="trouble" role="alert">Something did not load. Reload the page to try again.</p>
     </div>
-    <script type="module" src="/src/main.tsx"></script>
+    <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

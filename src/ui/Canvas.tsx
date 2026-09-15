@@ -2,28 +2,18 @@
  * ─ Canvas ─
  *
  * The host element the stage draws into, and the effect that mounts
- * it. Mounting is async, so the cleanup marks the effect disposed and
- * a stage that finishes after that is torn down at once: StrictMode's
+ * it. The canvas chunk is loaded here, on demand, and mounting is
+ * async after that, so the cleanup marks the effect disposed and a
+ * canvas that finishes after that is torn down at once: StrictMode's
  * double mount is a real test of the teardown, not a special case.
  */
 
 import { useEffect, useRef } from "react";
-import { CameraInput, type Camera, type ViewSize } from "../camera/index.js";
-import { whenFacesReady } from "../canvas/faces.js";
-import { standInWall } from "../canvas/placeholder.js";
-import { Stage } from "../canvas/stage.js";
-import { tokenColor } from "../canvas/theme.js";
-import type { ValueStore } from "../canvas/value-store.js";
 import { useCanvas } from "./canvas-context.js";
-import { raiseCurtain, whenMarkDrawn } from "./curtain.js";
-
-// Screen pixels kept clear around the wall when the view first fits it.
-const FIT_PADDING = 48;
-// Never open closer than life size, however small the wall.
-const FIT_ZOOM_MOST = 1;
+import { failLoader, raiseCurtain } from "./curtain.js";
 
 export function Canvas() {
-  const { world, camera, view } = useCanvas();
+  const { camera, view } = useCanvas();
   const hostRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -33,18 +23,25 @@ export function Canvas() {
     }
     let isDisposed = false;
     let teardown = (): void => {};
-    void mount(host, world, camera, view).then((dispose) => {
+    const mount = async (): Promise<void> => {
+      const { mountCanvas } = await import("../canvas/mount.js");
+      const mounted = await mountCanvas(host, camera, view);
       if (isDisposed) {
-        dispose();
-      } else {
-        teardown = dispose;
+        mounted.dispose();
+        return;
       }
+      teardown = mounted.dispose;
+      void mounted.firstFrame.then(raiseCurtain);
+    };
+    mount().catch((error: unknown) => {
+      failLoader();
+      reportError(error);
     });
     return () => {
       isDisposed = true;
       teardown();
     };
-  }, [world, camera, view]);
+  }, [camera, view]);
 
   return (
     <div
@@ -52,33 +49,4 @@ export function Canvas() {
       className="absolute inset-0 cursor-grab touch-none select-none data-[camera=panning]:cursor-grabbing"
     />
   );
-}
-
-/** Put a stage on `host` over `world`, bind the camera to it, and return the teardown. */
-async function mount(
-  host: HTMLElement,
-  world: Parameters<typeof Stage.create>[1],
-  camera: Camera,
-  view: ValueStore<ViewSize>
-): Promise<() => void> {
-  // The faces fetch while the mark draws; the stage, whose setup is heavy
-  // on the main thread, waits for the draw to end so it cannot stall it.
-  const faces = whenFacesReady();
-  await whenMarkDrawn();
-  await faces;
-  const stage = await Stage.create(host, world);
-  const input = new CameraInput(camera, host);
-  const stopFrames = camera.onChange(() => stage.requestFrame());
-  const stopResize = stage.onResize(() => view.set(stage.view));
-  view.set(stage.view);
-  const wall = standInWall(world, tokenColor("--color-ink", { rgb: 0x2b2b30, alpha: 1 }));
-  camera.fit(stage.view, wall.bounds, FIT_PADDING, FIT_ZOOM_MOST);
-  void stage.firstFrame.then(raiseCurtain);
-  return () => {
-    wall.dispose();
-    stopResize();
-    stopFrames();
-    input.dispose();
-    stage.destroy();
-  };
 }

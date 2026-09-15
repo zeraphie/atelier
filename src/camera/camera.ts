@@ -1,14 +1,14 @@
 /**
  * ─ Camera ─
  *
- * One transform for the whole world. Pan and zoom go through the pure
- * camera math and land on the world container as position and scale;
- * listeners fire once per change so the pins in the DOM follow the
+ * One transform for the whole world, as state and listeners and
+ * nothing else: it imports no renderer. Pan and zoom go through the
+ * pure camera math, and every change reaches each listener once, so
+ * the stage's world container and the pins in the DOM follow the
  * same numbers in the same frame.
  * Decision: DECISIONS.md, one camera for canvas and DOM.
  */
 
-import type { Container } from "pixi.js";
 import type { Point, WorldRect } from "../geometry.js";
 import {
   fitToRect,
@@ -26,17 +26,14 @@ export type CameraListener = (state: CameraState) => void;
 // Far enough to see every room at once, close enough to read the smallest label.
 const DEFAULT_LIMITS: ZoomLimits = { min: 0.1, max: 8 };
 
-/** Owns the view transform and applies it to the world container. */
+/** Owns the view transform and tells its listeners when it changes. */
 export class Camera {
-  private readonly world: Container;
   private readonly limits: ZoomLimits;
   private readonly listeners = new Set<CameraListener>();
   private state: CameraState = { x: 0, y: 0, zoom: 1 };
 
-  constructor(world: Container, limits: ZoomLimits = DEFAULT_LIMITS) {
-    this.world = world;
+  constructor(limits: ZoomLimits = DEFAULT_LIMITS) {
     this.limits = limits;
-    this.apply();
   }
 
   get current(): CameraState {
@@ -64,7 +61,6 @@ export class Camera {
   /** Replace the whole state, for example at the end of an animated move. */
   set(state: CameraState): void {
     this.state = state;
-    this.apply();
     for (const listener of this.listeners) {
       listener(state);
     }
@@ -84,10 +80,5 @@ export class Camera {
     return () => {
       this.listeners.delete(listener);
     };
-  }
-
-  private apply(): void {
-    this.world.position.set(this.state.x, this.state.y);
-    this.world.scale.set(this.state.zoom);
   }
 }
