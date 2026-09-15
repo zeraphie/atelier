@@ -6,6 +6,8 @@
 
 ### A gallery, with real works
 
+### A loader that draws the mark
+
 ### Rooms as grouping on the canvas
 
 ### Adding a comment: a button and a menu, not a bare tap
