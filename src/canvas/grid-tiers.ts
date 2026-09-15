@@ -43,3 +43,13 @@ export function gridTier(zoom: number, current?: number): number {
   }
   return tier;
 }
+
+// Small dots this close, in screen pixels, are a texture rather than a
+// grid, and this far apart they are fully themselves; between, they fade.
+const CROWDED_PX = 8;
+const CLEAR_PX = 16;
+
+/** How visible the small dots are at `spacingPx` between them: none when crowded, full with room. */
+export function smallDotAlpha(spacingPx: number): number {
+  return Math.min(1, Math.max(0, (spacingPx - CROWDED_PX) / (CLEAR_PX - CROWDED_PX)));
+}
