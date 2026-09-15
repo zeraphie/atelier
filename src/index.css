@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+/**
+ * ─ Tokens ─
+ *
+ * One place for the palette and the type scale. Tailwind turns each
+ * into a utility (bg-canvas, text-ink) and a custom property
+ * (--color-canvas) that CSS modules and the Pixi bridge read alike.
+ * One light theme over a neutral grey canvas, the design-tool ground.
+ */
+@theme {
+  --color-canvas: oklch(93% 0.003 260);
+  --color-surface: oklch(100% 0 0);
+  --color-ink: oklch(20% 0.01 260);
+  --color-muted: oklch(50% 0.01 260);
+  --color-line: oklch(88% 0.005 260);
+  --color-accent: oklch(58% 0.19 262);
+  --color-accent-ink: oklch(100% 0 0);
+  --color-resolved: oklch(62% 0.15 150);
+}

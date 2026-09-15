@@ -1,0 +1,120 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  # A manual run deploys too (see the deploy job's gate); the button
+  # only lists once this file is on the default branch.
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  install:
+    name: Install
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+      - uses: oven-sh/setup-bun@v2
+      - uses: actions/cache@v5
+        id: bun-cache
+        with:
+          path: node_modules
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+      - if: steps.bun-cache.outputs.cache-hit != 'true'
+        run: bun install --frozen-lockfile
+      - run: tar --zstd -cf node_modules.tar.zst node_modules
+      - uses: actions/upload-artifact@v7
+        with:
+          name: node-modules-${{ github.sha }}
+          retention-days: 1
+          if-no-files-found: error
+          path: node_modules.tar.zst
+
+  build:
+    name: Typecheck & Build
+    runs-on: ubuntu-latest
+    needs: install
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+      - uses: oven-sh/setup-bun@v2
+      - uses: actions/download-artifact@v8
+        with:
+          name: node-modules-${{ github.sha }}
+      - run: tar --zstd -xf node_modules.tar.zst
+      - run: bun run typecheck
+      - run: bun run build
+      - if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    needs: install
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+      - uses: actions/download-artifact@v8
+        with:
+          name: node-modules-${{ github.sha }}
+      - run: tar --zstd -xf node_modules.tar.zst
+      - run: bun run lint
+
+  format:
+    name: Format
+    runs-on: ubuntu-latest
+    needs: install
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+      - uses: actions/download-artifact@v8
+        with:
+          name: node-modules-${{ github.sha }}
+      - run: tar --zstd -xf node_modules.tar.zst
+      - run: bun run format:check
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: install
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+      - uses: actions/download-artifact@v8
+        with:
+          name: node-modules-${{ github.sha }}
+      - run: tar --zstd -xf node_modules.tar.zst
+      - run: bun run test
+
+  # The fan-in: deploy needs every check green and ships the build
+  # job's artifact. Pushes to main deploy; a manual dispatch deploys
+  # too, as the deliberate-redeploy lever.
+  deploy:
+    name: Deploy
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    needs: [build, lint, format, test]
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
