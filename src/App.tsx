@@ -1,15 +1,15 @@
 import { Tooltip } from "radix-ui";
-import { Canvas } from "./ui/Canvas.js";
-import { CanvasProvider } from "./ui/canvas-context.js";
-import { CommentList } from "./ui/CommentList.js";
-import { FoyerPlaque } from "./ui/FoyerPlaque.js";
-import { MiniMap } from "./ui/MiniMap.js";
-import { PinLayer } from "./ui/PinLayer.js";
-import { useShortcuts } from "./ui/shortcuts.js";
-import { StudioDesk } from "./ui/StudioDesk.js";
-import { ThresholdArrows } from "./ui/ThresholdArrows.js";
-import { TourControls } from "./ui/TourControls.js";
-import { ZoomIndicator } from "./ui/ZoomIndicator.js";
+import { Canvas } from "./ui/components/Canvas.js";
+import { CanvasProvider } from "./ui/utils/canvas-context.js";
+import { CommentList } from "./ui/components/CommentList.js";
+import { FoyerPlaque } from "./ui/components/FoyerPlaque.js";
+import { MiniMap } from "./ui/components/MiniMap.js";
+import { PinLayer } from "./ui/components/PinLayer.js";
+import { useShortcuts } from "./ui/utils/shortcuts.js";
+import { StudioDesk } from "./ui/components/StudioDesk.js";
+import { ThresholdArrows } from "./ui/components/ThresholdArrows.js";
+import { TourControls } from "./ui/components/TourControls.js";
+import { ZoomIndicator } from "./ui/components/ZoomIndicator.js";
 
 export function App() {
   return (

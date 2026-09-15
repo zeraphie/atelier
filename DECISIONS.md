@@ -48,6 +48,8 @@
 
 ### Tailwind v4 tokens and Radix primitives
 
+### The UI folder: atomic design
+
 ### Type: four faces, and which one a thing is set in
 
 ### Tests

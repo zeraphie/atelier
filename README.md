@@ -22,7 +22,7 @@ bun run test     # the logic tests alone
 - `src/canvas/` — the PixiJS stage, drawing on request, the rooms and works on it
 - `src/gallery/` — the works and rooms as data, the hang, the tiers
 - `src/comments/` — the comment model, events, store and persistence
-- `src/ui/` — React components: pins, thread, list, toolbar, zoom indicator, mini-map
+- `src/ui/` — React, by atomic design: `atoms/`, `molecules/`, `components/`, `utils/`
 - `tests/` — logic tests, one file per module
 - `.ai/` — the working contract for AI collaborators: workflow, style, testing
 - `DECISIONS.md` — product and technical decisions, and why

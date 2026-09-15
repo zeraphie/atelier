@@ -10,9 +10,9 @@
  */
 
 import { createContext, useContext, useState, useSyncExternalStore, type ReactNode } from "react";
-import { Camera, type CameraState, type ViewSize } from "../camera/index.js";
-import type { TourHandle } from "../canvas/tour.js";
-import { ValueStore } from "../canvas/value-store.js";
+import { Camera, type CameraState, type ViewSize } from "../../camera/index.js";
+import type { TourHandle } from "../../canvas/tour.js";
+import { ValueStore } from "../../canvas/value-store.js";
 
 export interface CanvasSession {
   readonly camera: Camera;

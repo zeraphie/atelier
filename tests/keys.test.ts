@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { keyActionFor, type KeyPress } from "../src/ui/keys.js";
+import { keyActionFor, type KeyPress } from "../src/ui/utils/keys.js";
 
 function press(key: string, code: string, held: Partial<KeyPress> = {}): KeyPress {
   return { key, code, shiftKey: false, ctrlKey: false, metaKey: false, altKey: false, ...held };

@@ -1,4 +1,14 @@
+/**
+ * ─ Comment form ─
+ *
+ * A place to write a comment: Enter sends, Shift+Enter breaks a line,
+ * Escape cancels. What it is for comes in as words and a callback; it
+ * holds only the text being typed.
+ */
+
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { Textarea } from "../atoms/Field.js";
+import { TextButton } from "../atoms/TextButton.js";
 
 interface CommentFormProps {
   readonly placeholder: string;
@@ -8,16 +18,6 @@ interface CommentFormProps {
   readonly onCancel?: () => void;
 }
 
-const FIELD =
-  "w-full resize-none rounded-md border border-line bg-surface px-3 py-2 font-serif text-base leading-snug " +
-  "text-ink placeholder:text-muted focus-visible:outline-2 focus-visible:outline-accent";
-const PRIMARY =
-  "rounded-md bg-accent px-3 py-1.5 font-sans text-sm font-bold text-accent-ink hover:brightness-110 " +
-  "disabled:opacity-40 disabled:hover:brightness-100 focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2";
-const QUIET =
-  "rounded-md px-3 py-1.5 font-sans text-sm text-muted hover:bg-canvas focus-visible:outline-2 focus-visible:outline-accent";
-
-/** A place to write a comment: Enter sends, Shift+Enter breaks a line, Escape cancels. */
 export function CommentForm({
   placeholder,
   submitLabel,
@@ -55,8 +55,7 @@ export function CommentForm({
         send();
       }}
     >
-      <textarea
-        className={FIELD}
+      <Textarea
         rows={3}
         placeholder={placeholder}
         aria-label={placeholder}
@@ -66,14 +65,10 @@ export function CommentForm({
         onKeyDown={onKeyDown}
       />
       <div className="flex justify-end gap-2">
-        {onCancel !== undefined && (
-          <button type="button" className={QUIET} onClick={onCancel}>
-            Cancel
-          </button>
-        )}
-        <button type="submit" className={PRIMARY} disabled={trimmed === ""}>
+        {onCancel !== undefined && <TextButton onClick={onCancel}>Cancel</TextButton>}
+        <TextButton tone="primary" type="submit" disabled={trimmed === ""}>
           {submitLabel}
-        </button>
+        </TextButton>
       </div>
     </form>
   );

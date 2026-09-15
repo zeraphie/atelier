@@ -80,6 +80,12 @@ they disagree, this file governs.
   The camera, the stage, the layout and the comment events are plain
   modules that never import React, so they are tested without it and
   extended without touching a component.
+- The UI folder follows atomic design. `atoms/` is one element with no
+  state of its own (a pill button, a field, a tooltip bubble); `molecules/`
+  is a few atoms with one purpose, props in and events out (a comment form,
+  a row of the list); `components/` is a piece of the screen that reads the
+  stores or the camera (the pin layer, the mini-map); `utils/` is hooks,
+  context and pure tables (the keys). A molecule never imports a store.
 - Pixi is imperative and lives behind one ref: a component creates
   the stage in an effect and disposes it in the cleanup, so
   StrictMode's double mount is a real test of the teardown.

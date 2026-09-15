@@ -10,24 +10,25 @@
  */
 
 import { Popover, Tooltip } from "radix-ui";
-import { worldToScreen, type Point } from "../camera/index.js";
-import type { Thread as ThreadModel } from "../comments/model.js";
-import { useCommentsStore } from "../comments/store.js";
-import { useUiStore } from "../comments/ui-store.js";
-import { whenWas } from "../comments/when.js";
-import { useCameraState } from "./canvas-context.js";
-import { CommentForm } from "./CommentForm.js";
-import { Placed } from "./Placed.js";
+import { worldToScreen, type Point } from "../../camera/index.js";
+import type { Thread as ThreadModel } from "../../comments/model.js";
+import { useCommentsStore } from "../../comments/store.js";
+import { useUiStore } from "../../comments/ui-store.js";
+import { whenWas } from "../../comments/when.js";
+import { CARD } from "../atoms/Card.js";
+import { Placed } from "../atoms/Placed.js";
+import { Tip } from "../atoms/Tip.js";
+import { CommentForm } from "../molecules/CommentForm.js";
+import { useCameraState } from "../utils/canvas-context.js";
+import { useNow } from "../utils/use-now.js";
 import { Thread } from "./Thread.js";
-import { useNow } from "./use-now.js";
 
 const PIN =
   "pointer-events-auto flex size-7 items-center justify-center " +
   "rounded-full border-2 border-surface font-sans text-xs font-bold shadow-md transition-[scale] " +
   "hover:scale-110 focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2 " +
   "bg-accent text-accent-ink data-[resolved=true]:bg-resolved data-[open=true]:scale-110";
-const CARD = "z-10 rounded-lg border border-line bg-surface p-3 shadow-lg";
-const TIP = "z-20 rounded-md bg-ink px-2 py-1 font-sans text-xs text-surface shadow-md";
+const POPOVER = `${CARD} z-10 p-3`;
 
 export function PinLayer() {
   const camera = useCameraState();
@@ -73,17 +74,15 @@ function Pin({ thread, at }: { readonly thread: ThreadModel; readonly at: Point 
             </Popover.Anchor>
           </Tooltip.Trigger>
           {!isOpen && (
-            <Tooltip.Portal>
-              <Tooltip.Content className={TIP} side="top" sideOffset={8}>
-                {author}, {first === undefined ? "" : whenWas(first.createdAt, now)}
-                {thread.comments.length > 1 && `, ${thread.comments.length - 1} replies`}
-              </Tooltip.Content>
-            </Tooltip.Portal>
+            <Tip>
+              {author}, {first === undefined ? "" : whenWas(first.createdAt, now)}
+              {thread.comments.length > 1 && `, ${thread.comments.length - 1} replies`}
+            </Tip>
           )}
         </Tooltip.Root>
         <Popover.Portal>
           <Popover.Content
-            className={CARD}
+            className={POPOVER}
             side="right"
             sideOffset={12}
             collisionPadding={16}
@@ -113,7 +112,7 @@ function DraftPin({ world, at }: { readonly world: Point; readonly at: Point }) 
         </Popover.Anchor>
         <Popover.Portal>
           <Popover.Content
-            className={`${CARD} w-80 max-w-[calc(100vw-2rem)]`}
+            className={`${POPOVER} w-80 max-w-[calc(100vw-2rem)]`}
             side="right"
             sideOffset={12}
             collisionPadding={16}

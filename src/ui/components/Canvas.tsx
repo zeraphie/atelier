@@ -12,10 +12,10 @@
 
 import { ContextMenu } from "radix-ui";
 import { useEffect, useRef, type MouseEvent } from "react";
-import type { Point } from "../camera/index.js";
-import { useUiStore } from "../comments/ui-store.js";
-import { useCanvas } from "./canvas-context.js";
-import { failLoader, raiseCurtain } from "./curtain.js";
+import type { Point } from "../../camera/index.js";
+import { useUiStore } from "../../comments/ui-store.js";
+import { useCanvas } from "../utils/canvas-context.js";
+import { failLoader, raiseCurtain } from "../utils/curtain.js";
 
 const MENU = "z-20 min-w-40 rounded-md border border-line bg-surface p-1 shadow-lg";
 const ITEM =
@@ -50,7 +50,7 @@ export function Canvas() {
     let isDisposed = false;
     let teardown = (): void => {};
     const mount = async (): Promise<void> => {
-      const { mountCanvas } = await import("../canvas/mount.js");
+      const { mountCanvas } = await import("../../canvas/mount.js");
       const mounted = await mountCanvas(host, camera, view, { onTap, gridShown });
       if (isDisposed) {
         mounted.dispose();

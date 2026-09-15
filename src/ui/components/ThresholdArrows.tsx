@@ -9,11 +9,13 @@
  */
 
 import { Tooltip } from "radix-ui";
-import { FIT_PADDING, moveTo, worldToScreen, type Point } from "../camera/index.js";
-import { PLAN } from "../gallery/plan.js";
-import { thresholdsOf, type Threshold } from "../gallery/thresholds.js";
-import { useCameraState, useCanvas } from "./canvas-context.js";
-import { Placed } from "./Placed.js";
+import { FIT_PADDING, moveTo, worldToScreen, type Point } from "../../camera/index.js";
+import { PLAN } from "../../gallery/plan.js";
+import { thresholdsOf, type Threshold } from "../../gallery/thresholds.js";
+import { ArrowIcon } from "../atoms/icons.js";
+import { Placed } from "../atoms/Placed.js";
+import { Tip } from "../atoms/Tip.js";
+import { useCameraState, useCanvas } from "../utils/canvas-context.js";
 
 const THRESHOLDS = thresholdsOf(PLAN);
 
@@ -22,10 +24,6 @@ const ARROW =
   "rounded-full border-2 border-accent bg-surface text-accent shadow-md " +
   "transition-[scale,background-color,color] hover:scale-110 hover:bg-accent hover:text-accent-ink " +
   "focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2";
-// The glyph points right; the others are turns of it.
-const GLYPH =
-  "data-[direction=down]:rotate-90 data-[direction=left]:rotate-180 data-[direction=up]:-rotate-90";
-const TIP = "z-20 rounded-md bg-ink px-2 py-1 font-sans text-xs text-surface shadow-md";
 
 export function ThresholdArrows() {
   const camera = useCameraState();
@@ -53,30 +51,10 @@ function Arrow({ threshold, at }: { readonly threshold: Threshold; readonly at: 
       <Tooltip.Root>
         <Tooltip.Trigger asChild>
           <button type="button" className={ARROW} aria-label={`Go to ${to.room.name}`} onClick={go}>
-            <svg
-              className={GLYPH}
-              data-direction={direction}
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-              aria-hidden="true"
-            >
-              <path
-                d="M3 8h10M9 4l4 4-4 4"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <ArrowIcon direction={direction} />
           </button>
         </Tooltip.Trigger>
-        <Tooltip.Portal>
-          <Tooltip.Content className={TIP} side="top" sideOffset={8}>
-            To {to.room.name}
-          </Tooltip.Content>
-        </Tooltip.Portal>
+        <Tip>To {to.room.name}</Tip>
       </Tooltip.Root>
     </Placed>
   );

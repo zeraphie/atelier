@@ -8,7 +8,7 @@
  */
 
 import "./index.css";
-import { failLoader, whenMarkDrawn } from "./ui/curtain.js";
+import { failLoader, whenMarkDrawn } from "./ui/utils/curtain.js";
 
 async function boot(): Promise<void> {
   const root = document.getElementById("root");

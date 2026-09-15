@@ -11,13 +11,13 @@
  */
 
 import type { PointerEvent } from "react";
-import { centredOn, moveTo, visibleRect, type Point } from "../camera/index.js";
-import { useCommentsStore } from "../comments/store.js";
-import { SPACING } from "../gallery/hang.js";
-import images from "../gallery/images.json";
-import { PLAN } from "../gallery/plan.js";
-import type { ImageEntry } from "../gallery/tiers.js";
-import { useCameraState, useCanvas, useViewSize } from "./canvas-context.js";
+import { centredOn, moveTo, visibleRect, type Point } from "../../camera/index.js";
+import { useCommentsStore } from "../../comments/store.js";
+import { SPACING } from "../../gallery/hang.js";
+import images from "../../gallery/images.json";
+import { PLAN } from "../../gallery/plan.js";
+import type { ImageEntry } from "../../gallery/tiers.js";
+import { useCameraState, useCanvas, useViewSize } from "../utils/canvas-context.js";
 
 // Ground kept clear around the plan, in centimetres, so the outer walls stand off the frame.
 const MARGIN_CM = 60;

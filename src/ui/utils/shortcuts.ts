@@ -12,9 +12,9 @@
  */
 
 import { useEffect } from "react";
-import { FIT_PADDING, LIFE_SIZE, moveTo, ZOOM_STEP } from "../camera/index.js";
-import { useUiStore } from "../comments/ui-store.js";
-import { PLAN } from "../gallery/plan.js";
+import { FIT_PADDING, LIFE_SIZE, moveTo, ZOOM_STEP } from "../../camera/index.js";
+import { useUiStore } from "../../comments/ui-store.js";
+import { PLAN } from "../../gallery/plan.js";
 import { useCanvas } from "./canvas-context.js";
 import { keyActionFor } from "./keys.js";
 

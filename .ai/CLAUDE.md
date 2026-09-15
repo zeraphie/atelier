@@ -1,8 +1,8 @@
 # Atelier — CLAUDE.md
 
 A gallery on an infinite canvas, with comment threads pinned to it.
-Six public-domain works hang in three rooms; zoom reveals the floor
-plan, then the works, then the labels. React + TypeScript on Vite,
+Eight public-domain works hang in five rooms laid out as a floor
+plan; zoom reveals the plan, then the works, then the labels. React + TypeScript on Vite,
 PixiJS for the canvas, DOM for the pins and panels, Tailwind v4 and
 Radix for the UI, zustand for state, trystero last for a shared room.
 Bun runs everything. Decisions and their reasons live in
@@ -68,5 +68,8 @@ for everything a person does.
 - `src/canvas/` — the Pixi stage, frame scheduler, rooms and works
 - `src/gallery/` — the works and rooms as data, the hang, the tiers
 - `src/comments/` — model, events, store, persistence
-- `src/ui/` — React components: pins, panels, toolbar, mini-map
+- `src/ui/` — React, by atomic design: `atoms/` (one element, no state of
+  its own), `molecules/` (a few atoms with one purpose, props in, events
+  out), `components/` (a piece of the screen that reads the stores or the
+  camera), `utils/` (hooks, context, pure tables)
 - `tests/` — logic tests, `bun test`
