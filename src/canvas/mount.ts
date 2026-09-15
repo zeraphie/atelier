@@ -91,11 +91,14 @@ export async function mountCanvas(
     gallery.follow(state);
   });
   // A double tap fills the view with what is under it: a work with its
-  // label, else its room, else the whole plan. Reduced motion jumps
-  // instead of gliding.
+  // label, joining the tour there, else its room, else the whole plan.
+  // Reduced motion jumps instead of gliding.
   const stopDoubleTap = input.onDoubleTap((at) => {
     const point = camera.toWorld(at);
     const work = workAt(plan, point);
+    if (work !== undefined) {
+      tour.enterAt(work.work.id);
+    }
     const target =
       work === undefined ? (roomAt(plan, point)?.rect ?? plan.bounds) : gallery.extentOf(work);
     const ms = isMotionReduced() ? 0 : GLIDE_MS;

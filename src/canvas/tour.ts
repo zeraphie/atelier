@@ -1,62 +1,51 @@
 /**
  * ─ Tour ─
  *
- * Next and previous along the route. The camera goes back to the
- * standing point it left from, walks the path to the next work at a
- * walking zoom, through the doorway if there is one, and settles with
- * the work and its label filling the view. Where it stands is a value
- * React can watch; a hand on the canvas stops any leg, and the next
- * press picks up from the last stop.
+ * The works one after another. Start takes the view to the first, and
+ * next and previous glide it straight to the one either side, each
+ * filling the view with its label; a double tap on a work joins the
+ * tour there. Where it stands is a value React can watch, so the
+ * controls come and go with it; a hand on the canvas stops any glide
+ * and leaves the count where it was.
  * Decision: DECISIONS.md, a route through the rooms.
  */
 
-import {
-  centredOn,
-  glide,
-  glideAlong,
-  pathLength,
-  type Camera,
-  type Frame,
-  type ViewSize,
-  type WorldRect,
-} from "../camera/index.js";
-import type { Point } from "../geometry.js";
+import { glide, type Camera, type Frame, type ViewSize, type WorldRect } from "../camera/index.js";
 import type { Route, Stop } from "../gallery/route.js";
 import { ValueStore } from "./value-store.js";
 
-/** What the tour controls need: where the walk stands, and the two moves. */
+/** What the tour controls need: where the tour stands, and the moves. */
 export interface TourHandle {
-  /** The stop the walk is at, or -1 before it has begun. */
+  /** The stop the tour is at, or -1 while it is not on. */
   readonly stop: ValueStore<number>;
   readonly count: number;
+  /** Begin at the first work. */
+  start(): void;
+  /** Join at a work the view has already reached. */
+  enterAt(workId: string): void;
   next(): void;
   previous(): void;
+  /** Step off the tour; the view stays where it is. */
+  leave(): void;
 }
 
 export interface TourOptions {
   readonly camera: Camera;
   readonly route: Route;
   readonly view: () => ViewSize;
-  /** The work with its label, for the settle. */
+  /** The work with its label, for the view to fit. */
   readonly extentOf: (stop: Stop) => WorldRect;
   /** Screen pixels kept clear around a work when it fills the view. */
   readonly fitPadding: number;
   readonly frame?: Frame;
-  /** Whether motion is reduced: jump to the work instead of walking. */
+  /** Whether motion is reduced: jump to the work instead of gliding. */
   readonly isMotionReduced: () => boolean;
 }
 
-// Walking, the view's shorter side shows this much of the world.
-const WALK_SPAN_CM = 500;
-// How long a leg takes per centimetre of path, within limits.
-const MS_PER_CM = 1.4;
-const LEAST_WALK_MS = 400;
-const MOST_WALK_MS = 1600;
-// The move back to the standing point, and the settle on the work.
-const APPROACH_MS = 350;
-const SETTLE_MS = 550;
+// How long a move to a work takes.
+const GLIDE_MS = 600;
 
-/** The walk along the route, with next and previous. */
+/** The works in route order, with next and previous. */
 export class Tour implements TourHandle {
   readonly stop = new ValueStore(-1);
   private readonly options: TourOptions;
@@ -70,12 +59,29 @@ export class Tour implements TourHandle {
     return this.options.route.stops.length;
   }
 
+  start(): void {
+    this.go(0);
+  }
+
+  enterAt(workId: string): void {
+    const index = this.options.route.stops.findIndex((stop) => stop.work.work.id === workId);
+    if (index >= 0) {
+      this.stop.set(index);
+    }
+  }
+
   next(): void {
     this.go(this.stop.current + 1);
   }
 
   previous(): void {
     this.go(this.stop.current - 1);
+  }
+
+  leave(): void {
+    this.halt?.();
+    this.halt = undefined;
+    this.stop.set(-1);
   }
 
   /** Stop any move in progress. */
@@ -90,42 +96,16 @@ export class Tour implements TourHandle {
     if (target === undefined) {
       return;
     }
-    const frame = this.options.frame ?? requestAnimationFrame;
     const view = this.options.view();
-    const leg = this.legTo(index);
-    const settle = camera.fitted(view, extentOf(target), fitPadding);
+    const there = camera.fitted(view, extentOf(target), fitPadding);
     this.halt?.();
     this.stop.set(index);
-    if (isMotionReduced()) {
-      camera.set(settle);
-      return;
-    }
-    const walkZoom = Math.min(view.width, view.height) / WALK_SPAN_CM;
-    const walkMs = Math.min(MOST_WALK_MS, Math.max(LEAST_WALK_MS, pathLength(leg) * MS_PER_CM));
-    const start = centredOn(leg[0]!, walkZoom, view);
-    // Three moves in turn, each only if the one before arrived.
-    this.halt = glide(camera, start, view, APPROACH_MS, frame, (arrived) => {
-      if (!arrived) {
-        return;
-      }
-      this.halt = glideAlong(camera, leg, walkZoom, view, walkMs, frame, (walked) => {
-        if (walked) {
-          this.halt = glide(camera, settle, view, SETTLE_MS, frame);
-        }
-      });
-    });
-  }
-
-  // The path from where the walk stands to the stop asked for: from the
-  // entrance before it has begun, backwards when going back.
-  private legTo(index: number): Point[] {
-    const { path, stops } = this.options.route;
-    const from = this.stop.current;
-    const to = stops[index]!.at;
-    if (from < 0) {
-      return path.slice(0, to + 1);
-    }
-    const at = stops[from]!.at;
-    return at <= to ? path.slice(at, to + 1) : path.slice(to, at + 1).reverse();
+    this.halt = glide(
+      camera,
+      there,
+      view,
+      isMotionReduced() ? 0 : GLIDE_MS,
+      this.options.frame ?? requestAnimationFrame
+    );
   }
 }
