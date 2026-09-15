@@ -1,9 +1,8 @@
 /**
  * ─ Gallery layer ─
  *
- * The plan, drawn: every room's floor, the route on it, the walls over
- * them, and every work above the walls, all in world space under the
- * camera. Each
+ * The plan, drawn: every room's floor, the walls over them, and every
+ * work above the walls, all in world space under the camera. Each
  * camera change is passed on as the zoom, which is the one thing the
  * views react to: a room holds its name at one screen size, and a
  * work picks its tier and picture.
@@ -12,25 +11,21 @@
 import type { Container, Graphics } from "pixi.js";
 import type { CameraState, WorldRect } from "../camera/index.js";
 import type { Plan } from "../gallery/hang.js";
-import type { Route } from "../gallery/route.js";
 import type { ImageEntry } from "../gallery/tiers.js";
 import type { PackedColor } from "./css-color.js";
 import { RoomView, type RoomColors } from "./room-view.js";
-import { RouteView } from "./route-view.js";
 import { drawWalls } from "./walls-view.js";
 import { WorkView, type WorkColors } from "./work-view.js";
 
 export interface GalleryColors {
   readonly room: RoomColors;
   readonly wall: PackedColor;
-  readonly route: PackedColor;
   readonly work: WorkColors;
 }
 
 /** Rooms, walls and works, drawn into `world` and following the camera. */
 export class GalleryLayer {
   private readonly rooms: RoomView[];
-  private readonly route: RouteView;
   private readonly walls: Graphics;
   private readonly works: WorkView[];
   private readonly byId = new Map<string, WorkView>();
@@ -38,14 +33,12 @@ export class GalleryLayer {
   constructor(
     world: Container,
     plan: Plan,
-    route: Route,
     wallCm: number,
     images: Readonly<Record<string, ImageEntry>>,
     colors: GalleryColors,
     requestFrame: () => void
   ) {
     this.rooms = plan.rooms.map((hung) => new RoomView(hung, colors.room));
-    this.route = new RouteView(route, colors.route);
     this.walls = drawWalls(plan.walls, wallCm, colors.wall);
     this.works = plan.rooms.flatMap((hung) =>
       hung.works.map((work) => {
@@ -60,7 +53,6 @@ export class GalleryLayer {
       this.byId.set(hung.work.id, this.works[i]!);
     }
     world.addChild(...this.rooms.map((room) => room.container));
-    world.addChild(this.route.line);
     world.addChild(this.walls);
     world.addChild(...this.works.map((work) => work.container));
   }
@@ -74,7 +66,6 @@ export class GalleryLayer {
     for (const room of this.rooms) {
       room.follow(state.zoom);
     }
-    this.route.follow(state.zoom);
     for (const work of this.works) {
       work.follow(state.zoom);
     }
@@ -84,7 +75,6 @@ export class GalleryLayer {
     for (const room of this.rooms) {
       room.destroy();
     }
-    this.route.destroy();
     this.walls.destroy();
     for (const work of this.works) {
       work.destroy();

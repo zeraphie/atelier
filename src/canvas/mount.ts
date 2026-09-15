@@ -49,20 +49,17 @@ export async function mountCanvas(
   const muted = tokenColor("--color-muted", { rgb: 0x777a86, alpha: 1 });
   const line = tokenColor("--color-line", { rgb: 0xd9dade, alpha: 1 });
   const surface = tokenColor("--color-surface", { rgb: 0xffffff, alpha: 1 });
-  const accent = tokenColor("--color-accent", { rgb: 0x5561d6, alpha: 1 });
   const isMotionReduced = (): boolean => matchMedia("(prefers-reduced-motion: reduce)").matches;
   const plan = hangGallery(ROOMS);
   const route = routeThrough(plan);
   const gallery = new GalleryLayer(
     stage.world,
     plan,
-    route,
     SPACING.wallCm,
     images,
     {
       room: { floor: { ...surface, alpha: 0.85 }, name: muted },
       wall: { ...ink, alpha: 0.9 },
-      route: { ...accent, alpha: 0.35 },
       work: { edge: line, card: surface, ink, muted },
     },
     requestFrame

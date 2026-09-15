@@ -40,49 +40,23 @@ function room(
 }
 
 describe("routeThrough", () => {
-  const plan = hangGallery(
-    [
-      room("foyer", 0, 2, 2, 1),
-      room("a", 0, 0, 2, 2, [work("w1", 40, 30), work("w2", 30, 30, "left")]),
-      room("b", 2, 0, 2, 2, [work("w3", 40, 30)]),
-    ],
-    spacing
-  );
-  const route = routeThrough(plan, 25);
-
-  test("starts at the entrance and crosses an empty room through its middle", () => {
-    const entrance = plan.doorways[0]!.gap;
-    expect(route.path[0]).toEqual({
-      x: (entrance.a.x + entrance.b.x) / 2,
-      y: (entrance.a.y + entrance.b.y) / 2,
-    });
-    expect(route.path[1]).toEqual({ x: 100, y: 250 });
-  });
-
-  test("passes through each doorway in turn", () => {
-    const [, intoA, intoB] = plan.doorways;
-    const mid = (g: { a: { x: number; y: number }; b: { x: number; y: number } }) => ({
-      x: (g.a.x + g.b.x) / 2,
-      y: (g.a.y + g.b.y) / 2,
-    });
-    expect(route.path).toContainEqual(mid(intoA!.gap));
-    expect(route.path).toContainEqual(mid(intoB!.gap));
-    expect(
-      route.path.findIndex((p) => p.x === mid(intoA!.gap).x && p.y === mid(intoA!.gap).y)
-    ).toBeLessThan(
-      route.path.findIndex((p) => p.x === mid(intoB!.gap).x && p.y === mid(intoB!.gap).y)
+  test("visits the works room by room, and within a room wall by wall from the far wall", () => {
+    const plan = hangGallery(
+      [
+        room("foyer", 0, 2, 2, 1),
+        // Entered from below: the far wall is the top, so w1 on the left comes after w2 on the top.
+        room("a", 0, 0, 2, 2, [work("w1", 30, 30, "left"), work("w2", 40, 30)]),
+        room("b", 2, 0, 2, 2, [work("w3", 40, 30)]),
+      ],
+      spacing
     );
+    const route = routeThrough(plan);
+    expect(route.stops.map((s) => s.work.work.id)).toEqual(["w2", "w1", "w3"]);
+    expect(route.stops.map((s) => s.room.room.id)).toEqual(["a", "a", "b"]);
   });
 
-  test("stops at every work in the order the walk meets them, standing off the wall", () => {
-    expect(route.stops.map((s) => s.work.work.id)).toEqual(["w1", "w2", "w3"]);
-    const w2 = route.stops[1]!;
-    expect(w2.work.wall).toBe("left");
-    expect(route.path[w2.at]).toEqual({
-      x: w2.work.rect.right + 25,
-      y: (w2.work.rect.top + w2.work.rect.bottom) / 2,
-    });
-    const w1 = route.stops[0]!;
-    expect(route.path[w1.at]!.y).toBe(w1.work.rect.bottom + 25);
+  test("an empty room adds no stop", () => {
+    const plan = hangGallery([room("a", 0, 0, 2, 2), room("b", 2, 0, 2, 2)], spacing);
+    expect(routeThrough(plan).stops).toHaveLength(0);
   });
 });
