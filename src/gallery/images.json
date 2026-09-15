@@ -1,0 +1,149 @@
+{
+  "haer-estate-whim-engine": {
+    "color": "#f8f8f8",
+    "width": 14435,
+    "height": 9843,
+    "sizes": [
+      {
+        "px": 512,
+        "width": 512,
+        "height": 349
+      },
+      {
+        "px": 1024,
+        "width": 1024,
+        "height": 698
+      },
+      {
+        "px": 2048,
+        "width": 2048,
+        "height": 1396
+      },
+      {
+        "px": 4096,
+        "width": 4096,
+        "height": 2793
+      }
+    ]
+  },
+  "haer-woolsey-bridge": {
+    "color": "#f8f8f8",
+    "width": 14440,
+    "height": 9893,
+    "sizes": [
+      {
+        "px": 512,
+        "width": 512,
+        "height": 351
+      },
+      {
+        "px": 1024,
+        "width": 1024,
+        "height": 702
+      },
+      {
+        "px": 2048,
+        "width": 2048,
+        "height": 1403
+      },
+      {
+        "px": 4096,
+        "width": 4096,
+        "height": 2806
+      }
+    ]
+  },
+  "hiroshige-iii-takanawa-railway": {
+    "color": "#d8c8a8",
+    "width": 8612,
+    "height": 4289,
+    "sizes": [
+      {
+        "px": 512,
+        "width": 512,
+        "height": 255
+      },
+      {
+        "px": 1024,
+        "width": 1024,
+        "height": 510
+      },
+      {
+        "px": 2048,
+        "width": 2048,
+        "height": 1020
+      },
+      {
+        "px": 4096,
+        "width": 4096,
+        "height": 2040
+      }
+    ]
+  },
+  "hiroshige-sudden-shower": {
+    "color": "#f8d8b8",
+    "width": 2650,
+    "height": 3860,
+    "sizes": [
+      {
+        "px": 512,
+        "width": 351,
+        "height": 512
+      },
+      {
+        "px": 1024,
+        "width": 703,
+        "height": 1024
+      },
+      {
+        "px": 2048,
+        "width": 1406,
+        "height": 2048
+      }
+    ]
+  },
+  "hokusai-great-wave": {
+    "color": "#f8f8e8",
+    "width": 3859,
+    "height": 2594,
+    "sizes": [
+      {
+        "px": 512,
+        "width": 512,
+        "height": 344
+      },
+      {
+        "px": 1024,
+        "width": 1024,
+        "height": 689
+      },
+      {
+        "px": 2048,
+        "width": 2048,
+        "height": 1377
+      }
+    ]
+  },
+  "kiyochika-kudanzaka-night": {
+    "color": "#383838",
+    "width": 2612,
+    "height": 1681,
+    "sizes": [
+      {
+        "px": 512,
+        "width": 512,
+        "height": 329
+      },
+      {
+        "px": 1024,
+        "width": 1024,
+        "height": 659
+      },
+      {
+        "px": 2048,
+        "width": 2048,
+        "height": 1318
+      }
+    ]
+  }
+}

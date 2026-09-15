@@ -8,16 +8,19 @@
  */
 
 import { CameraInput, type Camera, type ViewSize } from "../camera/index.js";
+import { hangGallery } from "../gallery/hang.js";
+import images from "../gallery/images.json";
+import { ROOMS } from "../gallery/works.js";
 import { DotGrid } from "./dot-grid.js";
 import { whenFacesReady } from "./faces.js";
-import { standInWall } from "./placeholder.js";
+import { GalleryLayer } from "./gallery-layer.js";
 import { Stage } from "./stage.js";
 import { tokenColor } from "./theme.js";
 import type { ValueStore } from "./value-store.js";
 
-// Screen pixels kept clear around the wall when the view first fits it.
+// Screen pixels kept clear around the gallery when the view first fits it.
 const FIT_PADDING = 48;
-// Never open closer than life size, however small the wall.
+// Never open closer than life size, however small the gallery.
 const FIT_ZOOM_MOST = 1;
 
 export interface MountedCanvas {
@@ -26,7 +29,7 @@ export interface MountedCanvas {
   dispose(): void;
 }
 
-/** Put a stage on `host` that follows `camera`, bind the input to it, and hang the wall over the grid. */
+/** Put a stage on `host` that follows `camera`, bind the input to it, and hang the gallery over the grid. */
 export async function mountCanvas(
   host: HTMLElement,
   camera: Camera,
@@ -35,21 +38,37 @@ export async function mountCanvas(
   await whenFacesReady();
   const stage = await Stage.create(host, camera);
   const input = new CameraInput(camera, host);
-  const wall = standInWall(stage.world, tokenColor("--color-ink", { rgb: 0x2b2b30, alpha: 1 }));
-  camera.fit(stage.view, wall.bounds, FIT_PADDING, FIT_ZOOM_MOST);
+  const requestFrame = (): void => stage.requestFrame();
+  const ink = tokenColor("--color-ink", { rgb: 0x2b2b30, alpha: 1 });
+  const muted = tokenColor("--color-muted", { rgb: 0x777a86, alpha: 1 });
+  const line = tokenColor("--color-line", { rgb: 0xd9dade, alpha: 1 });
+  const surface = tokenColor("--color-surface", { rgb: 0xffffff, alpha: 1 });
+  const hang = hangGallery(ROOMS);
+  const gallery = new GalleryLayer(
+    stage.world,
+    hang,
+    images,
+    {
+      room: { fill: { ...surface, alpha: 0.55 }, edge: line, name: muted },
+      work: { edge: line, card: surface, ink, muted },
+    },
+    requestFrame
+  );
+  camera.fit(stage.view, hang.bounds, FIT_PADDING, FIT_ZOOM_MOST);
+  gallery.follow(camera.current);
   // Made after the fit, so its first cell is drawn for the zoom the view opens at.
   const grid = new DotGrid(
     stage.app.renderer,
     stage.app.stage,
-    {
-      crossing: tokenColor("--color-muted", { rgb: 0x777a86, alpha: 1 }),
-      line: { ...tokenColor("--color-muted", { rgb: 0x777a86, alpha: 1 }), alpha: 0.6 },
-    },
-    () => stage.requestFrame(),
+    { crossing: muted, line: { ...muted, alpha: 0.6 } },
+    requestFrame,
     camera.current,
     stage.view
   );
-  const stopFollowing = camera.onChange((state) => grid.follow(state));
+  const stopFollowing = camera.onChange((state) => {
+    grid.follow(state);
+    gallery.follow(state);
+  });
   const stopResize = stage.onResize(() => {
     view.set(stage.view);
     grid.resize(stage.view);
@@ -61,7 +80,7 @@ export async function mountCanvas(
       stopResize();
       stopFollowing();
       grid.destroy();
-      wall.dispose();
+      gallery.destroy();
       input.dispose();
       stage.destroy();
     },

@@ -6,13 +6,36 @@
  * The stage follows the camera by subscription: each change lands on
  * the world as position and scale and asks for a frame. It draws on
  * request: its ticker never runs, and a frame comes only when
- * something asks.
+ * something asks. Text is a texture the world magnifies, so once the
+ * zoom settles every piece is drawn again at that scale.
  * Decision: DECISIONS.md, the canvas draws on request.
  */
 
-import { Application, Container } from "pixi.js";
+import { Application, Container, Text } from "pixi.js";
 import type { Camera, CameraState, ViewSize } from "../camera/index.js";
 import { FrameScheduler } from "./frame-scheduler.js";
+
+// How long after the last change of scale the text is drawn again, and how
+// far the scale has to have moved to be worth it: an eighth of a doubling,
+// which is about the point the eye starts to notice.
+const SETTLE_MS = 160;
+const SCALE_STEP = 0.125;
+// Four times the device's own pixels. A texture grows with the square of
+// this, and past here nobody is reading the canvas anyway.
+const MAX_TEXT_RESOLUTION = 4;
+
+/** Draw every piece of text under `root` again at `resolution`. */
+function sharpen(root: Container, resolution: number): void {
+  for (const child of root.children) {
+    if (child instanceof Text) {
+      if (child.resolution !== resolution) {
+        child.resolution = resolution;
+      }
+    } else if (child instanceof Container) {
+      sharpen(child, resolution);
+    }
+  }
+}
 
 /** A transparent, full-size Pixi canvas inside a host element, resized and DPR-corrected automatically. */
 export class Stage {
@@ -28,6 +51,8 @@ export class Stage {
   private readonly stopFollowing: () => void;
   private resolveFirstFrame: () => void = () => {};
   private dprQuery: MediaQueryList | undefined;
+  private sharpenAt: ReturnType<typeof setTimeout> | undefined;
+  private sharpenedFor = 0;
 
   private constructor(app: Application, host: HTMLElement, camera: Camera) {
     this.app = app;
@@ -72,6 +97,7 @@ export class Stage {
 
   /** Stop drawing, detach the canvas, and release the world and the GPU resources. */
   destroy(): void {
+    clearTimeout(this.sharpenAt);
     this.scheduler.dispose();
     this.stopFollowing();
     this.resizeObserver.disconnect();
@@ -112,6 +138,25 @@ export class Stage {
   private draw(): void {
     this.app.render();
     this.resolveFirstFrame();
+    this.watchScale();
+  }
+
+  // Every piece redraws at once, so never mid-gesture: only once the zoom has rested.
+  private watchScale(): void {
+    const wanted = this.world.scale.x;
+    if (Math.abs(Math.log2(wanted / this.sharpenedFor)) < SCALE_STEP) {
+      return;
+    }
+    clearTimeout(this.sharpenAt);
+    this.sharpenAt = setTimeout(() => {
+      this.sharpenedFor = this.world.scale.x;
+      const resolution = Math.min(
+        MAX_TEXT_RESOLUTION,
+        Math.max(1, this.sharpenedFor) * window.devicePixelRatio
+      );
+      sharpen(this.world, resolution);
+      this.requestFrame();
+    }, SETTLE_MS);
   }
 
   private fit(): void {

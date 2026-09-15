@@ -23,8 +23,8 @@ import {
 
 export type CameraListener = (state: CameraState) => void;
 
-// Far enough to see every room at once, close enough to read the smallest label.
-const DEFAULT_LIMITS: ZoomLimits = { min: 0.1, max: 8 };
+// Far enough to see every room at once, close enough to read a print at the scan's own pixels.
+const DEFAULT_LIMITS: ZoomLimits = { min: 0.05, max: 32 };
 
 /** Owns the view transform and tells its listeners when it changes. */
 export class Camera {
