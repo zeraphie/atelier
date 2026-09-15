@@ -22,7 +22,7 @@ import { useNow } from "./use-now.js";
 
 const PIN =
   "pointer-events-auto absolute -translate-x-1/2 -translate-y-1/2 flex size-7 items-center justify-center " +
-  "rounded-full border-2 border-surface font-sans text-xs font-bold shadow-md transition-transform " +
+  "rounded-full border-2 border-surface font-sans text-xs font-bold shadow-md transition-[scale] " +
   "hover:scale-110 focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2 " +
   "bg-accent text-accent-ink data-[resolved=true]:bg-resolved data-[open=true]:scale-110";
 const CARD = "z-10 rounded-lg border border-line bg-surface p-3 shadow-lg";
