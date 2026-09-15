@@ -29,8 +29,32 @@ bun run test     # the logic tests alone
 
 ## Keyboard
 
-<!-- Filled in once the shortcuts land. -->
+| Key                     | Does                                              |
+| ----------------------- | ------------------------------------------------- |
+| Scroll, or drag         | Move around                                       |
+| Pinch, or Ctrl + scroll | Zoom about the cursor                             |
+| Shift + scroll          | Move sideways with a one-axis mouse wheel         |
+| Double-click, double-tap | Fill the view with the work, room or plan under it |
+| `+` or `=`, `-`         | Zoom in, zoom out                                 |
+| Shift + `0`             | Life size, 100%                                   |
+| Shift + `1`             | Fit the whole plan                                |
+| `←` `→`                 | Previous and next work on the tour; `→` starts it |
+| `C`                     | The next tap on the canvas places a comment       |
+| Right-click             | Add a comment here                                |
+| Enter, Shift + Enter    | Send a comment, break a line                      |
+| Escape                  | Back out: a draft, an open thread, comment mode, the tour |
 
 ## Credits
 
-<!-- Each work: title, artist, year, collection, licence. -->
+Every work is in the public domain; each scan comes from the holding collection on the terms it states.
+
+| Work                                                        | Artist                                                     | Year       | Collection                                                        | Scan                                       |
+| ----------------------------------------------------------- | ---------------------------------------------------------- | ---------- | ----------------------------------------------------------------- | ------------------------------------------ |
+| Woolsey Bridge, axonometric from below                      | Matthew Swaim, Historic American Engineering Record        | 20th century | Library of Congress, HAER AR-63, sheet 4                        | United States government work              |
+| Overhead Crank Steam Engine and Cane Mill, Estate Whim      | Kathleen Hoeft, Historic American Engineering Record       | 20th century | Library of Congress, HAER VI,1-WEST,1C-, sheet 1                | United States government work              |
+| Sentinel Bridge over the Merced River, elevation and section | Marie-Claude LeSauteur, Historic American Engineering Record | 20th century | Library of Congress, HAER CAL,22-YOSEM,15-, sheet 1           | United States government work              |
+| Under the Wave off Kanagawa                                 | Katsushika Hokusai                                         | c. 1830–32 | The Metropolitan Museum of Art, JP1847                            | The Met Open Access                        |
+| Sudden Shower over Shin-Ōhashi Bridge and Atake             | Utagawa Hiroshige                                          | 1857       | The Metropolitan Museum of Art, JP2522                            | The Met Open Access                        |
+| Kudanzaka at Night in Early Summer                          | Kobayashi Kiyochika                                        | 1880       | Smithsonian Institution                                           | Wikimedia Commons                          |
+| Steam Train on the Railway along the Takanawa Coast         | Utagawa Hiroshige III                                      | 1871       | Geographicus Rare Antique Maps                                    | Wikimedia Commons                          |
+| The Sumida River at Night                                   | Kobayashi Kiyochika                                        | 1881       | Honolulu Museum of Art, James A. Michener Collection, 13681       | Wikimedia Commons                          |
