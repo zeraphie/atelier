@@ -35,6 +35,11 @@ function onTap(world: Point): void {
   }
 }
 
+// A room's name double-tapped in edit mode: the name field opens over it.
+function onRename(roomId: string): void {
+  useStore.getState().startRename(roomId);
+}
+
 export function Canvas() {
   const { camera, view, tour, gridShown } = useCanvas();
   const mode = useStore((store) => store.mode);
@@ -52,7 +57,7 @@ export function Canvas() {
     let teardown = (): void => {};
     const mount = async (): Promise<void> => {
       const { mountCanvas } = await import("../../canvas/mount.js");
-      const mounted = await mountCanvas(host, camera, view, { onTap, gridShown });
+      const mounted = await mountCanvas(host, camera, view, { onTap, gridShown, onRename });
       if (isDisposed) {
         mounted.dispose();
         return;

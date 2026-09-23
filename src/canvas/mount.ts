@@ -39,6 +39,8 @@ export interface MountHooks {
   readonly onTap: (world: Point) => void;
   /** Whether the grid is drawn, as the interface switches it. */
   readonly gridShown: ValueStore<boolean>;
+  /** A double tap on a room's name in edit mode: the name is to be typed. */
+  readonly onRename: (roomId: string) => void;
 }
 
 export interface MountedCanvas {
@@ -117,7 +119,16 @@ export async function mountCanvas(
     return target.kind === "room" ? target.room.rect : currentPlan().bounds;
   };
   const stopDoubleTap = input.onDoubleTap((at) => {
-    const target = targetAt(currentPlan(), camera.toWorld(at));
+    const point = camera.toWorld(at);
+    // In edit mode a room's name is for typing, not for fitting the room.
+    if (useStore.getState().mode === "edit") {
+      const named = gallery.roomNamedAt(point);
+      if (named !== undefined) {
+        hooks.onRename(named);
+        return;
+      }
+    }
+    const target = targetAt(currentPlan(), point);
     if (target.kind === "work") {
       tour.enterAt(target.work.work.id);
     }

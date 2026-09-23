@@ -7,6 +7,7 @@ import { EditRail } from "./ui/components/EditRail.js";
 import { FoyerPlaque } from "./ui/components/FoyerPlaque.js";
 import { MiniMap } from "./ui/components/MiniMap.js";
 import { PinLayer } from "./ui/components/PinLayer.js";
+import { RoomName } from "./ui/components/RoomName.js";
 import { useShortcuts } from "./ui/utils/shortcuts.js";
 import { StudioDesk } from "./ui/components/StudioDesk.js";
 import { ThresholdArrows } from "./ui/components/ThresholdArrows.js";
@@ -33,6 +34,7 @@ function Workspace() {
       <FoyerPlaque />
       <ThresholdArrows />
       <PinLayer />
+      <RoomName />
       <CommentList />
       <EditRail />
       <TourControls />

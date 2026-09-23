@@ -11,6 +11,7 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
+import type { WorldRect } from "../camera/index.js";
 import type { HungRoom } from "../gallery/hang.js";
 import type { PackedColor } from "./css-color.js";
 
@@ -29,6 +30,7 @@ const NAME_INSET_CM = 16;
 export class RoomView {
   readonly container = new Container();
   readonly id: string;
+  private readonly rect: WorldRect;
   private readonly floor: Graphics;
   private readonly floorAlpha: number;
   private readonly name: Text;
@@ -36,6 +38,7 @@ export class RoomView {
   constructor(hung: HungRoom, colors: RoomColors) {
     const { rect } = hung;
     this.id = hung.room.id;
+    this.rect = rect;
     this.container.position.set(rect.left, rect.top);
     // The floor's colour at full strength, and its rest alpha on the object, so lighting it is one number.
     this.floorAlpha = colors.floor.alpha;
@@ -59,6 +62,13 @@ export class RoomView {
   /** Follow the zoom: the name keeps its size on screen. */
   follow(zoom: number): void {
     this.name.scale.set(NAME_PX / (TEXT_PX * zoom));
+  }
+
+  /** Where the name sits, in world units, for a press on it to be a press on the name. */
+  nameRect(): WorldRect {
+    const left = this.rect.left + NAME_INSET_CM;
+    const top = this.rect.top + NAME_INSET_CM;
+    return { left, top, right: left + this.name.width, bottom: top + this.name.height };
   }
 
   /** Brighten the floor, or let it rest. */
