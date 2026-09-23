@@ -185,7 +185,8 @@ export async function mountCanvas(
     resize: (id, cells) => useStore.getState().resizeRoom(id, cells),
     host,
     isMotionReduced,
-    frame: requestAnimationFrame,
+    // Called through the tool, so the browser must not be handed the tool as its receiver.
+    frame: (callback) => requestAnimationFrame(callback),
   });
   const moving = new PointerSession(
     stage.app.canvas,
