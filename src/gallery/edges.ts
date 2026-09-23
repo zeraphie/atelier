@@ -9,7 +9,7 @@
  * Decision: DECISIONS.md, rooms stay on the metre grid.
  */
 
-import type { Point } from "../geometry.js";
+import type { Point, WorldRect } from "../geometry.js";
 import type { Segment } from "./hang.js";
 
 export interface Edge {
@@ -52,20 +52,42 @@ export function edgeOnWall(wall: Segment, edge: Edge, unitCm: number): boolean {
   return a.y === wall.a.y && b.y === wall.a.y && a.x >= left && b.x <= right;
 }
 
-/** The edge nearest `point`, within `reachCm` of it; none when the point is nowhere near a line. */
-export function edgeNear(point: Point, unitCm: number, reachCm: number): Edge | undefined {
+/**
+ * The edges nearest `point` within `reachCm` of it, nearest first: at most
+ * the nearest vertical line's and the nearest horizontal line's, so a
+ * caller can take the first that is on a wall.
+ */
+export function edgesNear(point: Point, unitCm: number, reachCm: number): Edge[] {
   const col = Math.floor(point.x / unitCm);
   const row = Math.floor(point.y / unitCm);
-  // Distances to the nearest vertical and horizontal grid lines.
-  const toVertical = Math.abs(point.x - Math.round(point.x / unitCm) * unitCm);
-  const toHorizontal = Math.abs(point.y - Math.round(point.y / unitCm) * unitCm);
-  if (Math.min(toVertical, toHorizontal) > reachCm) {
-    return undefined;
+  const vertical = Math.round(point.x / unitCm);
+  const horizontal = Math.round(point.y / unitCm);
+  const candidates: { readonly edge: Edge; readonly distance: number }[] = [
+    {
+      edge: { col: vertical - 1, row, side: "east" },
+      distance: Math.abs(point.x - vertical * unitCm),
+    },
+    {
+      edge: { col, row: horizontal - 1, side: "south" },
+      distance: Math.abs(point.y - horizontal * unitCm),
+    },
+  ];
+  return candidates
+    .filter((candidate) => candidate.distance <= reachCm)
+    .sort((a, b) => a.distance - b.distance)
+    .map((candidate) => candidate.edge);
+}
+
+/** The edge nearest `point`, within `reachCm` of it; none when the point is nowhere near a line. */
+export function edgeNear(point: Point, unitCm: number, reachCm: number): Edge | undefined {
+  return edgesNear(point, unitCm, reachCm)[0];
+}
+
+/** Whether the edge lies along one of `rect`'s sides, within its ends. */
+export function edgeOnRect(rect: WorldRect, edge: Edge, unitCm: number): boolean {
+  const { a, b } = edgeSegment(edge, unitCm);
+  if (a.x === b.x) {
+    return (a.x === rect.left || a.x === rect.right) && a.y >= rect.top && b.y <= rect.bottom;
   }
-  if (toVertical <= toHorizontal) {
-    const line = Math.round(point.x / unitCm);
-    return { col: line - 1, row, side: "east" };
-  }
-  const line = Math.round(point.y / unitCm);
-  return { col, row: line - 1, side: "south" };
+  return (a.y === rect.top || a.y === rect.bottom) && a.x >= rect.left && b.x <= rect.right;
 }

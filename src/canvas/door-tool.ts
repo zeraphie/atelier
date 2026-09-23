@@ -13,7 +13,7 @@
 import type { PointerSessionOwner } from "../camera/pointer-session.js";
 import type { Point } from "../geometry.js";
 import { doorAt, type DoorAction } from "../gallery/doors.js";
-import { edgeKey, edgeNear, type Edge } from "../gallery/edges.js";
+import { edgeKey, edgesNear, type Edge } from "../gallery/edges.js";
 import type { Plan } from "../gallery/hang.js";
 
 export interface DoorToolDeps {
@@ -36,10 +36,16 @@ export class DoorTool implements PointerSessionOwner {
     this.deps = deps;
   }
 
-  /** What a click at `at` would do, for the hover to show; nothing off a shared wall. */
+  /** What a click at `at` would do, for the hover to show: the nearest edge that is on a wall, or nothing. */
   actionAt(at: Point): DoorAction | undefined {
-    const edge = edgeNear(at, this.deps.unitCm, this.deps.reachCm());
-    return edge === undefined ? undefined : doorAt(this.deps.plan(), edge, this.deps.unitCm);
+    const { plan, unitCm, reachCm } = this.deps;
+    for (const edge of edgesNear(at, unitCm, reachCm())) {
+      const action = doorAt(plan(), edge, unitCm);
+      if (action !== undefined) {
+        return action;
+      }
+    }
+    return undefined;
   }
 
   takes(at: Point): boolean {

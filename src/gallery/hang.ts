@@ -9,9 +9,10 @@
  * the route winds and no door looks straight through to the next; a
  * pair that shares no wall gets none. A room drawn in the gallery is
  * outside the tour: it opens onto every room it meets, one doorway per
- * pair, centred on the wall they share. A doorway put by hand between
- * two rooms that share a wall, or taken away, holds whatever the rules
- * said. Works hang on the walls, the
+ * pair, centred on the wall they share. A doorway put by hand holds
+ * whatever the rules said: between two rooms that share a wall, or on
+ * an outer wall as a way outside, keyed by its edge; and one taken away
+ * is not cut, the entrance included. Works hang on the walls, the
  * wall facing the entry first, so the first thing seen through a threshold
  * is a work on the far wall, and the doorways' stretches stay clear; a
  * work that names its wall hangs there. The gallery's edits come in
@@ -23,7 +24,7 @@
  */
 
 import type { Point, WorldRect } from "../geometry.js";
-import { edgeOnWall, edgeSegment, pairKey, type Edge } from "./edges.js";
+import { edgeOnRect, edgeOnWall, edgeSegment, pairKey, type Edge } from "./edges.js";
 import type { Cells, Room, Side, Work } from "./works.js";
 
 export interface Spacing {
@@ -98,6 +99,9 @@ export const SPACING: Spacing = {
   doorCm: 70,
 };
 
+/** The name of the world beyond the walls, as the far side of an entrance or a way outside. */
+export const OUTSIDE = "outside";
+
 const OPPOSITE: Record<Side, Side> = { top: "bottom", bottom: "top", left: "right", right: "left" };
 
 /** Lay the rooms out as a plan, cut the doorways of the tour, and hang the works on the walls. */
@@ -158,11 +162,20 @@ function cutDoorways(
     next === undefined
       ? centre(first.rect)
       : centre(sharedWall(first.rect, next) ?? edges(next).top);
-  const entrance = doorNear(outerWall(first.rect, rects), towards, spacing);
-  const doorways: Doorway[] = [{ from: "outside", to: first.room.id, gap: entrance }];
+  const doorways: Doorway[] = [];
   // Where the last doorway was, which the next winds away from; with no
   // doorway into a room, the room's own centre stands in.
-  let before = centre(entrance);
+  let before = centre(first.rect);
+  // The entrance: by the rule, or on an outer edge chosen by hand, or none.
+  const entranceEdge = chosen[pairKey(OUTSIDE, first.room.id)];
+  if (entranceEdge !== null) {
+    const entrance =
+      entranceEdge !== undefined && isOuterEdge(first.rect, entranceEdge, rects, spacing.unitCm)
+        ? doorOnEdge(entranceEdge, spacing)
+        : doorNear(outerWall(first.rect, rects), towards, spacing);
+    doorways.push({ from: OUTSIDE, to: first.room.id, gap: entrance });
+    before = centre(entrance);
+  }
   for (let i = 1; i < shipped.length; i += 1) {
     const from = shipped[i - 1]!;
     const to = shipped[i]!;
@@ -212,16 +225,26 @@ function cutDoorways(
       doorways.push({ from, to, gap });
     }
   }
-  // A doorway put by hand between two rooms the rules gave none, on the
-  // edge chosen, when that edge lies on a wall they share.
+  // A doorway put by hand: between two rooms the rules gave none, on the
+  // edge chosen when it lies on a wall they share; or a way outside from a
+  // room, keyed by its edge, while that edge is an outer wall of the room.
   for (const [key, edge] of Object.entries(chosen)) {
     if (edge === null || doorways.some((doorway) => pairKey(doorway.from, doorway.to) === key)) {
       continue;
     }
     const [fromId, toId] = key.split(">");
     const from = placed.find(({ room }) => room.id === fromId);
+    if (from === undefined || toId === undefined) {
+      continue;
+    }
+    if (toId.startsWith(OUTSIDE)) {
+      if (isOuterEdge(from.rect, edge, rects, spacing.unitCm)) {
+        doorways.push({ from: from.room.id, to: OUTSIDE, gap: doorOnEdge(edge, spacing) });
+      }
+      continue;
+    }
     const to = placed.find(({ room }) => room.id === toId);
-    if (from === undefined || to === undefined) {
+    if (to === undefined) {
       continue;
     }
     const shared = sharedWall(from.rect, to.rect);
@@ -230,6 +253,19 @@ function cutDoorways(
     }
   }
   return doorways;
+}
+
+// Whether an edge lies on `rect`'s boundary and on no other room's: an outer wall.
+function isOuterEdge(
+  rect: WorldRect,
+  edge: Edge,
+  rects: readonly WorldRect[],
+  unitCm: number
+): boolean {
+  return (
+    edgeOnRect(rect, edge, unitCm) &&
+    !rects.some((other) => other !== rect && edgeOnRect(other, edge, unitCm))
+  );
 }
 
 // The stretch of wall two rooms have in common, or none when they do not touch.

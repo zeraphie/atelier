@@ -287,3 +287,39 @@ describe("doorways by hand", () => {
     ]);
   });
 });
+
+describe("ways outside and the entrance", () => {
+  const a = room("a", 0, 0, 3, 2);
+  const b = room("b", 3, 0, 2, 2);
+  const pairs = (chosen: Record<string, Edge | null>): string[] =>
+    hangGallery([a, b], spacing, { doorways: chosen }).doorways.map((d) => `${d.from}>${d.to}`);
+
+  test("a way outside is cut on an outer wall, keyed by its edge, and not on a shared or absent one", () => {
+    expect(pairs({ "b>outside:east:4:0": { col: 4, row: 0, side: "east" } })).toEqual([
+      "outside>a",
+      "a>b",
+      "b>outside",
+    ]);
+    expect(pairs({ "b>outside:east:2:0": { col: 2, row: 0, side: "east" } })).toEqual([
+      "outside>a",
+      "a>b",
+    ]);
+    expect(pairs({ "b>outside:east:6:0": { col: 6, row: 0, side: "east" } })).toEqual([
+      "outside>a",
+      "a>b",
+    ]);
+  });
+
+  test("the entrance moves to a chosen outer edge of the first room, and a null takes it away", () => {
+    const moved = hangGallery([a, b], spacing, {
+      doorways: { "outside>a": { col: -1, row: 1, side: "east" } },
+    });
+    expect(mid(moved.doorways[0]!.gap)).toEqual({ x: 0, y: 150 });
+    expect(pairs({ "outside>a": null })).toEqual(["a>b"]);
+    // An edge that is not an outer wall of the first room leaves the rule's entrance.
+    const kept = hangGallery([a, b], spacing, {
+      doorways: { "outside>a": { col: 2, row: 0, side: "east" } },
+    });
+    expect(kept.doorways[0]!.gap.a.y).toBe(200);
+  });
+});
