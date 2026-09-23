@@ -9,13 +9,14 @@
  * Decision: DECISIONS.md, everyone is in a viewing.
  */
 
-import { useSyncExternalStore, type CSSProperties } from "react";
+import type { CSSProperties } from "react";
 import { worldToScreen } from "../../camera/index.js";
 import { useStore } from "../../state/store.js";
 import { colorFor } from "../../viewing/color.js";
-import { cursors, type Cursors } from "../../viewing/cursors.js";
+import { cursors } from "../../viewing/cursors.js";
 import { CursorIcon } from "../atoms/icons.js";
 import { useCameraState } from "../utils/canvas-context.js";
+import { useValue } from "../utils/use-value.js";
 
 const NAME =
   "absolute top-4 left-3.5 rounded-full bg-[var(--person)] px-1.5 py-0.5 " +
@@ -23,7 +24,7 @@ const NAME =
 
 export function CursorLayer() {
   const camera = useCameraState();
-  const placed = useCursors();
+  const placed = useValue(cursors);
   const peers = useStore((store) => store.peers);
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
@@ -50,12 +51,5 @@ export function CursorLayer() {
         );
       })}
     </div>
-  );
-}
-
-function useCursors(): Cursors {
-  return useSyncExternalStore(
-    (listener) => cursors.subscribe(listener),
-    () => cursors.current
   );
 }

@@ -13,6 +13,7 @@ import { createContext, useContext, useState, useSyncExternalStore, type ReactNo
 import { Camera, type CameraState, type Point, type CanvasSize } from "../../camera/index.js";
 import type { TourHandle } from "../../canvas/tour.js";
 import { ValueStore } from "../../canvas/value-store.js";
+import { useValue } from "./use-value.js";
 
 export interface CanvasSession {
   readonly camera: Camera;
@@ -60,27 +61,15 @@ export function useCameraState(): CameraState {
 
 /** The tour, once there is one, re-rendering when it comes or goes. */
 export function useTour(): TourHandle | undefined {
-  const { tour } = useCanvas();
-  return useSyncExternalStore(
-    (listener) => tour.subscribe(listener),
-    () => tour.current
-  );
+  return useValue(useCanvas().tour);
 }
 
 /** Whether the grid is drawn, re-rendering when it is switched. */
 export function useGridShown(): boolean {
-  const { gridShown } = useCanvas();
-  return useSyncExternalStore(
-    (listener) => gridShown.subscribe(listener),
-    () => gridShown.current
-  );
+  return useValue(useCanvas().gridShown);
 }
 
 /** The canvas size in CSS pixels, re-rendering on resize. */
 export function useCanvasSize(): CanvasSize {
-  const { canvasSize } = useCanvas();
-  return useSyncExternalStore(
-    (listener) => canvasSize.subscribe(listener),
-    () => canvasSize.current
-  );
+  return useValue(useCanvas().canvasSize);
 }

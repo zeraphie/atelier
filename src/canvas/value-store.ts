@@ -22,11 +22,11 @@ export class ValueStore<T> {
     }
   }
 
-  /** Subscribe to changes; returns the unsubscribe function. */
-  subscribe(listener: (value: T) => void): () => void {
+  /** Subscribe to changes; returns the unsubscribe function. Bound, so React can hold it across renders. */
+  readonly subscribe = (listener: (value: T) => void): (() => void) => {
     this.listeners.add(listener);
     return () => {
       this.listeners.delete(listener);
     };
-  }
+  };
 }

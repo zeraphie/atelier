@@ -7,20 +7,14 @@
  * Decision: DECISIONS.md, a route through the rooms.
  */
 
-import { useSyncExternalStore } from "react";
 import { Pill, PillButton, PillLabel } from "../atoms/Pill.js";
 import { useTour } from "../utils/canvas-context.js";
+import { useValue } from "../utils/use-value.js";
 
 export function TourControls() {
   const tour = useTour();
-  const at = useSyncExternalStore(
-    (listener) => tour?.stop.subscribe(listener) ?? (() => {}),
-    () => tour?.stop.current ?? -1
-  );
-  const isPlaying = useSyncExternalStore(
-    (listener) => tour?.playing.subscribe(listener) ?? (() => {}),
-    () => tour?.playing.current ?? false
-  );
+  const at = useValue(tour?.stop, -1);
+  const isPlaying = useValue(tour?.playing, false);
   if (tour === undefined) {
     return null;
   }

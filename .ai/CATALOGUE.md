@@ -260,6 +260,9 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 **ui/utils/use-now.ts**
 - `useNow()`: The time, as a value that moves on every half minute, so a component can say how long ago.
 
+**ui/utils/use-value.ts**
+- `useValue()`: The value `store` holds, re-rendering on every change; `whenNone` while there is no store.
+
 **ui/utils/use-viewing.ts**
 - `useViewing()`: Follows the address: the viewing it names is joined and any other left, and unmounting leaves.
 - `enterViewing()`: Put a viewing in the address, which joins it.
@@ -285,7 +288,6 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 
 **viewing/cursors.ts** (ui)
 - `cursors`: The peers' pointers in the world, by peer id; only those over their canvas.
-- Also: `Cursors`
 
 **viewing/hash.ts** (ui)
 - `viewingCodeFromHash()`: The viewing's code a location hash names, or none.
