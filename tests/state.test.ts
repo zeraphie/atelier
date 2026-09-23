@@ -3,6 +3,7 @@ import { createStore } from "zustand/vanilla";
 import { createCommentsSlice } from "../src/state/slices/comments.js";
 import { createGallerySlice } from "../src/state/slices/gallery.js";
 import { createPicturesSlice } from "../src/state/slices/pictures.js";
+import { createRoomSlice } from "../src/state/slices/room.js";
 import type { ActionCall } from "../src/state/utils/actions.js";
 import type { Store } from "../src/state/store.js";
 
@@ -20,6 +21,7 @@ function gallery() {
     ...createCommentsSlice(context)(set, get),
     ...createPicturesSlice(context)(set, get),
     ...createGallerySlice(context)(set, get),
+    ...createRoomSlice(set, get),
   }));
   return { store, told, state: () => store.getState() };
 }
@@ -205,5 +207,22 @@ describe("doorways", () => {
     state().removeDoor("a>b", { at: 200 });
     expect(state().doorways["a>b"]?.value).toBeNull();
     expect(told.at(-1)).toEqual({ action: "removeDoor", args: ["a>b"], at: 200 });
+  });
+});
+
+describe("room", () => {
+  test("entering a room names it and empties the peers; peers come and go once each; leaving clears all", () => {
+    const { state } = gallery();
+    state().enteredRoom("r1");
+    state().peerJoined("a");
+    state().peerJoined("b");
+    state().peerJoined("a");
+    expect(state().roomId).toBe("r1");
+    expect(state().peers).toEqual(["a", "b"]);
+    state().peerLeft("a");
+    expect(state().peers).toEqual(["b"]);
+    state().leftRoom();
+    expect(state().roomId).toBeUndefined();
+    expect(state().peers).toEqual([]);
   });
 });
