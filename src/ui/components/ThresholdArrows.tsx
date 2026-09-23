@@ -32,7 +32,7 @@ export function ThresholdArrows() {
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
       {thresholds.map((threshold) => (
         <Arrow
-          key={threshold.to.room.id}
+          key={`${threshold.from.room.id}>${threshold.to.room.id}`}
           threshold={threshold}
           at={worldToScreen(camera, threshold.at)}
         />

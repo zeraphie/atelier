@@ -45,12 +45,12 @@ export function applyEdits(base: readonly Room[], edits: Edits): Edited {
   const drawn = Object.entries(edits.rooms)
     .filter(([id, edit]) => edit.drawn !== undefined && !base.some((room) => room.id === id))
     .sort(([, a], [, b]) => (a.drawn?.at ?? 0) - (b.drawn?.at ?? 0))
-    .flatMap(([id, edit]) => {
+    .flatMap<Room>(([id, edit]) => {
       const cells = edit.cells?.value;
       if (cells === undefined) {
         return [];
       }
-      return [{ id, name: edit.name?.value ?? "Room", ...cells, works: [] }];
+      return [{ id, name: edit.name?.value ?? "Room", ...cells, works: [], drawn: true }];
     });
   return {
     rooms: [...shipped, ...drawn],

@@ -47,6 +47,8 @@ export interface Room {
   readonly columns: number;
   readonly rows: number;
   readonly works: readonly Work[];
+  /** Drawn in the gallery rather than shipped with it: it opens onto every room it meets. */
+  readonly drawn?: true;
 }
 
 const PRINT = "Woodblock print, ink and colour on paper";

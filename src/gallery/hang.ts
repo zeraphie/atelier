@@ -7,8 +7,10 @@
  * each pair in turn gets a doorway in the wall they share, a third of
  * the way along from the end farthest from the doorway before it, so
  * the route winds and no door looks straight through to the next; a
- * pair that shares no wall gets none. Works hang on the walls, the wall
- * facing the entry first, so the first thing seen through a threshold
+ * pair that shares no wall gets none. A room drawn in the gallery is
+ * outside the tour: it opens onto every room it meets, one doorway per
+ * pair, centred on the wall they share. Works hang on the walls, the
+ * wall facing the entry first, so the first thing seen through a threshold
  * is a work on the far wall, and the doorways' stretches stay clear; a
  * work that names its wall hangs there. The gallery's edits come in
  * beside the data: a work placed by hand sits at its point on no wall,
@@ -141,35 +143,64 @@ function cutDoorways(
   spacing: Spacing,
   chosen: Readonly<Record<string, Edge>>
 ): Doorway[] {
-  const first = rooms[0];
-  const firstRect = rects[0];
-  if (first === undefined || firstRect === undefined) {
+  const placed = rooms.map((room, i) => ({ room, rect: rects[i]! }));
+  // The tour is the shipped rooms: the first has the entrance, and each opens
+  // onto the next where they share a wall.
+  const shipped = placed.filter(({ room }) => room.drawn !== true);
+  const first = shipped[0];
+  if (first === undefined) {
     return [];
   }
-  const next = rects[1];
+  const next = shipped[1]?.rect;
   const towards =
-    next === undefined ? centre(firstRect) : centre(sharedWall(firstRect, next) ?? edges(next).top);
-  const entrance = doorNear(outerWall(firstRect, rects), towards, spacing);
-  const doorways: Doorway[] = [{ from: "outside", to: first.id, gap: entrance }];
+    next === undefined
+      ? centre(first.rect)
+      : centre(sharedWall(first.rect, next) ?? edges(next).top);
+  const entrance = doorNear(outerWall(first.rect, rects), towards, spacing);
+  const doorways: Doorway[] = [{ from: "outside", to: first.room.id, gap: entrance }];
   // Where the last doorway was, which the next winds away from; with no
   // doorway into a room, the room's own centre stands in.
   let before = centre(entrance);
-  for (let i = 1; i < rooms.length; i += 1) {
-    const from = rooms[i - 1]!;
-    const to = rooms[i]!;
-    const rect = rects[i]!;
-    const shared = sharedWall(rects[i - 1]!, rect);
+  for (let i = 1; i < shipped.length; i += 1) {
+    const from = shipped[i - 1]!;
+    const to = shipped[i]!;
+    const shared = sharedWall(from.rect, to.rect);
     if (shared === undefined) {
-      before = centre(rect);
+      before = centre(to.rect);
       continue;
     }
-    const edge = chosen[pairKey(from.id, to.id)];
+    const edge = chosen[pairKey(from.room.id, to.room.id)];
     const gap =
       edge !== undefined && edgeOnWall(shared, edge, spacing.unitCm)
         ? doorOnEdge(edge, spacing)
         : doorFar(shared, before, spacing);
-    doorways.push({ from: from.id, to: to.id, gap });
+    doorways.push({ from: from.room.id, to: to.room.id, gap });
     before = centre(gap);
+  }
+  // A drawn room opens onto every room it meets, once per pair, the doorway
+  // centred on the wall they share unless one was chosen. The pair runs from
+  // the earlier room in the order to the later, which is the way on.
+  for (const [i, drawn] of placed.entries()) {
+    if (drawn.room.drawn !== true) {
+      continue;
+    }
+    for (const [j, other] of placed.entries()) {
+      const shared = j === i ? undefined : sharedWall(drawn.rect, other.rect);
+      if (shared === undefined) {
+        continue;
+      }
+      const from = placed[Math.min(i, j)]!.room.id;
+      const to = placed[Math.max(i, j)]!.room.id;
+      if (doorways.some((doorway) => doorway.from === from && doorway.to === to)) {
+        continue;
+      }
+      const edge = chosen[pairKey(from, to)];
+      const gap =
+        edge !== undefined && edgeOnWall(shared, edge, spacing.unitCm)
+          ? doorOnEdge(edge, spacing)
+          : doorCentred(shared, spacing);
+      doorways.push({ from, to, gap });
+    }
   }
   return doorways;
 }
@@ -240,10 +271,14 @@ function doorAt(wall: Segment, end: "a" | "b", spacing: Spacing): Segment {
 
 // The doorway centred on a metre edge someone chose.
 function doorOnEdge(edge: Edge, spacing: Spacing): Segment {
-  const segment = edgeSegment(edge, spacing.unitCm);
-  const total = distance(segment.a, segment.b);
+  return doorCentred(edgeSegment(edge, spacing.unitCm), spacing);
+}
+
+// The doorway in the middle of a wall: a drawn room's, with no route to wind.
+function doorCentred(wall: Segment, spacing: Spacing): Segment {
+  const total = distance(wall.a, wall.b);
   const width = Math.min(spacing.doorCm, total);
-  return { a: along(segment, (total - width) / 2), b: along(segment, (total + width) / 2) };
+  return { a: along(wall, (total - width) / 2), b: along(wall, (total + width) / 2) };
 }
 
 // ── Works on walls ──

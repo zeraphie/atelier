@@ -13,7 +13,7 @@
 import { applyEdits } from "../gallery/edited.js";
 import { hangGallery, SPACING, type Plan } from "../gallery/hang.js";
 import { routeThrough, type Route } from "../gallery/route.js";
-import { ROOMS, type Cells } from "../gallery/works.js";
+import { ROOMS, type Cells, type Room } from "../gallery/works.js";
 import { useStore, type Store } from "./store.js";
 
 interface Derived {
@@ -91,8 +91,8 @@ export function onPlanChange(listener: (plan: Plan) => void): () => void {
  */
 export function planWith(roomId: string, cells: Cells): Plan {
   const edited = applyEdits(ROOMS, useStore.getState());
-  const rooms = edited.rooms.some((room) => room.id === roomId)
+  const rooms: readonly Room[] = edited.rooms.some((room) => room.id === roomId)
     ? edited.rooms.map((room) => (room.id === roomId ? { ...room, ...cells } : room))
-    : [...edited.rooms, { id: roomId, name: "", ...cells, works: [] }];
+    : [...edited.rooms, { id: roomId, name: "", ...cells, works: [], drawn: true }];
   return hangGallery(rooms, SPACING, { placed: edited.placed, doorways: edited.doorways });
 }

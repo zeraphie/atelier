@@ -208,3 +208,42 @@ describe("hangGallery", () => {
     expect(bounds).toEqual({ left: 0, top: 0, right: 300, bottom: 400 });
   });
 });
+
+describe("doorways of drawn rooms", () => {
+  // The tour: a, then b to its right. Drawn rooms: c under both, d under c, e off on its own.
+  const shipped = [room("a", 0, 0, 3, 2), room("b", 3, 0, 2, 2)];
+  const drawn = (id: string, column: number, row: number, columns: number, rows: number): Room => ({
+    ...room(id, column, row, columns, rows),
+    drawn: true,
+  });
+  const pairs = (rooms: Room[]): string[] =>
+    hangGallery(rooms, spacing).doorways.map((d) => `${d.from}>${d.to}`);
+
+  test("the shipped rooms keep the tour's doors, and a drawn room opens onto every room it meets", () => {
+    expect(pairs([...shipped, drawn("c", 0, 2, 5, 2)])).toEqual(["outside>a", "a>b", "a>c", "b>c"]);
+  });
+
+  test("one door per pair, whichever room is drawn first, and none for a room that meets nothing", () => {
+    expect(pairs([...shipped, drawn("c", 0, 2, 5, 2), drawn("d", 0, 4, 2, 1)])).toEqual([
+      "outside>a",
+      "a>b",
+      "a>c",
+      "b>c",
+      "c>d",
+    ]);
+    expect(pairs([...shipped, drawn("e", 7, 7, 2, 2)])).toEqual(["outside>a", "a>b"]);
+  });
+
+  test("a drawn room's door is centred on the wall it shares", () => {
+    const { doorways } = hangGallery([...shipped, drawn("c", 0, 2, 5, 2)], spacing);
+    const toC = doorways.find((d) => d.from === "b" && d.to === "c")!;
+    expect(toC.gap.a.y).toBe(200);
+    expect(mid(toC.gap).x).toBe(400);
+    expect(length(toC.gap)).toBe(20);
+  });
+
+  test("the tour does not chain through a drawn room: a shipped room after one still opens onto the shipped room before it", () => {
+    const { doorways } = hangGallery([shipped[0]!, drawn("c", 0, 2, 5, 2), shipped[1]!], spacing);
+    expect(doorways.map((d) => `${d.from}>${d.to}`)).toEqual(["outside>a", "a>b", "a>c", "c>b"]);
+  });
+});
