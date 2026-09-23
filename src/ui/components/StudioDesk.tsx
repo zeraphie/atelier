@@ -10,10 +10,9 @@
  */
 
 import { useState } from "react";
-import { worldToScreen } from "../../camera/index.js";
 import { useCommentsStore } from "../../comments/store.js";
 import { PLAN } from "../../gallery/plan.js";
-import { Card } from "../atoms/Card.js";
+import { Anchored } from "../atoms/Anchored.js";
 import { Input } from "../atoms/Field.js";
 import { useCameraState, useCanvas, useGridShown } from "../utils/canvas-context.js";
 
@@ -30,19 +29,17 @@ export function StudioDesk() {
   const left = (rect.left + rect.right - WIDTH_CM) / 2;
   // A third of the way down the room, clear of its name.
   const top = rect.top + (rect.bottom - rect.top) / 3;
-  const at = worldToScreen(camera, { x: left, y: top });
   return (
-    <Card
+    <Anchored
+      camera={camera}
+      at={{ x: left, y: top }}
+      widthCm={WIDTH_CM}
       aria-label="Studio desk"
-      className="absolute top-0 left-0 origin-top-left p-3"
-      style={{
-        width: WIDTH_CM,
-        transform: `translate(${at.x}px, ${at.y}px) scale(${camera.zoom})`,
-      }}
+      className="p-3"
     >
       <NameField />
       <GridToggle />
-    </Card>
+    </Anchored>
   );
 }
 
