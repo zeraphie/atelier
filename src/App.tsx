@@ -1,5 +1,5 @@
 import { Tooltip } from "radix-ui";
-import "./state/dev.js";
+import "./state/utils/dev.js";
 import { Canvas } from "./ui/components/Canvas.js";
 import { CanvasProvider } from "./ui/utils/canvas-context.js";
 import { CommentList } from "./ui/components/CommentList.js";

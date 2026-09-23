@@ -18,7 +18,7 @@
 import { useEffect, useRef, type FocusEvent, type KeyboardEvent } from "react";
 import { worldToScreen, type Point } from "../../camera/index.js";
 import type { HungRoom } from "../../gallery/hang.js";
-import { usePlan } from "../../state/plan.js";
+import { usePlan } from "../../state/utils/plan.js";
 import { useStore } from "../../state/store.js";
 import { useCameraState } from "../utils/canvas-context.js";
 

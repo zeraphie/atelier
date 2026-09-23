@@ -7,7 +7,7 @@
  * Decision: DECISIONS.md, who is commenting.
  */
 
-import type { Get, Set } from "../actions.js";
+import type { Get, Set } from "../utils/actions.js";
 import type { OwnStore } from "../own-store.js";
 
 export interface Visited {

@@ -25,7 +25,7 @@ import { rectOf, SPACING, type Plan } from "../gallery/hang.js";
 import images from "../gallery/images.json";
 import { wallNear } from "../gallery/resize.js";
 import { targetAt, type Target } from "../gallery/targets.js";
-import { currentPlan, currentRoute, onPlanChange, planWith } from "../state/plan.js";
+import { currentPlan, currentRoute, onPlanChange, planWith } from "../state/utils/plan.js";
 import { useStore } from "../state/store.js";
 import { DotGrid } from "./dot-grid.js";
 import { DrawTool } from "./draw-tool.js";

@@ -11,7 +11,7 @@
 
 import { useState } from "react";
 import { useOwnStore } from "../../state/own-store.js";
-import { usePlan } from "../../state/plan.js";
+import { usePlan } from "../../state/utils/plan.js";
 import { Anchored } from "../atoms/Anchored.js";
 import { Input } from "../atoms/Field.js";
 import { useCameraState, useCanvas, useGridShown } from "../utils/canvas-context.js";

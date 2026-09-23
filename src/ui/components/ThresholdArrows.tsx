@@ -12,7 +12,7 @@ import { Tooltip } from "radix-ui";
 import { useMemo } from "react";
 import { FIT_PADDING, moveTo, worldToScreen, type Point } from "../../camera/index.js";
 import { thresholdsOf, type Threshold } from "../../gallery/thresholds.js";
-import { usePlan } from "../../state/plan.js";
+import { usePlan } from "../../state/utils/plan.js";
 import { ArrowIcon } from "../atoms/icons.js";
 import { Placed } from "../atoms/Placed.js";
 import { Tip } from "../atoms/Tip.js";

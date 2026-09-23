@@ -10,11 +10,11 @@
  * Decision: DECISIONS.md, layout from data: the hang.
  */
 
-import { applyEdits } from "../gallery/edited.js";
-import { hangGallery, SPACING, type Plan } from "../gallery/hang.js";
-import { routeThrough, type Route } from "../gallery/route.js";
-import { ROOMS, type Cells, type Room } from "../gallery/works.js";
-import { useStore, type Store } from "./store.js";
+import { applyEdits } from "../../gallery/edited.js";
+import { hangGallery, SPACING, type Plan } from "../../gallery/hang.js";
+import { routeThrough, type Route } from "../../gallery/route.js";
+import { ROOMS, type Cells, type Room } from "../../gallery/works.js";
+import { useStore, type Store } from "../store.js";
 
 interface Derived {
   readonly rooms: Store["rooms"];

@@ -10,8 +10,8 @@
  */
 
 import type { Point } from "../../geometry.js";
-import type { Get, Set, SliceContext } from "../actions.js";
-import { keptAfter, latest, stamp, type Stamped, type When } from "../stamped.js";
+import type { Get, Set, SliceContext } from "../utils/actions.js";
+import { keptAfter, latest, stamp, type Stamped, type When } from "../utils/stamped.js";
 import type { Store } from "../store.js";
 
 export interface Hanging {

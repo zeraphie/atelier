@@ -11,7 +11,7 @@
  */
 
 import { Fragment } from "react";
-import { usePlan } from "../../state/plan.js";
+import { usePlan } from "../../state/utils/plan.js";
 import { Anchored } from "../atoms/Anchored.js";
 import { useCameraState } from "../utils/canvas-context.js";
 

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { keptAfter, latest, stamp } from "../src/state/stamped.js";
+import { keptAfter, latest, stamp } from "../src/state/utils/stamped.js";
 
 describe("latest", () => {
   test("takes the later value, whichever order they come in", () => {

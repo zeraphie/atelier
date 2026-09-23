@@ -16,7 +16,7 @@ import { ContextMenu } from "radix-ui";
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 import type { Point } from "../../camera/index.js";
 import { roomAt, type HungRoom } from "../../gallery/hang.js";
-import { usePlan } from "../../state/plan.js";
+import { usePlan } from "../../state/utils/plan.js";
 import { useStore } from "../../state/store.js";
 import { whenHydrated } from "../../storage/index.js";
 import { useCanvas } from "../utils/canvas-context.js";

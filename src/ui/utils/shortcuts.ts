@@ -13,7 +13,7 @@
 
 import { useEffect } from "react";
 import { FIT_PADDING, LIFE_SIZE, moveTo, ZOOM_STEP } from "../../camera/index.js";
-import { currentPlan } from "../../state/plan.js";
+import { currentPlan } from "../../state/utils/plan.js";
 import { useStore } from "../../state/store.js";
 import { useCanvas } from "./canvas-context.js";
 import { keyActionFor } from "./keys.js";

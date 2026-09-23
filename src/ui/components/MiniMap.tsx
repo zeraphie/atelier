@@ -15,7 +15,7 @@ import { centredOn, moveTo, visibleRect, type Point, type WorldRect } from "../.
 import { SPACING } from "../../gallery/hang.js";
 import images from "../../gallery/images.json";
 import type { ImageEntry } from "../../gallery/tiers.js";
-import { usePlan } from "../../state/plan.js";
+import { usePlan } from "../../state/utils/plan.js";
 import { useStore } from "../../state/store.js";
 import { useCameraState, useCanvas, useViewSize } from "../utils/canvas-context.js";
 

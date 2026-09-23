@@ -10,8 +10,8 @@
  */
 
 import type { Point } from "../../geometry.js";
-import type { Get, Set, SliceContext } from "../actions.js";
-import { stamp, type When } from "../stamped.js";
+import type { Get, Set, SliceContext } from "../utils/actions.js";
+import { stamp, type When } from "../utils/stamped.js";
 import type { Store } from "../store.js";
 import type { Comment, Thread } from "../../comments/model.js";
 

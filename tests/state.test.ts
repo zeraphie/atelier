@@ -3,7 +3,7 @@ import { createStore } from "zustand/vanilla";
 import { createCommentsSlice } from "../src/state/slices/comments.js";
 import { createGallerySlice } from "../src/state/slices/gallery.js";
 import { createPicturesSlice } from "../src/state/slices/pictures.js";
-import type { ActionCall } from "../src/state/actions.js";
+import type { ActionCall } from "../src/state/utils/actions.js";
 import type { Store } from "../src/state/store.js";
 
 // The gallery store as the tests stand it up: the three slices on a plain

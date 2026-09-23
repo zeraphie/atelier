@@ -7,9 +7,9 @@
  * `atelier.store.getState().renameRoom("foyer", "Hall")`, `atelier.store.getState().reset()`.
  */
 
-import { useOwnStore } from "./own-store.js";
+import { useOwnStore } from "../own-store.js";
 import { currentPlan } from "./plan.js";
-import { useStore } from "./store.js";
+import { useStore } from "../store.js";
 
 if (import.meta.env.DEV) {
   Object.assign(globalThis, { atelier: { store: useStore, own: useOwnStore, plan: currentPlan } });

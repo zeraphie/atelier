@@ -14,7 +14,7 @@ import { useState } from "react";
 import { centredOn, moveTo } from "../../camera/index.js";
 import { filterThreads, groupByRoom, type ListFilter } from "../../comments/list.js";
 import type { Thread } from "../../comments/model.js";
-import { usePlan } from "../../state/plan.js";
+import { usePlan } from "../../state/utils/plan.js";
 import { useStore } from "../../state/store.js";
 import { Card } from "../atoms/Card.js";
 import { CommentIcon, PenIcon } from "../atoms/icons.js";
