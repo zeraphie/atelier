@@ -11,7 +11,8 @@
  */
 
 import type { Graphics } from "pixi.js";
-import type { Doorway, Segment } from "../gallery/hang.js";
+import type { Segment } from "../geometry.js";
+import type { Doorway } from "../gallery/hang.js";
 import type { PackedColor } from "./css-color.js";
 
 // A door post, as multiples of the wall's thickness: how far it reaches across, and how thick along.

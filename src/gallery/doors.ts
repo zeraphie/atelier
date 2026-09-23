@@ -12,7 +12,8 @@
  */
 
 import { edgeKey, edgeOnRect, pairKey, type Edge } from "./edges.js";
-import { OUTSIDE, type Doorway, type Plan } from "./hang.js";
+import { OUTSIDE } from "./doorways.js";
+import type { Doorway, Plan } from "./hang.js";
 
 /** The two sides of a doorway, in the plan's order, and the key it is kept under. */
 export interface Pair {

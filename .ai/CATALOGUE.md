@@ -15,6 +15,12 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 - `roundedPoint()`: A point to the whole unit: the centimetre in the world, the pixel on screen.
 - `samePoint()`: Whether two points are one and the same.
 - `toTenth()`: A length to a tenth of its unit: a millimetre, in the world.
+- `Segment`: A straight piece between two points, in whichever space the caller names: a wall, a doorway, a stretch.
+- `distance()`: The straight-line distance between two points.
+- `along()`: The point `at` along `segment` from its first end; the first end itself when the segment has no length.
+- `centre()`: The middle of a segment or a rect.
+- `contains()`: Whether `point` lies in `rect`, its edges included.
+- `union()`: The smallest rect holding every one of `rects`.
 
 ## camera
 
@@ -60,9 +66,7 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 **gallery/hang.ts** (canvas, comments, state, ui)
 - `hangGallery()`: Lay the rooms out as a plan, cut the doorways of the tour, and hang the works on the walls.
 - `rectOf()`: The rect of a room's cells on the grid, `unitCm` to a cell.
-- `workAt()`: The work under a world point, if any.
-- `roomAt()`: The room under a world point, if any.
-- Also: `Segment`, `HungWork`, `HungRoom`, `Doorway`, `Plan`, `SPACING`
+- Also: `HungWork`, `HungRoom`, `Doorway`, `Plan`, `SPACING`
 
 **gallery/resize.ts** (canvas)
 - `Limits`: The grid lines a wall may sit on, both ends included.
@@ -82,7 +86,9 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 - `scaled()`: `rect` with `corner` drawn towards `to`, the opposite corner held still and the proportions kept: the picture grows to whichever of its width and height the pointer asks more of, and never under `minWidthCm` wide.
 - Also: `Corner`, `CornerHit`
 
-**gallery/targets.ts** (canvas)
+**gallery/targets.ts** (canvas, comments, ui)
+- `workAt()`: The work under a world point, if any.
+- `roomAt()`: The room under a world point, if any.
 - `targetAt()`: What a double tap at `point` fills the view with: a work, else its room, else the whole plan.
 - Also: `Target`
 

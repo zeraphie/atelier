@@ -10,7 +10,7 @@
  */
 
 import type { Point, WorldRect } from "../geometry.js";
-import type { Segment } from "./hang.js";
+import type { Segment } from "../geometry.js";
 
 export interface Edge {
   readonly col: number;

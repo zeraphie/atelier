@@ -14,7 +14,8 @@
 import type { PointerSessionOwner } from "../camera/pointer-session.js";
 import type { Point } from "../geometry.js";
 import { cellAt, overlaps, spanOf, type Cell } from "../gallery/draw.js";
-import { roomAt, type Plan } from "../gallery/hang.js";
+import type { Plan } from "../gallery/hang.js";
+import { roomAt } from "../gallery/targets.js";
 import { cellsOf } from "../gallery/resize.js";
 import type { Cells } from "../gallery/works.js";
 

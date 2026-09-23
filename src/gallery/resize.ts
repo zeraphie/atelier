@@ -10,7 +10,8 @@
  */
 
 import type { Point, WorldRect } from "../geometry.js";
-import { roomAt, type HungRoom, type Plan, type Side } from "./hang.js";
+import type { HungRoom, Plan, Side } from "./hang.js";
+import { roomAt } from "./targets.js";
 import type { Cells, Room } from "./works.js";
 
 export interface WallHit {

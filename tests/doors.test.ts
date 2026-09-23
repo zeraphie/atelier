@@ -1,7 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import { doorAt, doorwayOnEdge, pairAt } from "../src/gallery/doors.js";
 import type { Edge } from "../src/gallery/edges.js";
-import { hangGallery, type Segment, type Spacing } from "../src/gallery/hang.js";
+import type { Segment } from "../src/geometry.js";
+import { hangGallery, type Spacing } from "../src/gallery/hang.js";
 import type { Room } from "../src/gallery/works.js";
 
 const spacing: Spacing = {
