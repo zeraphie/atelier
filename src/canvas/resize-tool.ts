@@ -52,7 +52,7 @@ export interface ResizeToolDeps {
 }
 
 /** How long the wall takes to settle on its metre line. */
-export const SETTLE_MS = 150;
+export const SETTLE_MS = 100;
 
 interface Held {
   readonly roomId: string;
