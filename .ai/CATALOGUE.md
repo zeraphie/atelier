@@ -9,9 +9,12 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 
 ## src
 
-**geometry.ts** (camera, canvas, comments, gallery, state, viewing)
+**geometry.ts** (camera, canvas, comments, gallery, state, ui, viewing)
 - `Point`: A position in whichever space the caller names: world units or screen pixels.
 - `WorldRect`: An axis-aligned rectangle, left and top inclusive, in whichever space the caller names.
+- `roundedPoint()`: A point to the whole unit: the centimetre in the world, the pixel on screen.
+- `samePoint()`: Whether two points are one and the same.
+- `toTenth()`: A length to a tenth of its unit: a millimetre, in the world.
 
 ## camera
 
@@ -154,6 +157,9 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 - `currentRoute()`: The route as it stands now, for code outside React.
 - `onPlanChange()`: Hear of every new plan, from either store; returns the unsubscribe function.
 - `planWith()`: The current plan with a room's cells put in: swapped if the room is there, added at the end if not.
+
+**state/utils/records.ts** (viewing)
+- `without()`: A record without one of its keys, as a new object; the record itself is left as it was.
 
 **state/utils/stamped.ts** (gallery, viewing)
 - `latest()`: The later of two stamped values; the one held on a tie, so a repeat is a no-op.

@@ -100,9 +100,15 @@ function firstSentence(prose: string): string {
   return (match?.[1] ?? prose).trim();
 }
 
+// One entry per name: an overloaded function is listed once, by its first signature.
 function exportsOf(text: string): Named[] {
   const named: Named[] = [];
+  const seen = new Set<string>();
   for (const match of text.matchAll(EXPORT)) {
+    if (seen.has(match[2]!)) {
+      continue;
+    }
+    seen.add(match[2]!);
     const prose = docAbove(text, match.index);
     named.push({
       name: match[2]!,

@@ -11,6 +11,7 @@
  */
 
 import type { Get, Set } from "../utils/actions.js";
+import { without } from "../utils/records.js";
 import type { Store } from "../store.js";
 
 export interface Peer {
@@ -65,14 +66,11 @@ export function createViewingSlice(set: Set<Store>, _get: Get<Store>): ViewingSl
       set((state) => ({ peers: { ...state.peers, [peerId]: { name, user, color } } }));
     },
     peerLeft: (peerId) => {
-      set((state) => {
-        const { [peerId]: _gone, ...peers } = state.peers;
-        return {
-          peers,
-          following: state.following === peerId ? undefined : state.following,
-          followers: state.followers.filter((id) => id !== peerId),
-        };
-      });
+      set((state) => ({
+        peers: without(state.peers, peerId),
+        following: state.following === peerId ? undefined : state.following,
+        followers: state.followers.filter((id) => id !== peerId),
+      }));
     },
     follow: (peerId) => {
       set({ following: peerId });

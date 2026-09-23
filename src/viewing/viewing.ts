@@ -15,15 +15,16 @@
  */
 
 import type { Thread } from "../comments/model.js";
-import type { Point } from "../geometry.js";
+import { roundedPoint, samePoint, type Point } from "../geometry.js";
 import { derivativeKey } from "../pictures/prepare.js";
 import { useOwnStore } from "../state/own-store.js";
 import type { Hanging } from "../state/slices/pictures.js";
 import { absorbSnapshot, keyForViewing, switchGallery, useStore } from "../state/store.js";
 import { onAction } from "../state/utils/actions.js";
+import { without } from "../state/utils/records.js";
 import { getPicture, putPicture, stateStorage } from "../storage/index.js";
 import { swatchIdFor } from "./color.js";
-import { clearCursors, dropCursor, placeCursor, roundedPoint, samePoint } from "./cursors.js";
+import { clearCursors, dropCursor, placeCursor } from "./cursors.js";
 import {
   isActionMessage,
   isBytesMetadata,
@@ -227,7 +228,7 @@ async function sendPicture(transport: Transport, pictureId: string, to?: string)
   if (record === undefined || blob === undefined) {
     return;
   }
-  const { pending: _pending, ...known } = record;
+  const known = without(record, "pending");
   const message: PictureMessage = { kind: "picture", record: known, by: own.name };
   transport.send(message, to);
   const metadata: BytesMetadata = { kind: "bytes", id: pictureId };
@@ -279,8 +280,7 @@ async function keepBytes(id: string, blob: Blob): Promise<void> {
   }
   const record = useOwnStore.getState().pictures[id];
   if (record?.pending === true) {
-    const { pending: _pending, ...whole } = record;
-    useOwnStore.getState().addPicture(whole);
+    useOwnStore.getState().addPicture(without(record, "pending"));
   }
 }
 

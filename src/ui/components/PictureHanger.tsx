@@ -19,6 +19,7 @@ import { putPicture } from "../../storage/index.js";
 import { CARD } from "../atoms/Card.js";
 import { Input, Textarea } from "../atoms/Field.js";
 import { TextButton } from "../atoms/TextButton.js";
+import { toTenth } from "../../geometry.js";
 
 /** How wide a picture hangs unless the form says otherwise, in centimetres. */
 const DEFAULT_WIDTH_CM = 60;
@@ -172,7 +173,7 @@ export function PictureHanger() {
 
 // The height a picture hangs at for a width, from its proportions, to a millimetre.
 function heightFor(widthCm: number, size: { readonly width: number; readonly height: number }) {
-  return Math.round(((widthCm * size.height) / size.width) * 10) / 10;
+  return toTenth((widthCm * size.height) / size.width);
 }
 
 // The form from the design, with the file's name as the title to start.

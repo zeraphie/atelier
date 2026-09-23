@@ -10,7 +10,7 @@
  */
 
 import type { PointerSessionOwner } from "../camera/pointer-session.js";
-import type { Point, WorldRect } from "../geometry.js";
+import { toTenth, type Point, type WorldRect } from "../geometry.js";
 import type { Plan } from "../gallery/hang.js";
 import { cornerNear, scaled, type Corner, type CornerHit } from "../gallery/scale.js";
 import type { Work } from "../gallery/works.js";
@@ -90,7 +90,7 @@ export class ScaleTool implements PointerSessionOwner {
     const { shown, rect } = held;
     if (shown.left !== rect.left || shown.right !== rect.right || shown.top !== rect.top) {
       const centre = { x: (shown.left + shown.right) / 2, y: (shown.top + shown.bottom) / 2 };
-      this.deps.resize(held.id, centre, Math.round((shown.right - shown.left) * 10) / 10);
+      this.deps.resize(held.id, centre, toTenth(shown.right - shown.left));
     }
   }
 

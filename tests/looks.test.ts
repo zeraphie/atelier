@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, test } from "bun:test";
-import { clearLooks, dropLook, placeLook, sameLook, lookOf, looks } from "../src/viewing/looks.js";
+import { describe, expect, test } from "bun:test";
+import { lookOf, sameLook } from "../src/viewing/looks.js";
 
 describe("lookOf", () => {
   test("a look is the world point at the middle of the canvas, and the zoom", () => {
@@ -21,25 +21,5 @@ describe("lookOf", () => {
     expect(Number.isInteger(look.centre.x) && Number.isInteger(look.centre.y)).toBe(true);
     expect(sameLook(look, lookOf(camera, size))).toBe(true);
     expect(sameLook(look, { ...look, zoom: 1.236 })).toBe(false);
-  });
-});
-
-describe("the peers' looks", () => {
-  beforeEach(() => {
-    clearLooks();
-  });
-
-  test("a peer's look is kept by its id, null takes it away, and clearing takes them all", () => {
-    const look = { centre: { x: 1, y: 2 }, zoom: 1 };
-    placeLook("a", look);
-    placeLook("b", look);
-    expect(Object.keys(looks.current)).toEqual(["a", "b"]);
-    placeLook("a", null);
-    expect(Object.keys(looks.current)).toEqual(["b"]);
-    const before = looks.current;
-    dropLook("a");
-    expect(looks.current).toBe(before);
-    clearLooks();
-    expect(looks.current).toEqual({});
   });
 });

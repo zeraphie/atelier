@@ -10,7 +10,7 @@
  * Decision: DECISIONS.md, the wall is curated by default, yours to rearrange here.
  */
 
-import type { Point } from "../geometry.js";
+import { toTenth, type Point } from "../geometry.js";
 import type { PictureRecord } from "../state/slices/collection.js";
 import type { RoomEdit } from "../state/slices/gallery.js";
 import type { Hanging } from "../state/slices/pictures.js";
@@ -105,7 +105,7 @@ function workOf(hanging: Hanging, record: PictureRecord): Work {
     year: record.year,
     medium: record.description,
     widthCm: hanging.widthCm,
-    heightCm: Math.round(heightCm * 10) / 10,
+    heightCm: toTenth(heightCm),
     collection: record.credit,
     source: "",
     pictureId: record.id,

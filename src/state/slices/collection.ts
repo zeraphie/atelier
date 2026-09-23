@@ -10,6 +10,7 @@
  */
 
 import type { Get, Set } from "../utils/actions.js";
+import { without } from "../utils/records.js";
 import type { OwnStore } from "../own-store.js";
 
 export interface PictureRecord {
@@ -45,10 +46,7 @@ export function createCollectionSlice(set: Set<OwnStore>, _get: Get<OwnStore>): 
       set((state) => ({ pictures: { ...state.pictures, [record.id]: record } }));
     },
     removePicture: (id) => {
-      set((state) => {
-        const { [id]: _gone, ...pictures } = state.pictures;
-        return { pictures };
-      });
+      set((state) => ({ pictures: without(state.pictures, id) }));
     },
   };
 }
