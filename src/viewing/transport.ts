@@ -1,13 +1,13 @@
 /**
  * ─ Transport ─
  *
- * The one file that touches trystero. A room's transport is the least
- * the room needs: send to all or to one, hear messages with who sent
+ * The one file that touches trystero. A viewing's transport is the least
+ * the viewing needs: send to all or to one, hear messages with who sent
  * them, hear peers come and go, and leave. The library is loaded on
  * demand, so the solo gallery never fetches it, and the relays are
  * named outright, since the library's own list has left a peer unable
  * to connect before, in warrior of keyboard.
- * Decision: DECISIONS.md, a room is opt-in by link and siloed.
+ * Decision: DECISIONS.md, a viewing is opt-in by link and siloed.
  */
 
 const APP_ID = "atelier";
@@ -23,7 +23,7 @@ const RELAYS = [
   "wss://offchain.pub",
 ];
 
-/** What a room can do over the network, and nothing more. */
+/** What a viewing can do over the network, and nothing more. */
 export interface Transport {
   /** This screen's own peer id. */
   readonly selfId: string;
@@ -36,10 +36,10 @@ export interface Transport {
   leave(): void;
 }
 
-/** Join the room `roomId` and return its transport; resolves once the library is loaded, not once a peer is found. */
-export async function connect(roomId: string): Promise<Transport> {
+/** Join the viewing `code` and return its transport; resolves once the library is loaded, not once a peer is found. */
+export async function connect(code: string): Promise<Transport> {
   const { joinRoom, selfId } = await import("trystero/nostr");
-  const room = joinRoom({ appId: APP_ID, relayConfig: { urls: RELAYS } }, roomId);
+  const room = joinRoom({ appId: APP_ID, relayConfig: { urls: RELAYS } }, code);
   const action = room.makeAction("msg");
   type Payload = Parameters<typeof action.send>[0];
   return {

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { isActionMessage } from "../src/collaboration/room.js";
+import { isActionMessage } from "../src/viewing/message.js";
 
 describe("isActionMessage", () => {
   test("an action message names a shared action with its arguments and its time", () => {

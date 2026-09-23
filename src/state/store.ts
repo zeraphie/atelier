@@ -2,11 +2,11 @@
  * ─ The gallery store ─
  *
  * One store for what a gallery is made of, composed from four slices:
- * the comments, the pictures, the gallery itself, and the room it is
+ * the comments, the pictures, the gallery itself, and the viewing it is
  * shared in. What persists is
  * the records, threads, placements, hangings, rooms, doorways and the
  * reset floor; what the interface is doing right now does not. It
- * persists under one key per room in the database, the solo gallery
+ * persists under one key per viewing in the database, the solo gallery
  * under its own, and joins the roll call the curtain waits on.
  * Decision: DECISIONS.md, state: zustand slices.
  */
@@ -16,14 +16,14 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import { createCommentsSlice, type CommentsSlice } from "./slices/comments.js";
 import { createGallerySlice, type GallerySlice } from "./slices/gallery.js";
 import { createPicturesSlice, type PicturesSlice } from "./slices/pictures.js";
-import { createRoomSlice, type RoomSlice } from "./slices/room.js";
+import { createViewingSlice, type ViewingSlice } from "./slices/viewing.js";
 import { hydration, stateStorage } from "../storage/index.js";
 import { tell, type SliceContext } from "./utils/actions.js";
 import { useOwnStore } from "./own-store.js";
 
-export type Store = CommentsSlice & PicturesSlice & GallerySlice & RoomSlice;
+export type Store = CommentsSlice & PicturesSlice & GallerySlice & ViewingSlice;
 
-/** The solo gallery's key; a room's is this with the room's id after a dot. */
+/** The solo gallery's key; a viewing's is this with the viewing's code after a dot. */
 export const GALLERY_KEY = "atelier.gallery";
 
 const context: SliceContext = { who: () => useOwnStore.getState().name, tell };
@@ -36,7 +36,7 @@ export const useStore = create<Store>()(
       ...createCommentsSlice(context)(set, get),
       ...createPicturesSlice(context)(set, get),
       ...createGallerySlice(context)(set, get),
-      ...createRoomSlice(set, get),
+      ...createViewingSlice(set, get),
     }),
     {
       name: GALLERY_KEY,
@@ -61,9 +61,9 @@ export const useStore = create<Store>()(
   )
 );
 
-/** The key a room's gallery persists under. */
-export function keyForRoom(roomId: string | undefined): string {
-  return roomId === undefined ? GALLERY_KEY : `${GALLERY_KEY}.${roomId}`;
+/** The key a viewing's gallery persists under. */
+export function keyForViewing(code: string | undefined): string {
+  return code === undefined ? GALLERY_KEY : `${GALLERY_KEY}.${code}`;
 }
 
 // What a gallery holds when nothing has happened in it yet: the persisted

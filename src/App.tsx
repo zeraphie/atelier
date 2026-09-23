@@ -9,7 +9,7 @@ import { MiniMap } from "./ui/components/MiniMap.js";
 import { PictureHanger } from "./ui/components/PictureHanger.js";
 import { PinLayer } from "./ui/components/PinLayer.js";
 import { RoomNames } from "./ui/components/RoomNames.js";
-import { useRoom } from "./ui/utils/use-room.js";
+import { useViewing } from "./ui/utils/use-viewing.js";
 import { useShortcuts } from "./ui/utils/shortcuts.js";
 import { StudioDesk } from "./ui/components/StudioDesk.js";
 import { ThresholdArrows } from "./ui/components/ThresholdArrows.js";
@@ -29,7 +29,7 @@ export function App() {
 // The screen: the canvas, and everything laid over it, a corner each.
 function Workspace() {
   useShortcuts();
-  useRoom();
+  useViewing();
   return (
     <main className="relative h-dvh overflow-hidden bg-canvas text-ink">
       <Canvas />

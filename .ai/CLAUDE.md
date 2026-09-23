@@ -5,7 +5,7 @@ Eight public-domain works hang in five rooms laid out as a floor
 plan; zoom reveals the plan, then the works, then the labels. React
 + TypeScript on Vite, PixiJS for the canvas, DOM for the pins and
 panels, Tailwind v4 and Radix for the UI, zustand for state, trystero
-last for a shared room.
+last for a shared viewing.
 Bun runs everything. Decisions and their reasons live in
 [DECISIONS.md](../DECISIONS.md), which is the design doc here.
 **Local until Izzy pushes:** never create a remote, push, or deploy
@@ -70,7 +70,7 @@ for everything a person does.
 - `src/gallery/` — the works and rooms as data, the hang, the tiers
 - `src/pictures/` — a file made a picture of your own: its hash, its derivative, its colour
 - `src/comments/` — the model, the list and the times of comment threads
-- `src/collaboration/` — the shared room: the address, the transport (the one file that touches trystero), the join and the replay
+- `src/viewing/` — the shared viewing: the address, the transport (the one file that touches trystero), the join and the replay
 - `src/state/` — the two zustand stores, every slice under `slices/`, and under `utils/` the stamps, the actions told, the live plan
 - `src/storage/` — the IndexedDB database every store persists in, and the roll call the curtain waits on
 - `src/ui/` — React, by atomic design: `atoms/` (one element, no state of
