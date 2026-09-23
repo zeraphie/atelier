@@ -1,9 +1,9 @@
 /**
  * ─ The own store ─
  *
- * What is this browser's whatever room is open: who it is, and its
- * collection of pictures. Two slices, persisted once under one key,
- * apart from the gallery store, which swaps per room. Joins the roll
+ * What is this browser's whichever viewing is open: who it is, and
+ * its collection of pictures. Two slices, persisted once under one
+ * key, apart from the gallery store, which swaps per viewing. Joins the roll
  * call the curtain waits on.
  * Decision: DECISIONS.md, state: zustand slices.
  */

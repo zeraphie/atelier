@@ -2,7 +2,7 @@
  * ─ Actions told ─
  *
  * Every action a person takes on a slice is told here by name, with
- * its arguments and its time, which is how a shared room will hear of
+ * its arguments and its time, which is how a viewing will hear of
  * it and replay it by name on other screens. A replayed action is not
  * told again. Nothing listens until a viewing does. A slice acts
  * through `acting`, which is the one place a write is stamped,

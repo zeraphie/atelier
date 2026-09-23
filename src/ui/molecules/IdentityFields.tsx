@@ -10,7 +10,6 @@
  */
 
 import type { KeyboardEvent } from "react";
-import { newViewingCode } from "../../viewing/code.js";
 import { FIELD, FieldLabel, Input } from "../atoms/Field.js";
 import { TextButton } from "../atoms/TextButton.js";
 import { ColorPicker } from "./ColorPicker.js";
@@ -25,6 +24,7 @@ export function IdentityFields({
   onCode,
   onName,
   onColor,
+  onNewCode,
   onCodeDone,
   onNameDone,
 }: {
@@ -38,6 +38,8 @@ export function IdentityFields({
   readonly onCode: (code: string) => void;
   readonly onName: (name: string) => void;
   readonly onColor: (color: string) => void;
+  /** New code was pressed: the caller makes one and keeps it. */
+  readonly onNewCode: () => void;
   readonly onCodeDone?: () => void;
   readonly onNameDone?: () => void;
 }) {
@@ -63,14 +65,7 @@ export function IdentityFields({
               onBlur={onCodeDone}
             />
           </span>
-          <TextButton
-            type="button"
-            className="whitespace-nowrap"
-            onClick={() => {
-              onCode(newViewingCode());
-              onCodeDone?.();
-            }}
-          >
+          <TextButton type="button" className="whitespace-nowrap" onClick={onNewCode}>
             New code
           </TextButton>
         </span>

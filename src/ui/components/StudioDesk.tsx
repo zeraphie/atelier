@@ -14,6 +14,7 @@ import { useState } from "react";
 import { useOwnStore } from "../../state/own-store.js";
 import { useStore } from "../../state/store.js";
 import { usePlan } from "../../state/utils/plan.js";
+import { newViewingCode } from "../../viewing/code.js";
 import { swatchIdFor } from "../../viewing/color.js";
 import { OnFloor } from "../molecules/OnFloor.js";
 import { IdentityFields } from "../molecules/IdentityFields.js";
@@ -74,6 +75,11 @@ function Identity({
       name={nameDraft}
       color={swatchIdFor(name, color)}
       onCode={setCodeDraft}
+      onNewCode={() => {
+        const code = newViewingCode();
+        setCodeDraft(code);
+        enterViewing(code);
+      }}
       onName={setNameDraft}
       onColor={setColor}
       onCodeDone={() => {

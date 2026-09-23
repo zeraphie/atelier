@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { keptAfter, latest, latestIn, stamp } from "../src/state/utils/stamped.js";
+import { keptAfter, latest, latestFirst, latestIn, stamp } from "../src/state/utils/stamped.js";
 
 describe("latest", () => {
   test("takes the later value, whichever order they come in", () => {
@@ -46,5 +46,12 @@ describe("keptAfter, over a record of optional stamps", () => {
       10
     );
     expect(Object.keys(kept)).toEqual(["late"]);
+  });
+});
+
+describe("latestFirst", () => {
+  test("the keys of a stamped map, latest first", () => {
+    expect(latestFirst({ a: { at: 5 }, b: { at: 15 }, c: { at: 10 } })).toEqual(["b", "c", "a"]);
+    expect(latestFirst({})).toEqual([]);
   });
 });

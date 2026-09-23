@@ -6,8 +6,6 @@
  * grid, so they sit together at any size the button gives them.
  */
 
-import type { Direction } from "../../gallery/thresholds.js";
-
 const STROKE = {
   fill: "none",
   stroke: "currentColor",
@@ -52,7 +50,7 @@ const TURNS =
   "data-[direction=down]:rotate-90 data-[direction=left]:rotate-180 data-[direction=up]:-rotate-90";
 
 /** An arrow turned to a direction, for a threshold. */
-export function ArrowIcon({ direction }: { readonly direction: Direction }) {
+export function ArrowIcon({ direction }: { readonly direction: "up" | "right" | "down" | "left" }) {
   return (
     <svg
       className={TURNS}

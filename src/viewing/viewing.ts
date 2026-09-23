@@ -301,8 +301,8 @@ export async function leaveViewing(): Promise<void> {
   await switchTo(keyForViewing(undefined));
 }
 
-// Unbind and let the room go; the store is the caller's to switch. The library
-// lets the room go a moment after it is told, and a join of the same room
+// Unbind and let the viewing go; the store is the caller's to switch. The
+// library lets its room go a moment after it is told, and a join of the same code
 // before then would get the dying one back, so this waits for it.
 async function leave(joined: Joined): Promise<void> {
   joined.isLeft = true;
@@ -312,11 +312,6 @@ async function leave(joined: Joined): Promise<void> {
   clearCursors();
   clearLooks();
   await joined.transport?.leave().catch(reportError);
-}
-
-/** The viewing joined, for the interface and the tests. */
-export function currentViewingCode(): string | undefined {
-  return current?.code;
 }
 
 /** The peers the transport itself knows of, for a look under the hood. */

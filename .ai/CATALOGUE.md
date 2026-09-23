@@ -88,7 +88,7 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 
 **gallery/thresholds.ts** (ui)
 - `thresholdsOf()`: An arrow for every doorway between two rooms of `plan`, in the tour's order.
-- Also: `Direction`, `Threshold`
+- Also: `Threshold`
 
 **gallery/tiers.ts** (canvas, ui)
 - `ImageEntry`: What images.json says about one work's pictures.
@@ -162,8 +162,9 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 **state/utils/records.ts** (viewing)
 - `without()`: A record without one of its keys, as a new object; the record itself is left as it was.
 
-**state/utils/stamped.ts** (gallery, viewing)
+**state/utils/stamped.ts** (gallery, ui, viewing)
 - `latest()`: The later of two stamped values; the one held on a tie, so a repeat is a no-op.
+- `latestFirst()`: The keys of `map`, latest first by stamp.
 - `keptAfter()`: The entries of `map` set after `at`; the rest, and any never set, are gone.
 - Also: `Stamped`
 

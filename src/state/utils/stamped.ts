@@ -39,6 +39,13 @@ export function latestIn<T>(
   return { ...map, [key]: latest(map[key], { value, at }) };
 }
 
+/** The keys of `map`, latest first by stamp. */
+export function latestFirst(map: Readonly<Record<string, { readonly at: number }>>): string[] {
+  return Object.entries(map)
+    .sort(([, a], [, b]) => b.at - a.at)
+    .map(([key]) => key);
+}
+
 /** The entries of `map` set after `at`; the rest, and any never set, are gone. */
 export function keptAfter<T>(
   map: Readonly<Record<string, Stamped<T> | undefined>>,

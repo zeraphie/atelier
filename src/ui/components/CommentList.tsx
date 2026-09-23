@@ -15,6 +15,7 @@ import { centredOn, moveTo } from "../../camera/index.js";
 import { filterThreads, groupByRoom, type ListFilter } from "../../comments/list.js";
 import type { Thread } from "../../comments/model.js";
 import { usePlan } from "../../state/utils/plan.js";
+import { latestFirst } from "../../state/utils/stamped.js";
 import { useStore } from "../../state/store.js";
 import { Card } from "../atoms/Card.js";
 import { CommentIcon, PenIcon } from "../atoms/icons.js";
@@ -48,10 +49,7 @@ export function CommentList() {
   const viewingCode = useStore((store) => store.viewingCode);
   const viewings = useOwnStore((store) => store.viewings);
   // The other viewings this browser has been in, latest first: where comments can be brought from.
-  const others = Object.entries(viewings)
-    .filter(([code]) => code !== viewingCode)
-    .sort(([, a], [, b]) => b.at - a.at)
-    .map(([code]) => code);
+  const others = latestFirst(viewings).filter((code) => code !== viewingCode);
   const [bringFrom, setBringFrom] = useState<string | undefined>(undefined);
   const [isOpen, setOpen] = useState(false);
   const [filter, setFilter] = useState<ListFilter>("open");

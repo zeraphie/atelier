@@ -18,6 +18,15 @@ import type { ActionCall } from "../state/utils/actions.js";
 import type { Snapshot } from "./snapshot.js";
 import type { Look } from "./looks.js";
 
+// The two checks every message shares: a plain object, and a whole point.
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isPoint(value: unknown): value is Point {
+  return isRecord(value) && Number.isFinite(value["x"]) && Number.isFinite(value["y"]);
+}
+
 /** An action one screen took, for the others to replay. */
 export interface ActionMessage {
   readonly kind: "action";
@@ -44,7 +53,7 @@ export const SHARED: ReadonlySet<string> = new Set([
 
 /** Whether `data` is an action message naming a shared action. */
 export function isActionMessage(data: unknown): data is ActionMessage {
-  if (typeof data !== "object" || data === null) {
+  if (!isRecord(data)) {
     return false;
   }
   const { kind, call } = data as { kind?: unknown; call?: unknown };
@@ -68,7 +77,7 @@ export interface SnapshotMessage {
 
 /** Whether `data` is a snapshot message with every persisted field in place. */
 export function isSnapshotMessage(data: unknown): data is SnapshotMessage {
-  if (typeof data !== "object" || data === null) {
+  if (!isRecord(data)) {
     return false;
   }
   const { kind, state } = data as { kind?: unknown; state?: unknown };
@@ -102,7 +111,7 @@ export interface BytesMetadata {
 
 /** Whether `metadata` says whose bytes these are. */
 export function isBytesMetadata(metadata: unknown): metadata is BytesMetadata {
-  if (typeof metadata !== "object" || metadata === null) {
+  if (!isRecord(metadata)) {
     return false;
   }
   const { kind, id } = metadata as { kind?: unknown; id?: unknown };
@@ -111,7 +120,7 @@ export function isBytesMetadata(metadata: unknown): metadata is BytesMetadata {
 
 /** Whether `data` is a picture message with a record worth keeping. */
 export function isPictureMessage(data: unknown): data is PictureMessage {
-  if (typeof data !== "object" || data === null) {
+  if (!isRecord(data)) {
     return false;
   }
   const { kind, record, by } = data as { kind?: unknown; record?: unknown; by?: unknown };
@@ -130,10 +139,6 @@ export function isPictureMessage(data: unknown): data is PictureMessage {
   );
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
 /** A screen saying who it is, on arrival and whenever its name changes: its name, and its browser's id. */
 export interface HelloMessage {
   readonly kind: "hello";
@@ -145,7 +150,7 @@ export interface HelloMessage {
 
 /** Whether `data` is a hello with a name. */
 export function isHelloMessage(data: unknown): data is HelloMessage {
-  if (typeof data !== "object" || data === null) {
+  if (!isRecord(data)) {
     return false;
   }
   const { kind, name, user, color } = data as {
@@ -170,15 +175,11 @@ export interface CursorMessage {
 
 /** Whether `data` is a cursor message with a whole point, or none. */
 export function isCursorMessage(data: unknown): data is CursorMessage {
-  if (typeof data !== "object" || data === null) {
+  if (!isRecord(data)) {
     return false;
   }
   const { kind, at } = data as { kind?: unknown; at?: unknown };
   return kind === "cursor" && (at === null || isPoint(at));
-}
-
-function isPoint(value: unknown): value is Point {
-  return isRecord(value) && Number.isFinite(value["x"]) && Number.isFinite(value["y"]);
 }
 
 /** Where a screen is looking: the world point at the middle of its window and its zoom, or null once it is gone. */
@@ -189,7 +190,7 @@ export interface LookMessage {
 
 /** Whether `data` is a look message with a whole look, or none. */
 export function isLookMessage(data: unknown): data is LookMessage {
-  if (typeof data !== "object" || data === null) {
+  if (!isRecord(data)) {
     return false;
   }
   const { kind, at } = data as { kind?: unknown; at?: unknown };
@@ -212,7 +213,7 @@ export interface FollowMessage {
 
 /** Whether `data` is a follow message. */
 export function isFollowMessage(data: unknown): data is FollowMessage {
-  if (typeof data !== "object" || data === null) {
+  if (!isRecord(data)) {
     return false;
   }
   const { kind, is } = data as { kind?: unknown; is?: unknown };

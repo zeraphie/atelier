@@ -9,6 +9,8 @@
  * Decision: DECISIONS.md, everyone is in a viewing.
  */
 
+import { latestFirst } from "../state/utils/stamped.js";
+
 const ALPHABET = "abcdefghjkmnpqrstuvwxyz23456789";
 export const CODE_LENGTH = 8;
 
@@ -40,6 +42,6 @@ export function suggestedCode(
   if (home !== undefined) {
     return { code: home, isNew: false };
   }
-  const last = Object.entries(visited).sort(([, a], [, b]) => b.at - a.at)[0];
-  return last === undefined ? { code: make(), isNew: true } : { code: last[0], isNew: false };
+  const last = latestFirst(visited)[0];
+  return last === undefined ? { code: make(), isNew: true } : { code: last, isNew: false };
 }
