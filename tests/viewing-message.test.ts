@@ -7,7 +7,7 @@ import {
   isHelloMessage,
   isPictureMessage,
   isSnapshotMessage,
-  isViewMessage,
+  isLookMessage,
 } from "../src/viewing/message.js";
 
 describe("isActionMessage", () => {
@@ -86,13 +86,13 @@ describe("isCursorMessage", () => {
   });
 });
 
-describe("isViewMessage", () => {
-  test("a view message is a middle point and a zoom above nothing, or null for a screen gone", () => {
-    expect(isViewMessage({ kind: "view", at: { centre: { x: 1, y: 2 }, zoom: 0.5 } })).toBe(true);
-    expect(isViewMessage({ kind: "view", at: null })).toBe(true);
-    expect(isViewMessage({ kind: "view", at: { centre: { x: 1, y: 2 }, zoom: 0 } })).toBe(false);
-    expect(isViewMessage({ kind: "view", at: { zoom: 1 } })).toBe(false);
-    expect(isViewMessage({ kind: "cursor", at: { centre: { x: 1, y: 2 }, zoom: 1 } })).toBe(false);
+describe("isLookMessage", () => {
+  test("a look message is a middle point and a zoom above nothing, or null for a screen gone", () => {
+    expect(isLookMessage({ kind: "look", at: { centre: { x: 1, y: 2 }, zoom: 0.5 } })).toBe(true);
+    expect(isLookMessage({ kind: "look", at: null })).toBe(true);
+    expect(isLookMessage({ kind: "look", at: { centre: { x: 1, y: 2 }, zoom: 0 } })).toBe(false);
+    expect(isLookMessage({ kind: "look", at: { zoom: 1 } })).toBe(false);
+    expect(isLookMessage({ kind: "cursor", at: { centre: { x: 1, y: 2 }, zoom: 1 } })).toBe(false);
   });
 });
 

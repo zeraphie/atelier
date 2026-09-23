@@ -14,7 +14,7 @@
  */
 
 import { Graphics, RenderTexture, TilingSprite, type Container, type Renderer } from "pixi.js";
-import type { CameraState, ViewSize } from "../camera/index.js";
+import type { CameraState, CanvasSize } from "../camera/index.js";
 import type { PackedColor } from "./css-color.js";
 import { DOTS_BETWEEN, gridCellCm, gridTier, smallDotAlpha } from "./grid-tiers.js";
 
@@ -46,7 +46,7 @@ export class DotGrid {
     colors: DotGridColors,
     requestFrame: () => void,
     camera: CameraState,
-    view: ViewSize
+    size: CanvasSize
   ) {
     this.renderer = renderer;
     this.colors = colors;
@@ -55,8 +55,8 @@ export class DotGrid {
     this.tier = gridTier(camera.zoom);
     this.sprite = new TilingSprite({
       texture: this.drawCell(),
-      width: view.width,
-      height: view.height,
+      width: size.width,
+      height: size.height,
       label: "grid",
     });
     // Under everything in the world.
@@ -82,9 +82,9 @@ export class DotGrid {
   }
 
   /** Cover the new view size; the display's pixel ratio may have changed with it. */
-  resize(view: ViewSize): void {
-    this.sprite.width = view.width;
-    this.sprite.height = view.height;
+  resize(size: CanvasSize): void {
+    this.sprite.width = size.width;
+    this.sprite.height = size.height;
     this.sprite.texture = this.drawCell();
     this.place();
   }

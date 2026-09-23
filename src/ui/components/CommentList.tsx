@@ -179,11 +179,11 @@ function emptyWording(filter: ListFilter): string {
 
 // A thread in the list, and what choosing it does: a glide to its pin, and the thread opened.
 function ListedThread({ thread }: { readonly thread: Thread }) {
-  const { camera, view } = useCanvas();
+  const { camera, canvasSize } = useCanvas();
   const isOpen = useStore((store) => store.openThreadId === thread.id);
   const showThread = useStore((store) => store.showThread);
   const jump = (): void => {
-    const size = view.current;
+    const size = canvasSize.current;
     const zoom = Math.max(camera.current.zoom, READING_ZOOM);
     moveTo(camera, centredOn(thread.at, zoom, size), size);
     showThread(thread.id);

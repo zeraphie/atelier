@@ -1,5 +1,5 @@
 /**
- * ─ Placed ─
+ * ─ On screen ─
  *
  * A thing in the DOM overlay at a screen point, by its centre. The
  * point comes from the camera as a transform, the one style the rules
@@ -14,7 +14,7 @@ import type { ReactNode } from "react";
 import type { Point } from "../../camera/index.js";
 
 /** A thing in the DOM overlay at a screen point, by its centre. */
-export function Placed({ at, children }: { readonly at: Point; readonly children: ReactNode }) {
+export function OnScreen({ at, children }: { readonly at: Point; readonly children: ReactNode }) {
   return (
     <div
       className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2"

@@ -5,7 +5,7 @@
  * viewing's own key, the viewing is joined in the background, and from then on every
  * action this screen takes is sent to the peers and every action a peer
  * takes is replayed here by name, marked remote so it is not told again;
- * your pointer and your view go the same way, once a frame, and theirs
+ * your pointer and where you look go the same way, once a frame, and theirs
  * are kept for the cursor layer and for following.
  * Leaving unbinds, leaves the viewing and switches the store back to the
  * solo gallery. Joining the viewing already joined is nothing, so
@@ -32,7 +32,7 @@ import {
   isHelloMessage,
   isPictureMessage,
   isSnapshotMessage,
-  isViewMessage,
+  isLookMessage,
   type ActionMessage,
   type BytesMetadata,
   type CursorMessage,
@@ -40,12 +40,12 @@ import {
   type HelloMessage,
   type PictureMessage,
   type SnapshotMessage,
-  type ViewMessage,
+  type LookMessage,
 } from "./message.js";
 import { Sayer } from "./sayer.js";
 import { snapshotOf } from "./snapshot.js";
 import { connect, type Transport } from "./transport.js";
-import { clearViews, dropView, placeView, sameView, type View } from "./views.js";
+import { clearLooks, dropLook, placeLook, sameLook, type Look } from "./looks.js";
 
 interface Joined {
   readonly code: string;
@@ -72,13 +72,13 @@ const cursorSayer = new Sayer<Point>(
   },
   samePoint
 );
-const viewSayer = new Sayer<View>(
+const lookSayer = new Sayer<Look>(
   refresh,
   (at) => {
-    const message: ViewMessage = { kind: "view", at };
+    const message: LookMessage = { kind: "look", at };
     current?.transport?.send(message);
   },
-  sameView
+  sameLook
 );
 
 /** Say where your pointer is in the world, to the centimetre, or that it is off the canvas; once a frame at most. */
@@ -87,8 +87,8 @@ export function sayCursor(at: Point | undefined): void {
 }
 
 /** Say where you are looking; once a frame at most, and only when it changed. */
-export function sayView(view: View): void {
-  viewSayer.say(view);
+export function sayLook(look: Look): void {
+  lookSayer.say(look);
 }
 
 /** Tell a peer you are following them, or no longer; nothing to one who has gone. */
@@ -167,7 +167,7 @@ function bind(joined: Joined, transport: Transport): void {
     useStore.getState().peerJoined(peerId);
     sayHello(transport, peerId);
     cursorSayer.sayAgain();
-    viewSayer.sayAgain();
+    lookSayer.sayAgain();
     const state = useStore.getState();
     const message: SnapshotMessage = { kind: "snapshot", state: snapshotOf(state) };
     transport.send(message, peerId);
@@ -180,7 +180,7 @@ function bind(joined: Joined, transport: Transport): void {
   transport.onLeave((peerId) => {
     useStore.getState().peerLeft(peerId);
     dropCursor(peerId);
-    dropView(peerId);
+    dropLook(peerId);
   });
   // A new name or colour is said to everyone.
   const saidOf = (own: { readonly name: string; readonly color: string | undefined }): string =>
@@ -244,8 +244,8 @@ function receive(data: unknown, from: string, metadata: unknown): void {
     void keepBytes(metadata.id, bytes);
   } else if (isCursorMessage(data)) {
     placeCursor(from, data.at);
-  } else if (isViewMessage(data)) {
-    placeView(from, data.at);
+  } else if (isLookMessage(data)) {
+    placeLook(from, data.at);
   } else if (isFollowMessage(data)) {
     useStore.getState().followedBy(from, data.is);
   } else if (isHelloMessage(data)) {
@@ -310,7 +310,7 @@ async function leave(joined: Joined): Promise<void> {
   joined.stopNaming();
   useStore.getState().leftViewing();
   clearCursors();
-  clearViews();
+  clearLooks();
   await joined.transport?.leave().catch(reportError);
 }
 

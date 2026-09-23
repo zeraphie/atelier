@@ -11,7 +11,7 @@ import { Arrival } from "./ui/components/Arrival.js";
 import { PictureHanger } from "./ui/components/PictureHanger.js";
 import { PinLayer } from "./ui/components/PinLayer.js";
 import { RoomNames } from "./ui/components/RoomNames.js";
-import { useFollowing, useViewSharing } from "./ui/utils/use-follow.js";
+import { useFollowing, useLookSharing } from "./ui/utils/use-follow.js";
 import { useCursorSharing, useViewing } from "./ui/utils/use-viewing.js";
 import { useShortcuts } from "./ui/utils/shortcuts.js";
 import { StudioDesk } from "./ui/components/StudioDesk.js";
@@ -34,7 +34,7 @@ function Workspace() {
   useShortcuts();
   useViewing();
   useCursorSharing();
-  useViewSharing();
+  useLookSharing();
   useFollowing();
   return (
     <main className="relative h-dvh overflow-hidden bg-canvas text-ink">

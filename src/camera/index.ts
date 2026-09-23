@@ -7,7 +7,7 @@ export {
   worldToScreen,
   zoomAbout,
 } from "./camera-math.js";
-export type { CameraState, ViewSize, ZoomLimits } from "./camera-math.js";
+export type { CameraState, CanvasSize, ZoomLimits } from "./camera-math.js";
 export { wheelDeltaToPixels, wheelIntent, wheelZoomFactor } from "./wheel-math.js";
 export type { WheelInput, WheelIntent } from "./wheel-math.js";
 export { pinchStep } from "./pinch-math.js";

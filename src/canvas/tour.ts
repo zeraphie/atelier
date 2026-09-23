@@ -16,7 +16,7 @@ import {
   MOVE_MS,
   type Camera,
   type Frame,
-  type ViewSize,
+  type CanvasSize,
   type WorldRect,
 } from "../camera/index.js";
 import type { Route, Stop } from "../gallery/route.js";
@@ -46,7 +46,7 @@ export interface TourOptions {
   readonly camera: Camera;
   /** The route as it stands; it changes when the plan does. */
   readonly route: () => Route;
-  readonly view: () => ViewSize;
+  readonly canvasSize: () => CanvasSize;
   /** The work with its label, for the view to fit. */
   readonly extentOf: (stop: Stop) => WorldRect;
   /** Screen pixels kept clear around a work when it fills the view. */
@@ -137,14 +137,14 @@ export class Tour implements TourHandle {
     if (target === undefined) {
       return;
     }
-    const view = this.options.view();
-    const there = camera.fitted(view, extentOf(target), fitPadding);
+    const size = this.options.canvasSize();
+    const there = camera.fitted(size, extentOf(target), fitPadding);
     this.halt?.();
     this.stop.set(index);
     this.halt = glide(
       camera,
       there,
-      view,
+      size,
       isMotionReduced() ? 0 : MOVE_MS,
       this.options.frame ?? requestAnimationFrame
     );

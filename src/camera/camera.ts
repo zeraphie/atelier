@@ -17,7 +17,7 @@ import {
   worldToScreen,
   zoomAbout,
   type CameraState,
-  type ViewSize,
+  type CanvasSize,
   type ZoomLimits,
 } from "./camera-math.js";
 
@@ -51,16 +51,16 @@ export class Camera {
   }
 
   /**
-   * Show all of `rect` centred in a view of `view` size, with `padding` screen
+   * Show all of `rect` centred in a canvas of `size`, with `padding` screen
    * pixels clear and the zoom no closer than `most`.
    */
-  fit(view: ViewSize, rect: WorldRect, padding = 0, most?: number): void {
-    this.set(this.fitted(view, rect, padding, most));
+  fit(size: CanvasSize, rect: WorldRect, padding = 0, most?: number): void {
+    this.set(this.fitted(size, rect, padding, most));
   }
 
   /** The state `fit` would move to, for a move over time. */
-  fitted(view: ViewSize, rect: WorldRect, padding = 0, most?: number): CameraState {
-    return fitToRect(view, rect, this.limits, padding, most);
+  fitted(size: CanvasSize, rect: WorldRect, padding = 0, most?: number): CameraState {
+    return fitToRect(size, rect, this.limits, padding, most);
   }
 
   /** Replace the whole state, for example at the end of an animated move. */

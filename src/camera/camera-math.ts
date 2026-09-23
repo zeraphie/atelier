@@ -25,7 +25,7 @@ export interface ZoomLimits {
 }
 
 /** Screen size in CSS pixels. */
-export interface ViewSize {
+export interface CanvasSize {
   readonly width: number;
   readonly height: number;
 }
@@ -70,13 +70,13 @@ export function zoomAbout(
 }
 
 /**
- * The camera that shows all of `rect` centred in `view`, with `padding` screen
+ * The camera that shows all of `rect` centred in a canvas of `size`, with `padding` screen
  * pixels kept clear around it. `rect` must have positive size. `most` caps the
- * zoom: at 1 a rect smaller than the view is centred at life size rather than
+ * zoom: at 1 a rect smaller than the canvas is centred at life size rather than
  * blown up to fill it.
  */
 export function fitToRect(
-  view: ViewSize,
+  size: CanvasSize,
   rect: WorldRect,
   limits: ZoomLimits,
   padding = 0,
@@ -87,21 +87,21 @@ export function fitToRect(
   const zoom = clampZoom(
     Math.min(
       most,
-      (view.width - 2 * padding) / rectWidth,
-      (view.height - 2 * padding) / rectHeight
+      (size.width - 2 * padding) / rectWidth,
+      (size.height - 2 * padding) / rectHeight
     ),
     limits
   );
   return {
-    x: (view.width - rectWidth * zoom) / 2 - rect.left * zoom,
-    y: (view.height - rectHeight * zoom) / 2 - rect.top * zoom,
+    x: (size.width - rectWidth * zoom) / 2 - rect.left * zoom,
+    y: (size.height - rectHeight * zoom) / 2 - rect.top * zoom,
     zoom,
   };
 }
 
 /** The world rect the view shows: its corners, unprojected. */
-export function visibleRect(camera: CameraState, view: ViewSize): WorldRect {
+export function visibleRect(camera: CameraState, size: CanvasSize): WorldRect {
   const topLeft = screenToWorld(camera, { x: 0, y: 0 });
-  const bottomRight = screenToWorld(camera, { x: view.width, y: view.height });
+  const bottomRight = screenToWorld(camera, { x: size.width, y: size.height });
   return { left: topLeft.x, top: topLeft.y, right: bottomRight.x, bottom: bottomRight.y };
 }

@@ -1,5 +1,5 @@
 /**
- * ─ Anchored ─
+ * ─ On floor ─
  *
  * A panel laid on the floor: a card at a world point by its top-left
  * corner, as wide as it says in centimetres, moved and scaled by the
@@ -13,9 +13,9 @@
 
 import type { ComponentProps } from "react";
 import { worldToScreen, type CameraState, type Point } from "../../camera/index.js";
-import { Card } from "./Card.js";
+import { Card } from "../atoms/Card.js";
 
-interface AnchoredProps extends ComponentProps<"section"> {
+interface OnFloorProps extends ComponentProps<"section"> {
   readonly camera: CameraState;
   /** The top-left corner, in world units. */
   readonly at: Point;
@@ -25,14 +25,14 @@ interface AnchoredProps extends ComponentProps<"section"> {
 }
 
 /** A card at a world point, as wide as it says in centimetres, scaled by the camera. */
-export function Anchored({
+export function OnFloor({
   camera,
   at,
   widthCm,
   layoutPx = widthCm,
   className = "",
   ...props
-}: AnchoredProps) {
+}: OnFloorProps) {
   const screen = worldToScreen(camera, at);
   const scale = (camera.zoom * widthCm) / layoutPx;
   return (

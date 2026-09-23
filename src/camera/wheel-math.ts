@@ -12,7 +12,7 @@
  * Decision: DECISIONS.md, scroll pans, pinch zooms.
  */
 
-import type { ViewSize } from "./camera-math.js";
+import type { CanvasSize } from "./camera-math.js";
 
 // WheelEvent.deltaMode values; the DOM constants live on the event, not the type.
 const DELTA_LINE = 1;
@@ -64,12 +64,12 @@ export function wheelZoomFactor(deltaYPixels: number): number {
  * What a wheel event asks of the camera. Shift turns a mouse wheel's only
  * axis sideways, for browsers that do not do that themselves.
  */
-export function wheelIntent(input: WheelInput, view: ViewSize): WheelIntent {
-  const dy = wheelDeltaToPixels(input.deltaY, input.deltaMode, view.height);
+export function wheelIntent(input: WheelInput, size: CanvasSize): WheelIntent {
+  const dy = wheelDeltaToPixels(input.deltaY, input.deltaMode, size.height);
   if (input.ctrlKey || input.metaKey) {
     return { kind: "zoom", factor: wheelZoomFactor(dy) };
   }
-  const dx = wheelDeltaToPixels(input.deltaX, input.deltaMode, view.width);
+  const dx = wheelDeltaToPixels(input.deltaX, input.deltaMode, size.width);
   if (input.shiftKey && dx === 0) {
     return { kind: "pan", dx: -dy, dy: 0 };
   }

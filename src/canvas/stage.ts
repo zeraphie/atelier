@@ -13,7 +13,7 @@
  */
 
 import { Application, Container, Text } from "pixi.js";
-import type { Camera, CameraState, ViewSize } from "../camera/index.js";
+import type { Camera, CameraState, CanvasSize } from "../camera/index.js";
 import { FrameScheduler } from "./frame-scheduler.js";
 
 // How long after the last change of scale the text is drawn again, and how
@@ -126,7 +126,7 @@ export class Stage {
   }
 
   /** The canvas size in CSS pixels. */
-  get view(): ViewSize {
+  get canvasSize(): CanvasSize {
     return { width: this.host.clientWidth, height: this.host.clientHeight };
   }
 

@@ -19,7 +19,7 @@ import {
   type Camera,
   type Point,
   type TapModifiers,
-  type ViewSize,
+  type CanvasSize,
   type WorldRect,
 } from "../camera/index.js";
 import { edgeSegment } from "../gallery/edges.js";
@@ -72,7 +72,7 @@ const DRAWN_NAME = "Room";
 export async function mountCanvas(
   host: HTMLElement,
   camera: Camera,
-  view: ValueStore<ViewSize>,
+  canvasSize: ValueStore<CanvasSize>,
   hooks: MountHooks
 ): Promise<MountedCanvas> {
   await whenFacesReady();
@@ -105,14 +105,18 @@ export async function mountCanvas(
   const tour = new Tour({
     camera,
     route: currentRoute,
-    view: () => stage.view,
+    canvasSize: () => stage.canvasSize,
     extentOf: (stop) => gallery.extentOf(stop.work),
     fitPadding: FIT_PADDING,
     isMotionReduced,
   });
   // The view opens on the first room, the Foyer, with the way on in sight.
   const first = currentPlan().rooms[0];
-  camera.fit(stage.view, first === undefined ? currentPlan().bounds : first.rect, FIT_PADDING);
+  camera.fit(
+    stage.canvasSize,
+    first === undefined ? currentPlan().bounds : first.rect,
+    FIT_PADDING
+  );
   gallery.follow(camera.current);
   // Made after the fit, so its first cell is drawn for the zoom the view opens at.
   const grid = new DotGrid(
@@ -121,7 +125,7 @@ export async function mountCanvas(
     { crossing: muted, line: { ...muted, alpha: 0.6 } },
     requestFrame,
     camera.current,
-    stage.view
+    stage.canvasSize
   );
   const stopFollowing = camera.onChange((state) => {
     grid.follow(state);
@@ -158,7 +162,11 @@ export async function mountCanvas(
     if (target.kind === "work") {
       tour.enterAt(target.work.work.id);
     }
-    moveTo(camera, camera.fitted(stage.view, rectOfTarget(target), FIT_PADDING), stage.view);
+    moveTo(
+      camera,
+      camera.fitted(stage.canvasSize, rectOfTarget(target), FIT_PADDING),
+      stage.canvasSize
+    );
   });
   // In edit mode with Move held, a press on a picture drags it and a press
   // near a wall drags the wall; any other press falls through to the camera.
@@ -347,10 +355,10 @@ export async function mountCanvas(
   const stopGridSwitch = hooks.gridShown.subscribe((isShown) => grid.show(isShown));
   grid.show(hooks.gridShown.current);
   const stopResize = stage.onResize(() => {
-    view.set(stage.view);
-    grid.resize(stage.view);
+    canvasSize.set(stage.canvasSize);
+    grid.resize(stage.canvasSize);
   });
-  view.set(stage.view);
+  canvasSize.set(stage.canvasSize);
   return {
     firstFrame: stage.firstFrame,
     tour,

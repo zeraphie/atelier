@@ -17,7 +17,7 @@ import images from "../../gallery/images.json";
 import type { ImageEntry } from "../../gallery/tiers.js";
 import { usePlan } from "../../state/utils/plan.js";
 import { useStore } from "../../state/store.js";
-import { useCameraState, useCanvas, useViewSize } from "../utils/canvas-context.js";
+import { useCameraState, useCanvas, useCanvasSize } from "../utils/canvas-context.js";
 
 // Ground kept clear around the plan, in centimetres, so the outer walls stand off the frame.
 const MARGIN_CM = 60;
@@ -46,9 +46,9 @@ function boxAround(bounds: WorldRect): string {
 }
 
 export function MiniMap() {
-  const { camera, view } = useCanvas();
+  const { camera, canvasSize } = useCanvas();
   const state = useCameraState();
-  const size = useViewSize();
+  const size = useCanvasSize();
   const plan = usePlan();
   const threads = useStore((store) => store.threads);
   const shown = visibleRect(state, size);
@@ -60,9 +60,9 @@ export function MiniMap() {
     if (world === undefined) {
       return;
     }
-    const there = centredOn(world, camera.current.zoom, view.current);
+    const there = centredOn(world, camera.current.zoom, canvasSize.current);
     if (isPress) {
-      moveTo(camera, there, view.current);
+      moveTo(camera, there, canvasSize.current);
     } else {
       camera.set(there);
     }

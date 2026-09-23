@@ -12,7 +12,7 @@
 
 import { Fragment } from "react";
 import { usePlan } from "../../state/utils/plan.js";
-import { Anchored } from "../atoms/Anchored.js";
+import { OnFloor } from "../molecules/OnFloor.js";
 import { useCameraState } from "../utils/canvas-context.js";
 
 // The plaque's size and place in the room, in centimetres: right of the
@@ -38,7 +38,7 @@ export function FoyerPlaque() {
   }
   const { rect } = first;
   return (
-    <Anchored
+    <OnFloor
       camera={camera}
       at={{ x: rect.left + INSET_LEFT_CM, y: rect.top + INSET_TOP_CM }}
       widthCm={WIDTH_CM}
@@ -54,6 +54,6 @@ export function FoyerPlaque() {
           </Fragment>
         ))}
       </dl>
-    </Anchored>
+    </OnFloor>
   );
 }

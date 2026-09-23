@@ -168,9 +168,6 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 
 ## ui: atoms
 
-**ui/atoms/Anchored.tsx**
-- `Anchored()`: A card at a world point, as wide as it says in centimetres, scaled by the camera.
-
 **ui/atoms/Card.tsx**
 - `Card()`: The raised surface every panel and popover sits on.
 - Also: `CARD`
@@ -179,13 +176,13 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 - `Textarea()`: Where a comment is typed, in the reading face.
 - `Input()`: Where a short answer is typed, such as a name or a code.
 
+**ui/atoms/OnScreen.tsx**
+- `OnScreen()`: A thing in the DOM overlay at a screen point, by its centre.
+
 **ui/atoms/Pill.tsx**
 - `Pill()`: A corner's worth of controls in one rounded surface.
 - `PillButton()`: A tool in a pill, showing pressed and expanded in colour.
 - `PillLabel()`: A reading between tools: where the tour stands.
-
-**ui/atoms/Placed.tsx**
-- `Placed()`: A thing in the DOM overlay at a screen point, by its centre.
 
 **ui/atoms/TextButton.tsx**
 - `TextButton()`: A button that is a word: the one action of a form, or a quiet one beside it.
@@ -218,6 +215,9 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 **ui/molecules/IdentityFields.tsx**
 - `IdentityFields()`: The viewing's code with a button for a new one, the name, and the colour, as one set of fields.
 
+**ui/molecules/OnFloor.tsx**
+- `OnFloor()`: A card at a world point, as wide as it says in centimetres, scaled by the camera.
+
 **ui/molecules/ThreadItem.tsx**
 - `ThreadItem()`: One thread as a row of the list: who opened it and when, its opening words, its replies and state.
 
@@ -229,7 +229,7 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 - `useCameraState()`: The camera's state, re-rendering on every change.
 - `useTour()`: The tour, once there is one, re-rendering when it comes or goes.
 - `useGridShown()`: Whether the grid is drawn, re-rendering when it is switched.
-- `useViewSize()`: The canvas size in CSS pixels, re-rendering on resize.
+- `useCanvasSize()`: The canvas size in CSS pixels, re-rendering on resize.
 - Also: `CanvasSession`
 
 **ui/utils/curtain.ts**
@@ -247,7 +247,7 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 - `useShortcuts()`: Listens for the keys the interface answers to, for as long as the app is mounted.
 
 **ui/utils/use-follow.ts**
-- `useViewSharing()`: Your view, said as the camera or the window changes.
+- `useLookSharing()`: Where you look, said as the camera or the canvas changes.
 - `useFollowing()`: The peer followed, if any, steering the camera until anything else does.
 
 **ui/utils/use-now.ts**
@@ -284,6 +284,11 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 - `viewingCodeFromHash()`: The viewing's code a location hash names, or none.
 - `hashForViewing()`: The location hash that names a viewing.
 
+**viewing/looks.ts** (ui)
+- `looks`: The peers' looks, by peer id.
+- `lookOf()`: Your look: the world point at the middle of a window of `size`, to the centimetre, and the zoom to a thousandth.
+- Also: `Look`
+
 **viewing/snapshot.ts** (state)
 - `Snapshot`: The persisted part of a gallery.
 - `snapshotOf()`: The snapshot of a gallery's state: its persisted fields and nothing else.
@@ -291,14 +296,9 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 
 **viewing/viewing.ts** (state, ui)
 - `sayCursor()`: Say where your pointer is in the world, to the centimetre, or that it is off the canvas; once a frame at most.
-- `sayView()`: Say where you are looking; once a frame at most, and only when it changed.
+- `sayLook()`: Say where you are looking; once a frame at most, and only when it changed.
 - `sayFollowing()`: Tell a peer you are following them, or no longer; nothing to one who has gone.
 - `joinViewing()`: Join the viewing `code`, leaving any other first; joining the one being joined shares its wait.
 - `bringCommentsFrom()`: Replay another viewing's saved threads here, telling each, so this viewing has them too.
 - `leaveViewing()`: Leave the viewing, if in one, and go back to the solo gallery.
 - `currentPeers()`: The peers the transport itself knows of, for a look under the hood.
-
-**viewing/views.ts** (ui)
-- `views`: The peers' views, by peer id.
-- `viewOf()`: Your view: the world point at the middle of a window of `size`, to the centimetre, and the zoom to a thousandth.
-- Also: `View`

@@ -8,12 +8,12 @@
 
 import { ZOOM_STEP } from "../../camera/index.js";
 import { Pill, PillButton } from "../atoms/Pill.js";
-import { useCameraState, useCanvas, useViewSize } from "../utils/canvas-context.js";
+import { useCameraState, useCanvas, useCanvasSize } from "../utils/canvas-context.js";
 
 export function ZoomIndicator() {
   const { camera } = useCanvas();
   const { zoom } = useCameraState();
-  const size = useViewSize();
+  const size = useCanvasSize();
   const centre = { x: size.width / 2, y: size.height / 2 };
   const percent = Math.round(zoom * 100);
   return (

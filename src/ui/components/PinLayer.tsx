@@ -17,7 +17,7 @@ import { useStore } from "../../state/store.js";
 import { colorFor } from "../../viewing/color.js";
 import { whenWas } from "../../comments/when.js";
 import { CARD } from "../atoms/Card.js";
-import { Placed } from "../atoms/Placed.js";
+import { OnScreen } from "../atoms/OnScreen.js";
 import { Tip } from "../atoms/Tip.js";
 import { CommentForm } from "../molecules/CommentForm.js";
 import { useCameraState } from "../utils/canvas-context.js";
@@ -54,7 +54,7 @@ function Pin({ thread, at }: { readonly thread: ThreadModel; readonly at: Point 
   const first = thread.comments[0];
   const author = first?.author ?? "";
   return (
-    <Placed at={at}>
+    <OnScreen at={at}>
       <Popover.Root
         open={isOpen}
         onOpenChange={(open) => (open ? showThread(thread.id) : closeThread())}
@@ -95,7 +95,7 @@ function Pin({ thread, at }: { readonly thread: ThreadModel; readonly at: Point 
           </Popover.Content>
         </Popover.Portal>
       </Popover.Root>
-    </Placed>
+    </OnScreen>
   );
 }
 
@@ -105,7 +105,7 @@ function DraftPin({ world, at }: { readonly world: Point; readonly at: Point }) 
   const showThread = useStore((store) => store.showThread);
   const post = useStore((store) => store.openThread);
   return (
-    <Placed at={at}>
+    <OnScreen at={at}>
       <Popover.Root open onOpenChange={(open) => !open && cancelDraft()}>
         <Popover.Anchor asChild>
           <span className={`${PIN} border-accent bg-surface text-accent`} aria-hidden="true">
@@ -129,6 +129,6 @@ function DraftPin({ world, at }: { readonly world: Point; readonly at: Point }) 
           </Popover.Content>
         </Popover.Portal>
       </Popover.Root>
-    </Placed>
+    </OnScreen>
   );
 }

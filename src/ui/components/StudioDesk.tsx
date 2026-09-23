@@ -15,7 +15,7 @@ import { useOwnStore } from "../../state/own-store.js";
 import { useStore } from "../../state/store.js";
 import { usePlan } from "../../state/utils/plan.js";
 import { swatchIdFor } from "../../viewing/color.js";
-import { Anchored } from "../atoms/Anchored.js";
+import { OnFloor } from "../molecules/OnFloor.js";
 import { IdentityFields } from "../molecules/IdentityFields.js";
 import { useCameraState, useCanvas, useGridShown } from "../utils/canvas-context.js";
 import { enterViewing } from "../utils/use-viewing.js";
@@ -38,7 +38,7 @@ export function StudioDesk() {
   // A third of the way down the room, clear of its name.
   const top = rect.top + (rect.bottom - rect.top) / 3;
   return (
-    <Anchored
+    <OnFloor
       camera={camera}
       at={{ x: left, y: top }}
       widthCm={WIDTH_CM}
@@ -48,7 +48,7 @@ export function StudioDesk() {
     >
       <Identity key={`${viewingCode}:${name}`} viewingCode={viewingCode} name={name} />
       <GridToggle />
-    </Anchored>
+    </OnFloor>
   );
 }
 

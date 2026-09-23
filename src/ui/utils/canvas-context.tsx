@@ -1,7 +1,7 @@
 /**
  * ─ Canvas session ─
  *
- * One camera and one view size for the whole app, made once and
+ * One camera and one canvas size for the whole app, made once and
  * handed down by context. The camera is a plain class with its own
  * listeners, so React subscribes to it rather than copying its state;
  * the stage follows the same camera, and so will the pins in the DOM.
@@ -10,14 +10,14 @@
  */
 
 import { createContext, useContext, useState, useSyncExternalStore, type ReactNode } from "react";
-import { Camera, type CameraState, type Point, type ViewSize } from "../../camera/index.js";
+import { Camera, type CameraState, type Point, type CanvasSize } from "../../camera/index.js";
 import type { TourHandle } from "../../canvas/tour.js";
 import { ValueStore } from "../../canvas/value-store.js";
 
 export interface CanvasSession {
   readonly camera: Camera;
   /** The canvas size in CSS pixels, kept current by the canvas host. */
-  readonly view: ValueStore<ViewSize>;
+  readonly canvasSize: ValueStore<CanvasSize>;
   /** The tour along the route, once the canvas has mounted. */
   readonly tour: ValueStore<TourHandle | undefined>;
   /** Whether the dot grid is drawn. */
@@ -32,7 +32,7 @@ const CanvasContext = createContext<CanvasSession | undefined>(undefined);
 export function CanvasProvider({ children }: { readonly children: ReactNode }) {
   const [session] = useState<CanvasSession>(() => ({
     camera: new Camera(),
-    view: new ValueStore({ width: 0, height: 0 }),
+    canvasSize: new ValueStore({ width: 0, height: 0 }),
     tour: new ValueStore<TourHandle | undefined>(undefined),
     gridShown: new ValueStore(true),
     pointer: new ValueStore<Point | undefined>(undefined),
@@ -77,10 +77,10 @@ export function useGridShown(): boolean {
 }
 
 /** The canvas size in CSS pixels, re-rendering on resize. */
-export function useViewSize(): ViewSize {
-  const { view } = useCanvas();
+export function useCanvasSize(): CanvasSize {
+  const { canvasSize } = useCanvas();
   return useSyncExternalStore(
-    (listener) => view.subscribe(listener),
-    () => view.current
+    (listener) => canvasSize.subscribe(listener),
+    () => canvasSize.current
   );
 }

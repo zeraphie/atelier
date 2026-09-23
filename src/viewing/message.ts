@@ -16,7 +16,7 @@ import type { Point } from "../geometry.js";
 import type { PictureRecord } from "../state/slices/collection.js";
 import type { ActionCall } from "../state/utils/actions.js";
 import type { Snapshot } from "./snapshot.js";
-import type { View } from "./views.js";
+import type { Look } from "./looks.js";
 
 /** An action one screen took, for the others to replay. */
 export interface ActionMessage {
@@ -182,21 +182,21 @@ function isPoint(value: unknown): value is Point {
 }
 
 /** Where a screen is looking: the world point at the middle of its window and its zoom, or null once it is gone. */
-export interface ViewMessage {
-  readonly kind: "view";
-  readonly at: View | null;
+export interface LookMessage {
+  readonly kind: "look";
+  readonly at: Look | null;
 }
 
-/** Whether `data` is a view message with a whole view, or none. */
-export function isViewMessage(data: unknown): data is ViewMessage {
+/** Whether `data` is a look message with a whole look, or none. */
+export function isLookMessage(data: unknown): data is LookMessage {
   if (typeof data !== "object" || data === null) {
     return false;
   }
   const { kind, at } = data as { kind?: unknown; at?: unknown };
-  return kind === "view" && (at === null || isView(at));
+  return kind === "look" && (at === null || isLook(at));
 }
 
-function isView(value: unknown): value is View {
+function isLook(value: unknown): value is Look {
   if (!isRecord(value)) {
     return false;
   }

@@ -9,7 +9,7 @@
  * pair of numbers.
  */
 
-import type { CameraState, ViewSize } from "./camera-math.js";
+import type { CameraState, CanvasSize } from "./camera-math.js";
 import type { Camera } from "./camera.js";
 import { glide } from "./glide.js";
 
@@ -28,8 +28,8 @@ export function isMotionReduced(): boolean {
 }
 
 /** Take the camera to `to`, gliding, or at once under reduced motion; returns a function that stops the move. */
-export function moveTo(camera: Camera, to: CameraState, view: ViewSize): () => void {
-  return glide(camera, to, view, isMotionReduced() ? 0 : MOVE_MS);
+export function moveTo(camera: Camera, to: CameraState, size: CanvasSize): () => void {
+  return glide(camera, to, size, isMotionReduced() ? 0 : MOVE_MS);
 }
 
 /** A quarter per press of a zoom key or button, the step Figma's zoom buttons take. */

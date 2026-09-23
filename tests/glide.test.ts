@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { between, centredOn, eased, glide } from "../src/camera/glide.js";
 import { Camera, screenToWorld, type CameraState } from "../src/camera/index.js";
 
-const view = { width: 1000, height: 500 };
+const size = { width: 1000, height: 500 };
 const from: CameraState = { x: 0, y: 0, zoom: 1 };
 const to: CameraState = { x: -1500, y: -700, zoom: 4 };
 
@@ -37,15 +37,15 @@ describe("eased", () => {
 
 describe("centredOn", () => {
   test("puts the point at the centre of the view", () => {
-    const state = centredOn({ x: 200, y: 100 }, 2, view);
+    const state = centredOn({ x: 200, y: 100 }, 2, size);
     expect(screenToWorld(state, { x: 500, y: 250 })).toEqual({ x: 200, y: 100 });
   });
 });
 
 describe("between", () => {
   test("is the start at 0 and the end at 1", () => {
-    expect(between(from, to, view, 0)).toEqual(from);
-    const end = between(from, to, view, 1);
+    expect(between(from, to, size, 0)).toEqual(from);
+    const end = between(from, to, size, 1);
     expect(end.zoom).toBeCloseTo(to.zoom, 10);
     expect(end.x).toBeCloseTo(to.x, 10);
     expect(end.y).toBeCloseTo(to.y, 10);
@@ -53,7 +53,7 @@ describe("between", () => {
 
   test("halfway, the zoom is the geometric mean and the centre is the midpoint", () => {
     const middle = { x: 500, y: 250 };
-    const half = between(from, to, view, 0.5);
+    const half = between(from, to, size, 0.5);
     expect(half.zoom).toBeCloseTo(2, 10);
     const a = screenToWorld(from, middle);
     const b = screenToWorld(to, middle);
@@ -67,7 +67,7 @@ describe("glide", () => {
   test("arrives over the frames, then asks for no more", () => {
     const frames = new FakeFrames();
     const camera = new Camera({ min: 0.1, max: 8 });
-    glide(camera, to, view, 100, frames.request);
+    glide(camera, to, size, 100, frames.request);
     frames.run(1000);
     frames.run(1050);
     expect(camera.current.zoom).toBeCloseTo(2, 10);
@@ -79,7 +79,7 @@ describe("glide", () => {
   test("stops when something else moves the camera", () => {
     const frames = new FakeFrames();
     const camera = new Camera({ min: 0.1, max: 8 });
-    glide(camera, to, view, 100, frames.request);
+    glide(camera, to, size, 100, frames.request);
     frames.run(1000);
     frames.run(1025);
     camera.panBy(10, 0);
@@ -92,7 +92,7 @@ describe("glide", () => {
   test("with no time, sets the camera at once", () => {
     const frames = new FakeFrames();
     const camera = new Camera({ min: 0.1, max: 8 });
-    glide(camera, to, view, 0, frames.request);
+    glide(camera, to, size, 0, frames.request);
     expect(camera.current).toEqual(to);
     expect(frames.pending).toBe(0);
   });

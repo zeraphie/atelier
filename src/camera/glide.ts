@@ -10,7 +10,7 @@
  */
 
 import type { Point } from "../geometry.js";
-import { screenToWorld, type CameraState, type ViewSize } from "./camera-math.js";
+import { screenToWorld, type CameraState, type CanvasSize } from "./camera-math.js";
 import type { Camera } from "./camera.js";
 
 /** Runs its callback at the next frame with the time: requestAnimationFrame. */
@@ -22,25 +22,25 @@ export function eased(t: number): number {
   return x < 0.5 ? 4 * x * x * x : 1 - (-2 * x + 2) ** 3 / 2;
 }
 
-/** The camera that puts `point` at the centre of `view` at `zoom`. */
-export function centredOn(point: Point, zoom: number, view: ViewSize): CameraState {
-  return { x: view.width / 2 - point.x * zoom, y: view.height / 2 - point.y * zoom, zoom };
+/** The camera that puts `point` at the centre of a canvas of `size` at `zoom`. */
+export function centredOn(point: Point, zoom: number, size: CanvasSize): CameraState {
+  return { x: size.width / 2 - point.x * zoom, y: size.height / 2 - point.y * zoom, zoom };
 }
 
-/** The state `t` of the way from `from` to `to`, 0 to 1, for a view of `view`. */
+/** The state `t` of the way from `from` to `to`, 0 to 1, for a canvas of `size`. */
 export function between(
   from: CameraState,
   to: CameraState,
-  view: ViewSize,
+  size: CanvasSize,
   t: number
 ): CameraState {
   const k = eased(t);
-  const middle = { x: view.width / 2, y: view.height / 2 };
+  const middle = { x: size.width / 2, y: size.height / 2 };
   const start = screenToWorld(from, middle);
   const end = screenToWorld(to, middle);
   const zoom = from.zoom * (to.zoom / from.zoom) ** k;
   const centre = { x: start.x + (end.x - start.x) * k, y: start.y + (end.y - start.y) * k };
-  return centredOn(centre, zoom, view);
+  return centredOn(centre, zoom, size);
 }
 
 /**
@@ -51,7 +51,7 @@ export function between(
 export function glide(
   camera: Camera,
   to: CameraState,
-  view: ViewSize,
+  size: CanvasSize,
   ms: number,
   frame: Frame = requestAnimationFrame
 ): () => void {
@@ -69,7 +69,7 @@ export function glide(
     }
     start ??= time;
     const t = Math.min(1, (time - start) / ms);
-    last = between(from, to, view, t);
+    last = between(from, to, size, t);
     camera.set(last);
     if (t < 1) {
       frame(tick);

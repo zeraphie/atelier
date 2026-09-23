@@ -27,7 +27,7 @@ function isTyping(target: EventTarget | null): boolean {
 
 /** Listens for the keys the interface answers to, for as long as the app is mounted. */
 export function useShortcuts(): void {
-  const { camera, view, tour } = useCanvas();
+  const { camera, canvasSize, tour } = useCanvas();
   useEffect(() => {
     const escape = (): void => {
       const ui = useStore.getState();
@@ -58,7 +58,7 @@ export function useShortcuts(): void {
     };
     // The zoom keys work about the middle of the view, as the zoom buttons do.
     const zoomBy = (factor: number): void => {
-      const { width, height } = view.current;
+      const { width, height } = canvasSize.current;
       camera.zoomAt({ x: width / 2, y: height / 2 }, factor);
     };
     const onKeyDown = (event: KeyboardEvent): void => {
@@ -104,8 +104,8 @@ export function useShortcuts(): void {
         case "fit":
           moveTo(
             camera,
-            camera.fitted(view.current, currentPlan().bounds, FIT_PADDING, LIFE_SIZE),
-            view.current
+            camera.fitted(canvasSize.current, currentPlan().bounds, FIT_PADDING, LIFE_SIZE),
+            canvasSize.current
           );
           break;
       }
@@ -114,5 +114,5 @@ export function useShortcuts(): void {
     return () => {
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [camera, view, tour]);
+  }, [camera, canvasSize, tour]);
 }
