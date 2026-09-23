@@ -5,14 +5,15 @@
  * Each action makes one event, applies it through the reducers, and
  * tells the event listeners, which is how a shared room hears of it;
  * an event from elsewhere is applied without being told again. The
- * threads and the person's name persist in this browser, so a reload
- * keeps them.
+ * threads and the person's name persist in this browser's database, so a
+ * reload keeps them; the store joins the roll call the curtain waits on.
  * Decision: DECISIONS.md, persistence; who is commenting.
  */
 
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import type { Point } from "../geometry.js";
+import { hydration, stateStorage } from "../storage/index.js";
 import { applyEvent, type CommentEvent } from "./events.js";
 import type { CommentsState } from "./model.js";
 
@@ -45,6 +46,8 @@ export function onCommentEvent(listener: EventListener): () => void {
 function visitorName(): string {
   return `Visitor ${Math.floor(100 + Math.random() * 900)}`;
 }
+
+hydration.expect("comments");
 
 export const useCommentsStore = create<CommentsStore>()(
   persist(
@@ -92,8 +95,15 @@ export const useCommentsStore = create<CommentsStore>()(
     {
       name: "atelier.comments",
       version: 1,
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => stateStorage),
       partialize: (state) => ({ threads: state.threads, author: state.author }),
+      // Loaded, or failed to load and carrying on empty: either way the curtain may open.
+      onRehydrateStorage: () => (_state, error) => {
+        if (error !== undefined) {
+          reportError(error);
+        }
+        hydration.loaded("comments");
+      },
     }
   )
 );

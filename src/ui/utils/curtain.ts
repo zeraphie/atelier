@@ -7,7 +7,8 @@
  * same thread and would stall it; the line under the mark sweeps on
  * the compositor throughout, for one full sweep at least. The curtain
  * opens at the latest of the draw, the sweep and the first frame, and
- * the two halves part with their share of the letters. A load that
+ * the two halves part with their share of the letters; the canvas host
+ * asks for it only once the stores have loaded as well. A load that
  * fails says so under the mark. The lengths are written down twice:
  * here, and in the rules and markup of index.html.
  * Decision: DECISIONS.md, a loader that draws the mark.

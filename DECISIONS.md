@@ -84,7 +84,7 @@ Two small stores: the comments, whose actions each make one event and pass it th
 
 ### Persistence
 
-The threads and the name persist in this browser's localStorage, versioned, so a reload keeps them. Clearing site data is the reset.
+The threads and the name persist in this browser, in one IndexedDB database, versioned, so a reload keeps them; the curtain waits for the stores to load as it waits for the first frame, so the gallery never shows empty. IndexedDB over localStorage because a picture is megabytes and a Blob, and because its calls never block the canvas. Clearing site data is the reset.
 
 ### Tailwind v4 tokens and Radix primitives
 

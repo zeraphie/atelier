@@ -14,6 +14,7 @@ import { ContextMenu } from "radix-ui";
 import { useEffect, useRef, type MouseEvent } from "react";
 import type { Point } from "../../camera/index.js";
 import { useUiStore } from "../../comments/ui-store.js";
+import { whenHydrated } from "../../storage/index.js";
 import { useCanvas } from "../utils/canvas-context.js";
 import { failLoader, raiseCurtain } from "../utils/curtain.js";
 
@@ -61,7 +62,8 @@ export function Canvas() {
         mounted.dispose();
       };
       tour.set(mounted.tour);
-      void mounted.firstFrame.then(raiseCurtain);
+      // The curtain opens on the first frame of a whole gallery: the stores loaded too.
+      void Promise.all([mounted.firstFrame, whenHydrated()]).then(raiseCurtain);
     };
     mount().catch((error: unknown) => {
       failLoader();
