@@ -13,7 +13,7 @@
 import { applyEdits } from "../gallery/edited.js";
 import { hangGallery, SPACING, type Plan } from "../gallery/hang.js";
 import { routeThrough, type Route } from "../gallery/route.js";
-import { ROOMS } from "../gallery/works.js";
+import { ROOMS, type Cells } from "../gallery/works.js";
 import { useStore, type Store } from "./store.js";
 
 interface Derived {
@@ -82,4 +82,11 @@ export function onPlanChange(listener: (plan: Plan) => void): () => void {
       listener(next);
     }
   });
+}
+
+/** The current plan with one room's cells swapped: a preview of a resize, derived each time and not kept. */
+export function planWith(roomId: string, cells: Cells): Plan {
+  const edited = applyEdits(ROOMS, useStore.getState());
+  const rooms = edited.rooms.map((room) => (room.id === roomId ? { ...room, ...cells } : room));
+  return hangGallery(rooms, SPACING, { placed: edited.placed, doorways: edited.doorways });
 }

@@ -20,7 +20,7 @@
 
 import type { Point, WorldRect } from "../geometry.js";
 import { edgeOnWall, edgeSegment, pairKey, type Edge } from "./edges.js";
-import type { Room, Side, Work } from "./works.js";
+import type { Cells, Room, Side, Work } from "./works.js";
 
 export interface Spacing {
   /** One cell of the plan's grid. */
@@ -102,12 +102,7 @@ export function hangGallery(
   spacing: Spacing = SPACING,
   edits: HangEdits = {}
 ): Plan {
-  const rects = rooms.map((room) => ({
-    left: room.column * spacing.unitCm,
-    top: room.row * spacing.unitCm,
-    right: (room.column + room.columns) * spacing.unitCm,
-    bottom: (room.row + room.rows) * spacing.unitCm,
-  }));
+  const rects = rooms.map((room) => rectOf(room, spacing.unitCm));
   const doorways = cutDoorways(rooms, rects, spacing, edits.doorways ?? {});
   const hung = rooms.map((room, i) => {
     const rect = rects[i]!;
@@ -125,6 +120,16 @@ export function hangGallery(
     walls: wallsOf(rects, doorways, spacing),
     doorways,
     bounds: union(rects),
+  };
+}
+
+/** The rect of a room's cells on the grid, `unitCm` to a cell. */
+export function rectOf(cells: Cells, unitCm: number): WorldRect {
+  return {
+    left: cells.column * unitCm,
+    top: cells.row * unitCm,
+    right: (cells.column + cells.columns) * unitCm,
+    bottom: (cells.row + cells.rows) * unitCm,
   };
 }
 

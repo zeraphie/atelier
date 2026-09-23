@@ -18,7 +18,7 @@ export { between, centredOn, eased, glide } from "./glide.js";
 export type { Frame } from "./glide.js";
 export { FIT_PADDING, isMotionReduced, LIFE_SIZE, MOVE_MS, moveTo, ZOOM_STEP } from "./move.js";
 export { CameraInput } from "./camera-input.js";
-export { PointerSession } from "./pointer-session.js";
+export { firstOf, PointerSession } from "./pointer-session.js";
 export type { PointerSessionOwner } from "./pointer-session.js";
 export type { CanvasTapListener } from "./camera-input.js";
 export type { Point, WorldRect } from "../geometry.js";

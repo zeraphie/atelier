@@ -12,6 +12,7 @@
 import {
   CameraInput,
   FIT_PADDING,
+  firstOf,
   isMotionReduced,
   moveTo,
   PointerSession,
@@ -20,15 +21,17 @@ import {
   type ViewSize,
   type WorldRect,
 } from "../camera/index.js";
-import { SPACING, type Plan } from "../gallery/hang.js";
+import { rectOf, SPACING, type Plan } from "../gallery/hang.js";
 import images from "../gallery/images.json";
+import { wallNear } from "../gallery/resize.js";
 import { targetAt, type Target } from "../gallery/targets.js";
-import { currentPlan, currentRoute, onPlanChange } from "../state/plan.js";
+import { currentPlan, currentRoute, onPlanChange, planWith } from "../state/plan.js";
 import { useStore } from "../state/store.js";
 import { DotGrid } from "./dot-grid.js";
 import { whenFacesReady } from "./faces.js";
 import { GalleryLayer, type GalleryColors } from "./gallery-layer.js";
 import { MoveTool } from "./move-tool.js";
+import { ResizeTool } from "./resize-tool.js";
 import { Stage } from "./stage.js";
 import { tokenColor } from "./theme.js";
 import { Tour, type TourHandle } from "./tour.js";
@@ -48,6 +51,10 @@ export interface MountedCanvas {
   readonly tour: TourHandle;
   dispose(): void;
 }
+
+// How near a wall a press in edit mode must be: screen pixels, but never more than a stretch of floor.
+const WALL_REACH_PX = 8;
+const WALL_REACH_MOST_CM = 50;
 
 /** Put a stage on `host` that follows `camera`, bind the input to it, and hang the gallery over the grid. */
 export async function mountCanvas(
@@ -70,6 +77,7 @@ export async function mountCanvas(
     wall: { ...ink, alpha: 0.9 },
     work: { edge: line, card: surface, ink, muted },
     outline: accent,
+    badge: { back: accent, ink: surface },
   };
   const layerOf = (plan: Plan): GalleryLayer =>
     new GalleryLayer(stage.world, plan, SPACING.wallCm, images, colors, requestFrame);
@@ -110,7 +118,7 @@ export async function mountCanvas(
   // A double tap fills the view with what is under it: a work with its
   // label, joining the tour there, else its room, else the whole plan.
   // Reduced motion jumps instead of gliding.
-  const rectOf = (target: Target): WorldRect => {
+  const rectOfTarget = (target: Target): WorldRect => {
     if (target.kind === "work") {
       return gallery.extentOf(target.work);
     }
@@ -121,43 +129,77 @@ export async function mountCanvas(
     if (target.kind === "work") {
       tour.enterAt(target.work.work.id);
     }
-    moveTo(camera, camera.fitted(stage.view, rectOf(target), FIT_PADDING), stage.view);
+    moveTo(camera, camera.fitted(stage.view, rectOfTarget(target), FIT_PADDING), stage.view);
   });
+  // In edit mode with Move held, a press on a picture drags it and a press
+  // near a wall drags the wall; any other press falls through to the camera.
+  const isMoving = (): boolean => {
+    const { mode, tool } = useStore.getState();
+    return mode === "edit" && tool === "move";
+  };
+  const reachCm = (): number => Math.min(WALL_REACH_PX / camera.current.zoom, WALL_REACH_MOST_CM);
   // Under a pointer at rest, the same target is shown, so what lights up is
   // what a double tap would fill the view with. A held pointer is panning,
-  // and the world under it is moving, so it shows nothing.
+  // and the world under it is moving, so it shows nothing. The cursor is
+  // told what a press would take: a work before a wall, as the tools go.
+  const overAt = (target: Target, world: Point): string => {
+    if (target.kind !== "work" && isMoving()) {
+      const hit = wallNear(currentPlan(), world, reachCm());
+      if (hit !== undefined) {
+        return hit.side === "left" || hit.side === "right" ? "wall-x" : "wall-y";
+      }
+    }
+    return target.kind;
+  };
   const onHover = (event: PointerEvent): void => {
     if (event.buttons !== 0) {
       return;
     }
     const rect = host.getBoundingClientRect();
-    const at = { x: event.clientX - rect.left, y: event.clientY - rect.top };
-    const target = targetAt(currentPlan(), camera.toWorld(at));
+    const world = camera.toWorld({ x: event.clientX - rect.left, y: event.clientY - rect.top });
+    const target = targetAt(currentPlan(), world);
     gallery.highlight(target);
-    // What is under the pointer, for the cursor to say what a press would take.
-    host.dataset["over"] = target.kind;
+    host.dataset["over"] = overAt(target, world);
   };
   const onLeave = (): void => {
     gallery.highlight(undefined);
     delete host.dataset["over"];
   };
-  // In edit mode with Move held, a press on a picture is the tool's and drags
-  // it; any other press falls through to the camera. The session lives on
-  // the canvas element, under the host, so a press it takes never starts a pan.
+  // The session lives on the canvas element, under the host, so a press a
+  // tool takes never starts a pan. The wall's preview is the plan the drag
+  // would make, hung afresh, so the doorways move with the wall.
+  const resizing = new ResizeTool({
+    plan: currentPlan,
+    unitCm: SPACING.unitCm,
+    reachCm,
+    preview: (shown) =>
+      gallery.preview(
+        shown === undefined
+          ? undefined
+          : {
+              plan: planWith(shown.roomId, shown.dragged),
+              ghost: rectOf(shown.ghost, SPACING.unitCm),
+              label: shown.label,
+            }
+      ),
+    resize: (id, cells) => useStore.getState().resizeRoom(id, cells),
+    host,
+    isMotionReduced,
+    frame: requestAnimationFrame,
+  });
   const moving = new PointerSession(
     stage.app.canvas,
     (at) => camera.toWorld(at),
-    new MoveTool({
-      plan: currentPlan,
-      nudge: (id, centre) => gallery.nudge(id, centre),
-      move: (id, centre) => useStore.getState().moveWork(id, centre),
-      host,
-    })
+    firstOf(
+      new MoveTool({
+        plan: currentPlan,
+        nudge: (id, centre) => gallery.nudge(id, centre),
+        move: (id, centre) => useStore.getState().moveWork(id, centre),
+        host,
+      }),
+      resizing
+    )
   );
-  const isMoving = (): boolean => {
-    const { mode, tool } = useStore.getState();
-    return mode === "edit" && tool === "move";
-  };
   const stopTools = useStore.subscribe(() => moving.setActive(isMoving()));
   moving.setActive(isMoving());
   host.addEventListener("pointermove", onHover);
@@ -182,6 +224,7 @@ export async function mountCanvas(
       host.removeEventListener("pointerleave", onLeave);
       stopTools();
       moving.dispose();
+      resizing.dispose();
       stopPlan();
       stopResize();
       stopFollowing();

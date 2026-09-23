@@ -4,13 +4,17 @@
  * The plan, drawn: every room's floor, the walls over them, and every
  * work above the walls, all in world space under the camera. Each
  * camera change is passed on as the zoom, which is the one thing the
- * views react to: a room holds its name at one screen size, and a
- * work picks its tier and picture. The layer also shows what a double
- * tap would fill the view with, under the pointer: a room lit, or a work
- * outlined with its label.
+ * views react to: a work picks its tier and picture, and what is held
+ * at a screen size is scaled again. The layer also shows what a double
+ * tap would fill the view with, under the pointer: a room lit, or a
+ * work outlined with its label. While a wall is dragged it shows the
+ * preview: floors and walls drawn from the plan the drag would make,
+ * a dashed ghost on the metre line the wall will settle on, and a
+ * badge by the pointer with the room's new measure. The works stay
+ * where they are until the edit lands.
  */
 
-import { Graphics, type Container } from "pixi.js";
+import { Container, Graphics, Text } from "pixi.js";
 import type { CameraState, Point, WorldRect } from "../camera/index.js";
 import type { Plan } from "../gallery/hang.js";
 import type { Target } from "../gallery/targets.js";
@@ -24,23 +28,48 @@ export interface GalleryColors {
   readonly room: RoomColors;
   readonly wall: PackedColor;
   readonly work: WorkColors;
-  /** The outline around a work under the pointer. */
+  /** The outline around a work under the pointer, and the ghost of a drag. */
   readonly outline: PackedColor;
+  /** The badge by the pointer during a drag: its ground and its text. */
+  readonly badge: { readonly back: PackedColor; readonly ink: PackedColor };
+}
+
+/** What a drag shows: the plan it would make, the rect it will settle on, and a measure by the pointer. */
+export interface LayerPreview {
+  readonly plan: Plan;
+  readonly ghost: WorldRect;
+  readonly label: { readonly text: string; readonly at: Point };
 }
 
 // Screen pixels the outline keeps clear of a work and its label.
 const OUTLINE_PAD_PX = 6;
+// The ghost's dashes and the gaps between them, in screen pixels.
+const DASH_PX = 6;
+const GAP_PX = 4;
+// The badge: its text size on screen, its padding, its corner, and how far it sits from the pointer.
+const BADGE_PX = 12;
+const BADGE_PAD_X = 6;
+const BADGE_PAD_Y = 2;
+const BADGE_RADIUS = 4;
+const BADGE_OFFSET_PX = 14;
 
 /** Rooms, walls and works, drawn into `world` and following the camera. */
 export class GalleryLayer {
+  private readonly plan: Plan;
+  private readonly wallCm: number;
   private readonly rooms: RoomView[];
-  private readonly walls: Graphics;
+  private readonly walls = new Graphics({ label: "walls" });
   private readonly works: WorkView[];
   private readonly byId = new Map<string, WorkView>();
   private readonly outline = new Graphics({ label: "outline" });
+  private readonly ghost = new Graphics({ label: "ghost" });
+  private readonly badge = new Container({ label: "badge" });
+  private readonly badgeBack = new Graphics();
+  private readonly badgeText: Text;
   private readonly colors: GalleryColors;
   private readonly requestFrame: () => void;
   private target: Target | undefined;
+  private shown: LayerPreview | undefined;
   private zoom = 1;
 
   constructor(
@@ -51,10 +80,12 @@ export class GalleryLayer {
     colors: GalleryColors,
     requestFrame: () => void
   ) {
+    this.plan = plan;
+    this.wallCm = wallCm;
     this.colors = colors;
     this.requestFrame = requestFrame;
     this.rooms = plan.rooms.map((hung) => new RoomView(hung, colors.room));
-    this.walls = drawWalls(plan.walls, wallCm, colors.wall);
+    drawWalls(this.walls, plan.walls, wallCm, colors.wall);
     this.works = plan.rooms.flatMap((hung) =>
       hung.works.map((work) => {
         const entry = images[work.work.id];
@@ -67,15 +98,38 @@ export class GalleryLayer {
     for (const [i, hung] of plan.rooms.flatMap((room) => room.works).entries()) {
       this.byId.set(hung.work.id, this.works[i]!);
     }
+    this.badgeText = new Text({
+      text: "",
+      style: { fontFamily: "Libertinus Sans", fontSize: BADGE_PX, fill: colors.badge.ink.rgb },
+    });
+    this.badgeText.position.set(BADGE_PAD_X, BADGE_PAD_Y);
+    this.badge.addChild(this.badgeBack, this.badgeText);
+    this.badge.visible = false;
+    this.ghost.visible = false;
     world.addChild(...this.rooms.map((room) => room.container));
     world.addChild(this.walls);
     world.addChild(...this.works.map((work) => work.container));
-    world.addChild(this.outline);
+    world.addChild(this.outline, this.ghost, this.badge);
   }
 
   /** Show a work at a centre for the length of a drag; the plan, and so the layer, still say where it is. */
   nudge(workId: string, centre: Point): void {
     this.byId.get(workId)?.moveTo(centre);
+  }
+
+  /** Show a drag of a wall, or, with nothing, the plan as it is. */
+  preview(shown: LayerPreview | undefined): void {
+    this.shown = shown;
+    const plan = shown?.plan ?? this.plan;
+    for (const room of this.rooms) {
+      const hung = plan.rooms.find((candidate) => candidate.room.id === room.id);
+      if (hung !== undefined) {
+        room.reshape(hung.rect);
+      }
+    }
+    drawWalls(this.walls, plan.walls, this.wallCm, this.colors.wall);
+    this.drawGhost();
+    this.requestFrame();
   }
 
   /** A work and its label together, for a view that fits both; the work's frame alone if unknown. */
@@ -88,8 +142,9 @@ export class GalleryLayer {
     for (const work of this.works) {
       work.follow(state.zoom);
     }
-    // The outline keeps its clearance in screen pixels, so it is drawn again at the new zoom.
+    // The outline and the ghost keep their measures in screen pixels, so both are drawn again at the new zoom.
     this.drawOutline();
+    this.drawGhost();
   }
 
   /** Show what a double tap would fill the view with, or nothing when the pointer is elsewhere. */
@@ -111,6 +166,8 @@ export class GalleryLayer {
       work.destroy();
     }
     this.outline.destroy();
+    this.ghost.destroy();
+    this.badge.destroy({ children: true });
   }
 
   // A hairline around the work and its label, the fit's own extent, a few screen pixels clear of both.
@@ -132,5 +189,57 @@ export class GalleryLayer {
       )
       .stroke({ color: outline.rgb, alpha: outline.alpha, width: 1, pixelLine: true });
     this.outline.visible = true;
+  }
+
+  // The ghost as a dashed hairline, and the badge at one size on screen beside the pointer.
+  private drawGhost(): void {
+    this.ghost.clear();
+    if (this.shown === undefined) {
+      this.ghost.visible = false;
+      this.badge.visible = false;
+      return;
+    }
+    const { ghost, label } = this.shown;
+    const { outline, badge } = this.colors;
+    const corners: Point[] = [
+      { x: ghost.left, y: ghost.top },
+      { x: ghost.right, y: ghost.top },
+      { x: ghost.right, y: ghost.bottom },
+      { x: ghost.left, y: ghost.bottom },
+    ];
+    for (const [i, corner] of corners.entries()) {
+      dashed(this.ghost, corner, corners[(i + 1) % 4]!, DASH_PX / this.zoom, GAP_PX / this.zoom);
+    }
+    this.ghost.stroke({ color: outline.rgb, alpha: outline.alpha, width: 1, pixelLine: true });
+    this.ghost.visible = true;
+    this.badgeText.text = label.text;
+    this.badgeBack
+      .clear()
+      .roundRect(
+        0,
+        0,
+        this.badgeText.width + 2 * BADGE_PAD_X,
+        this.badgeText.height + 2 * BADGE_PAD_Y,
+        BADGE_RADIUS
+      )
+      .fill({ color: badge.back.rgb, alpha: badge.back.alpha });
+    this.badge.scale.set(1 / this.zoom);
+    const offset = BADGE_OFFSET_PX / this.zoom;
+    this.badge.position.set(label.at.x + offset, label.at.y + offset);
+    this.badge.visible = true;
+  }
+}
+
+// The line from `a` to `b` as dashes, drawn into `shapes` for one stroke after.
+function dashed(shapes: Graphics, a: Point, b: Point, dash: number, gap: number): void {
+  const length = Math.hypot(b.x - a.x, b.y - a.y);
+  if (length === 0) {
+    return;
+  }
+  const ux = (b.x - a.x) / length;
+  const uy = (b.y - a.y) / length;
+  for (let at = 0; at < length; at += dash + gap) {
+    const end = Math.min(at + dash, length);
+    shapes.moveTo(a.x + ux * at, a.y + uy * at).lineTo(a.x + ux * end, a.y + uy * end);
   }
 }

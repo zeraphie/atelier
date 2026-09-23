@@ -143,3 +143,32 @@ export class PointerSession {
     return this.toWorld({ x: event.clientX - rect.left, y: event.clientY - rect.top });
   }
 }
+
+/** One owner from several: the first whose `takes` says yes to a press owns it until it is let go. */
+export function firstOf(...owners: readonly PointerSessionOwner[]): PointerSessionOwner {
+  let holder: PointerSessionOwner | undefined;
+  return {
+    takes(at, event) {
+      return owners.some((owner) => owner.takes(at, event));
+    },
+    onDown(at, event) {
+      holder = owners.find((owner) => owner.takes(at, event));
+      const isHeld = holder?.onDown(at, event) ?? false;
+      if (!isHeld) {
+        holder = undefined;
+      }
+      return isHeld;
+    },
+    onMove(at, event) {
+      holder?.onMove(at, event);
+    },
+    onUp(at, event) {
+      holder?.onUp(at, event);
+      holder = undefined;
+    },
+    onCancel() {
+      holder?.onCancel();
+      holder = undefined;
+    },
+  };
+}
