@@ -85,7 +85,7 @@ export async function mountCanvas(
   const colors: GalleryColors = {
     room: { floor: { ...surface, alpha: 0.85 }, selection: { ...accent, alpha: 0.16 } },
     wall: { ...ink, alpha: 0.9 },
-    work: { edge: line, card: surface, ink, muted },
+    work: { edge: line, card: surface, ink, muted, loading: accent },
     outline: accent,
     badge: { back: accent, ink: surface },
   };

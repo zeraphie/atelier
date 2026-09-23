@@ -4,8 +4,8 @@
  * What travels between the peers of a viewing, and the checks that a
  * message is one: an action a screen took, named, with its arguments
  * and its time, and only one of the actions a peer may replay; a
- * snapshot of a gallery for a peer who just arrived; and what rides
- * beside a picture's bytes. Pure,
+ * snapshot of a gallery for a peer who just arrived; a picture's record
+ * sent ahead of its bytes; and what rides beside the bytes. Pure,
  * so a message from the network is judged before anything acts on it.
  * Decision: DECISIONS.md, a viewing is opt-in by link and siloed.
  */
@@ -82,20 +82,35 @@ export function isSnapshotMessage(data: unknown): data is SnapshotMessage {
   );
 }
 
-/** What rides beside a picture's bytes: its record, and whose it is. */
-export interface PictureMetadata {
+/** A picture's record, sent ahead of its bytes, and whose it is. */
+export interface PictureMessage {
   readonly kind: "picture";
   readonly record: PictureRecord;
   /** The name of the screen it came from. */
   readonly by: string;
 }
 
-/** Whether `metadata` names a picture with a record worth keeping. */
-export function isPictureMetadata(metadata: unknown): metadata is PictureMetadata {
+/** What rides beside a picture's bytes: which picture they are. */
+export interface BytesMetadata {
+  readonly kind: "bytes";
+  readonly id: string;
+}
+
+/** Whether `metadata` says whose bytes these are. */
+export function isBytesMetadata(metadata: unknown): metadata is BytesMetadata {
   if (typeof metadata !== "object" || metadata === null) {
     return false;
   }
-  const { kind, record, by } = metadata as { kind?: unknown; record?: unknown; by?: unknown };
+  const { kind, id } = metadata as { kind?: unknown; id?: unknown };
+  return kind === "bytes" && typeof id === "string";
+}
+
+/** Whether `data` is a picture message with a record worth keeping. */
+export function isPictureMessage(data: unknown): data is PictureMessage {
+  if (typeof data !== "object" || data === null) {
+    return false;
+  }
+  const { kind, record, by } = data as { kind?: unknown; record?: unknown; by?: unknown };
   if (kind !== "picture" || typeof by !== "string" || !isRecord(record)) {
     return false;
   }

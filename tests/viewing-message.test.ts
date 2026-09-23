@@ -1,5 +1,10 @@
 import { describe, expect, test } from "bun:test";
-import { isActionMessage, isPictureMetadata, isSnapshotMessage } from "../src/viewing/message.js";
+import {
+  isActionMessage,
+  isBytesMetadata,
+  isPictureMessage,
+  isSnapshotMessage,
+} from "../src/viewing/message.js";
 
 describe("isActionMessage", () => {
   test("an action message names a shared action with its arguments and its time", () => {
@@ -24,7 +29,7 @@ describe("isActionMessage", () => {
   });
 });
 
-describe("isSnapshotMessage and isPictureMetadata", () => {
+describe("isSnapshotMessage, isPictureMessage and isBytesMetadata", () => {
   test("a snapshot has every persisted field; a picture rides with its record and a name", () => {
     const state = { threads: [], placed: {}, hangings: {}, rooms: {}, doorways: {}, resetAt: 0 };
     expect(isSnapshotMessage({ kind: "snapshot", state })).toBe(true);
@@ -42,11 +47,13 @@ describe("isSnapshotMessage and isPictureMetadata", () => {
       color: "#cccccc",
       size: { width: 200, height: 100 },
     };
-    expect(isPictureMetadata({ kind: "picture", record, by: "Izzy" })).toBe(true);
+    expect(isPictureMessage({ kind: "picture", record, by: "Izzy" })).toBe(true);
+    expect(isBytesMetadata({ kind: "bytes", id: "abc" })).toBe(true);
+    expect(isBytesMetadata({ kind: "picture", id: "abc" })).toBe(false);
     expect(
-      isPictureMetadata({ kind: "picture", record: { ...record, size: null }, by: "Izzy" })
+      isPictureMessage({ kind: "picture", record: { ...record, size: null }, by: "Izzy" })
     ).toBe(false);
-    expect(isPictureMetadata({ kind: "picture", record })).toBe(false);
-    expect(isPictureMetadata(undefined)).toBe(false);
+    expect(isPictureMessage({ kind: "picture", record })).toBe(false);
+    expect(isPictureMessage(undefined)).toBe(false);
   });
 });

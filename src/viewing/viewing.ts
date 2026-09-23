@@ -24,13 +24,16 @@ import {
   useStore,
 } from "../state/store.js";
 import { onAction } from "../state/utils/actions.js";
-import { getPicture, putPicture, stateStorage } from "../storage/index.js";
+import { getPicture, hydration, putPicture, stateStorage } from "../storage/index.js";
+import { viewingCodeFromHash } from "./hash.js";
 import {
   isActionMessage,
-  isPictureMetadata,
+  isBytesMetadata,
+  isPictureMessage,
   isSnapshotMessage,
   type ActionMessage,
-  type PictureMetadata,
+  type BytesMetadata,
+  type PictureMessage,
   type SnapshotMessage,
 } from "./message.js";
 import { snapshotOf } from "./snapshot.js";
@@ -44,6 +47,13 @@ interface Joined {
 }
 
 let current: Joined | undefined;
+
+// A viewing named in the address at load is part of the roll call the curtain
+// waits on: its saved state is switched to before the gallery shows.
+const VIEWING_LOAD = "viewing";
+if (viewingCodeFromHash(window.location.hash) !== undefined) {
+  hydration.expect(VIEWING_LOAD);
+}
 // Switches of the gallery's key run one after another, so a leave that
 // follows a join always lands after it.
 let switching: Promise<void> = Promise.resolve();
@@ -61,7 +71,11 @@ export async function joinViewing(code: string): Promise<void> {
   await leaveViewing();
   const joined: Joined = { code, transport: undefined, stopTelling: () => {}, isLeft: false };
   current = joined;
-  await switchTo(keyForViewing(code));
+  try {
+    await switchTo(keyForViewing(code));
+  } finally {
+    hydration.loaded(VIEWING_LOAD);
+  }
   if (joined.isLeft) {
     return;
   }
@@ -121,24 +135,31 @@ export async function bringComments(): Promise<number> {
   return threads.length;
 }
 
-// A picture's derivative and its record, sent to one peer or to all; nothing
-// when the picture is not here, as with one that came from elsewhere and never arrived.
+// A picture for a peer, in two parts: its record first, so the hanging shows
+// at once as a placeholder, then its derivative as bytes; nothing when the
+// picture is not here, as with one that came from elsewhere and never arrived.
 async function sendPicture(transport: Transport, pictureId: string, to?: string): Promise<void> {
-  const record = useOwnStore.getState().pictures[pictureId];
+  const own = useOwnStore.getState();
+  const record = own.pictures[pictureId];
   const blob = await getPicture(derivativeKey(pictureId));
   if (record === undefined || blob === undefined) {
     return;
   }
-  const metadata: PictureMetadata = { kind: "picture", record, by: useOwnStore.getState().name };
+  const { pending: _pending, ...known } = record;
+  const message: PictureMessage = { kind: "picture", record: known, by: own.name };
+  transport.send(message, to);
+  const metadata: BytesMetadata = { kind: "bytes", id: pictureId };
   transport.send(blob, to, metadata);
 }
 
-// What a peer sent: an action to replay, a snapshot to merge, or a picture to
-// keep, whose bytes the library may hand over as a buffer rather than a blob.
+// What a peer sent: an action to replay, a snapshot to merge, a picture's
+// record to keep, or its bytes, which the library may hand over as a buffer.
 function receive(data: unknown, from: string, metadata: unknown): void {
   const bytes = asBlob(data);
-  if (isPictureMetadata(metadata) && bytes !== undefined) {
-    void keepPicture(bytes, metadata);
+  if (isBytesMetadata(metadata) && bytes !== undefined) {
+    void keepBytes(metadata.id, bytes);
+  } else if (isPictureMessage(data)) {
+    void keepRecord(data);
   } else if (isSnapshotMessage(data)) {
     absorbSnapshot(data.state);
   } else if (isActionMessage(data)) {
@@ -148,15 +169,26 @@ function receive(data: unknown, from: string, metadata: unknown): void {
   }
 }
 
-// A picture from a peer joins the collection marked with whose it is, its
-// bytes kept under the same id, so the same picture from two peers is one.
-async function keepPicture(blob: Blob, { record, by }: PictureMetadata): Promise<void> {
+// A record from a peer joins the collection marked with whose it is, and as
+// pending until its bytes are here, unless they arrived first.
+async function keepRecord({ record, by }: PictureMessage): Promise<void> {
   const own = useOwnStore.getState();
-  if ((await getPicture(derivativeKey(record.id))) === undefined) {
-    await putPicture(derivativeKey(record.id), blob);
+  if (own.pictures[record.id] !== undefined) {
+    return;
   }
-  if (own.pictures[record.id] === undefined) {
-    own.addPicture({ ...record, from: by });
+  const isHere = (await getPicture(derivativeKey(record.id))) !== undefined;
+  own.addPicture({ ...record, from: by, ...(isHere ? {} : { pending: true }) });
+}
+
+// A picture's bytes are kept once by id, and its record, if pending, is whole.
+async function keepBytes(id: string, blob: Blob): Promise<void> {
+  if ((await getPicture(derivativeKey(id))) === undefined) {
+    await putPicture(derivativeKey(id), blob);
+  }
+  const record = useOwnStore.getState().pictures[id];
+  if (record?.pending === true) {
+    const { pending: _pending, ...whole } = record;
+    useOwnStore.getState().addPicture(whole);
   }
 }
 

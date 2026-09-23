@@ -28,6 +28,8 @@ export interface PictureRecord {
   readonly size: { readonly width: number; readonly height: number };
   /** Whose it is when it came from a peer; absent for your own. */
   readonly from?: string;
+  /** Set while its bytes are still on their way from a peer; the record came first. */
+  readonly pending?: true;
 }
 
 export interface CollectionSlice {

@@ -111,7 +111,16 @@ export class GalleryLayer {
         if (entry === undefined) {
           throw new Error(`no picture is known for the work "${work.work.id}"`);
         }
-        return new WorkView(work, entry, sourceFor(work.work), colors.work, requestFrame);
+        const record =
+          work.work.pictureId === undefined ? undefined : pictures[work.work.pictureId];
+        return new WorkView(
+          work,
+          entry,
+          sourceFor(work.work),
+          colors.work,
+          requestFrame,
+          record?.pending === true
+        );
       })
     );
     for (const [i, hung] of plan.rooms.flatMap((room) => room.works).entries()) {

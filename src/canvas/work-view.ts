@@ -25,6 +25,8 @@ export interface WorkColors {
   readonly card: PackedColor;
   readonly ink: PackedColor;
   readonly muted: PackedColor;
+  /** The bar that sweeps a picture still on its way from a peer. */
+  readonly loading: PackedColor;
 }
 
 // Text is drawn at this size and scaled down to its size in the world,
@@ -36,6 +38,10 @@ const DETAIL_CM = 1.6;
 const LABEL_GAP_CM = 3;
 const CARD_PAD_CM = 1.5;
 const LINE_GAP_CM = 1;
+// The sweeping bar of a picture on its way: its share of the block's width and height, and one sweep's time.
+const SWEEP_SHARE = 0.25;
+const SWEEP_HEIGHT_SHARE = 0.04;
+const SWEEP_MS = 1100;
 
 /** One hung work: its block, its picture when close enough, and its label when closer. */
 export class WorkView {
@@ -44,6 +50,9 @@ export class WorkView {
   private readonly entry: ImageEntry;
   private readonly source: PictureSource;
   private readonly colors: WorkColors;
+  /** Whether the picture's bytes are still on their way, so a bar sweeps where it will be. */
+  private readonly isPending: boolean;
+  private sweep: Graphics | undefined;
   private readonly requestFrame: () => void;
   private readonly picture = new Sprite();
   private label: { card: Graphics; title: Text; details: Text } | undefined;
@@ -56,11 +65,13 @@ export class WorkView {
     entry: ImageEntry,
     source: PictureSource,
     colors: WorkColors,
-    requestFrame: () => void
+    requestFrame: () => void,
+    isPending = false
   ) {
     this.hung = hung;
     this.entry = entry;
     this.source = source;
+    this.isPending = isPending;
     this.colors = colors;
     this.requestFrame = requestFrame;
     const { rect } = hung;
@@ -90,6 +101,40 @@ export class WorkView {
   destroy(): void {
     this.isDestroyed = true;
     this.container.destroy({ children: true });
+  }
+
+  // A bar sweeping side to side along the block's foot while the picture is on its way, at
+  // the tiers where the picture would show; it asks for a frame each tick, and stops with the view.
+  private startSweep(): void {
+    if (this.sweep !== undefined) {
+      return;
+    }
+    const { loading } = this.colors;
+    const barWidth = this.width * SWEEP_SHARE;
+    const barHeight = Math.max(0.5, this.height * SWEEP_HEIGHT_SHARE);
+    const bar = new Graphics()
+      .rect(0, 0, barWidth, barHeight)
+      .fill({ color: loading.rgb, alpha: loading.alpha });
+    bar.position.set(0, this.height - barHeight * 2);
+    this.container.addChild(bar);
+    this.sweep = bar;
+    const tick = (time: number): void => {
+      if (this.isDestroyed || this.sweep !== bar) {
+        return;
+      }
+      const phase = (time / SWEEP_MS) % 2;
+      bar.position.x = (phase < 1 ? phase : 2 - phase) * (this.width - barWidth);
+      this.requestFrame();
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+
+  private stopSweep(): void {
+    if (this.sweep !== undefined) {
+      this.sweep.destroy();
+      this.sweep = undefined;
+    }
   }
 
   /** Show the work with its centre on `centre`, plaque and all, without changing what it is. */
@@ -132,6 +177,11 @@ export class WorkView {
 
   private apply(): void {
     this.picture.visible = this.tier !== "far" && this.shownPx > 0;
+    if (this.isPending && this.tier !== "far") {
+      this.startSweep();
+    } else {
+      this.stopSweep();
+    }
     if (this.tier !== "far") {
       this.label ??= this.makeLabel();
     }
@@ -144,25 +194,29 @@ export class WorkView {
   }
 
   private want(px: number): void {
-    if (px <= this.shownPx) {
+    if (this.isPending || px <= this.shownPx) {
       return;
     }
-    void this.source(px).then((texture) => {
-      if (this.isDestroyed || px <= this.shownPx) {
-        return;
-      }
-      this.shownPx = px;
-      this.picture.texture = texture;
-      // Inside the work's frame, centred, at the picture's own proportions.
-      const scale = Math.min(this.width / texture.width, this.height / texture.height);
-      this.picture.scale.set(scale);
-      this.picture.position.set(
-        (this.width - texture.width * scale) / 2,
-        (this.height - texture.height * scale) / 2
-      );
-      this.picture.visible = this.tier !== "far";
-      this.requestFrame();
-    });
+    void this.source(px)
+      .then((texture) => {
+        if (this.isDestroyed || px <= this.shownPx) {
+          return;
+        }
+        this.shownPx = px;
+        this.picture.texture = texture;
+        // Inside the work's frame, centred, at the picture's own proportions.
+        const scale = Math.min(this.width / texture.width, this.height / texture.height);
+        this.picture.scale.set(scale);
+        this.picture.position.set(
+          (this.width - texture.width * scale) / 2,
+          (this.height - texture.height * scale) / 2
+        );
+        this.picture.visible = this.tier !== "far";
+        this.requestFrame();
+      })
+      .catch(() => {
+        // A picture that is not here stays a block in its colour; the next tier change asks again.
+      });
   }
 
   // The museum label under the work: the title alone at mid, and at near
