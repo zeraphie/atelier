@@ -7,7 +7,7 @@
  * demand, so the solo gallery never fetches it, and the relays are
  * named outright, since the library's own list has left a peer unable
  * to connect before, in warrior of keyboard.
- * Decision: DECISIONS.md, a viewing is opt-in by link and siloed.
+ * Decision: DECISIONS.md, everyone is in a viewing.
  */
 
 const APP_ID = "atelier";

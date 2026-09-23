@@ -1,0 +1,112 @@
+/**
+ * ─ Arrival ─
+ *
+ * The card under the mark, once the loader has said its piece and
+ * before the curtain parts: which viewing, by code, the address's or
+ * this browser's own or a new one; the name as it stands; and one of
+ * the eight colours. Come in keeps them, joins the viewing and lets the
+ * curtain rise. It cannot be dismissed any other way, and accepting
+ * what it offers is one press.
+ * Decision: DECISIONS.md, everyone is in a viewing.
+ */
+
+import { Dialog } from "radix-ui";
+import { useEffect, useState, type FormEvent } from "react";
+import { useOwnStore } from "../../state/own-store.js";
+import { arrive, offeredCode } from "../../viewing/arrival.js";
+import { swatchIdFor } from "../../viewing/color.js";
+import { CARD } from "../atoms/Card.js";
+import { TextButton } from "../atoms/TextButton.js";
+import { IdentityFields } from "../molecules/IdentityFields.js";
+import { whenLoaderDone } from "../utils/curtain.js";
+
+// Above the curtain, which sits at 999.
+const CONTENT = `${CARD} fixed top-1/2 left-1/2 z-[1000] flex w-96 max-w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/3 flex-col gap-3 p-5`;
+
+export function Arrival() {
+  const name = useOwnStore((store) => store.name);
+  const color = useOwnStore((store) => store.color);
+  const [isReady, setReady] = useState(false);
+  const [isIn, setIn] = useState(false);
+  useEffect(() => {
+    whenLoaderDone().then(() => setReady(true), reportError);
+  }, []);
+  const come = (details: { code: string; name: string; color: string }): void => {
+    arrive(details.code, details.name, details.color).then(() => setIn(true), reportError);
+  };
+  return (
+    <Dialog.Root open={isReady && !isIn}>
+      <Dialog.Portal>
+        <Dialog.Content
+          className={CONTENT}
+          onEscapeKeyDown={(event) => event.preventDefault()}
+          onPointerDownOutside={(event) => event.preventDefault()}
+          onInteractOutside={(event) => event.preventDefault()}
+        >
+          <Dialog.Title className="font-sans text-base font-bold text-ink">
+            Before you come in
+          </Dialog.Title>
+          <Dialog.Description className="sr-only">
+            Which viewing to join, your name, and your colour.
+          </Dialog.Description>
+          {isReady && !isIn && (
+            <ArrivalForm name={name} color={swatchIdFor(name, color)} onComeIn={come} />
+          )}
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+}
+
+function ArrivalForm({
+  name: givenName,
+  color: givenColor,
+  onComeIn,
+}: {
+  readonly name: string;
+  readonly color: string;
+  readonly onComeIn: (details: { code: string; name: string; color: string }) => void;
+}) {
+  const [offered] = useState(offeredCode);
+  const [code, setCode] = useState(offered.code);
+  const [name, setName] = useState(givenName);
+  const [color, setColor] = useState(givenColor);
+  const [isGoing, setGoing] = useState(false);
+  const trimmed = code.trim().toLowerCase();
+  const isValid = trimmed !== "" && name.trim() !== "";
+  const submit = (event: FormEvent<HTMLFormElement>): void => {
+    event.preventDefault();
+    if (!isValid || isGoing) {
+      return;
+    }
+    setGoing(true);
+    onComeIn({ code: trimmed, name: name.trim(), color });
+  };
+  return (
+    <form className="flex flex-col gap-3" onSubmit={submit}>
+      <IdentityFields
+        idPrefix="arrive"
+        code={code}
+        name={name}
+        color={color}
+        codeNote={
+          offered.isNew
+            ? "A viewing of your own, made just now. Type a code to join someone else's."
+            : "Change it to join another viewing, or make a new one."
+        }
+        onCode={setCode}
+        onName={setName}
+        onColor={setColor}
+      />
+      <p className="font-serif text-sm leading-snug text-muted">
+        The others here see your name and colour beside your comments and your cursor. Both are
+        yours to change at the desk later.
+      </p>
+      <div className="flex justify-end pt-1">
+        <TextButton tone="primary" type="submit" disabled={!isValid || isGoing}>
+          Come in
+        </TextButton>
+      </div>
+    </form>
+  );
+}

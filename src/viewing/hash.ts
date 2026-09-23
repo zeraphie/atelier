@@ -4,7 +4,7 @@
  * A viewing lives in the address: `#viewing=<code>` joins it on load, and the
  * same link shared joins a peer to it. Pure: the code out of a hash, and
  * the hash for a code, so the URL is read and written in one place.
- * Decision: DECISIONS.md, a viewing is opt-in by link and siloed.
+ * Decision: DECISIONS.md, everyone is in a viewing.
  */
 
 const KEY = "viewing";

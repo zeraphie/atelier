@@ -31,6 +31,11 @@ export function whenMarkDrawn(): Promise<void> {
   return drawn;
 }
 
+/** Resolves once the mark is drawn and the line has swept once: the loader has said its piece. */
+export function whenLoaderDone(): Promise<void> {
+  return Promise.all([whenMarkDrawn(), whenLineSwept()]).then(() => {});
+}
+
 // The line is up from the first paint and stays for one full sweep at
 // least, so a fast load never flashes it. Its own animation clock says how
 // much of the sweep is left; under reduced motion there is no animation,

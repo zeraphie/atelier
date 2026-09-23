@@ -6,7 +6,7 @@
  * until it does. What the interface shows as the viewing's status.
  * Never kept: a reload joins again from the address, and the peers
  * announce themselves afresh.
- * Decision: DECISIONS.md, a viewing is opt-in by link and siloed.
+ * Decision: DECISIONS.md, everyone is in a viewing.
  */
 
 import type { Get, Set } from "../utils/actions.js";

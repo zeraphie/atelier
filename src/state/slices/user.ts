@@ -25,10 +25,14 @@ export interface UserSlice {
   readonly color: string | undefined;
   /** The viewings this browser has been in, by code. */
   readonly viewings: Readonly<Record<string, Visited>>;
+  /** The viewing this browser made for itself on first arriving: where Leave goes. */
+  readonly home: string | undefined;
   setName(name: string): void;
   setColor(color: string): void;
   /** Remember a viewing as one this browser has been in, now. */
   noteViewing(code: string): void;
+  /** Call a viewing home, once. */
+  setHome(code: string): void;
 }
 
 // A name to comment under until the person types their own.
@@ -42,6 +46,7 @@ export function createUserSlice(set: Set<OwnStore>, _get: Get<OwnStore>): UserSl
     name: visitorName(),
     color: undefined,
     viewings: {},
+    home: undefined,
     setName: (name) => {
       set({ name: name.trim() || visitorName() });
     },
@@ -50,6 +55,9 @@ export function createUserSlice(set: Set<OwnStore>, _get: Get<OwnStore>): UserSl
     },
     noteViewing: (code) => {
       set((state) => ({ viewings: { ...state.viewings, [code]: { at: Date.now() } } }));
+    },
+    setHome: (code) => {
+      set({ home: code });
     },
   };
 }

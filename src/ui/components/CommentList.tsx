@@ -19,7 +19,8 @@ import { useStore } from "../../state/store.js";
 import { Card } from "../atoms/Card.js";
 import { CommentIcon, PenIcon } from "../atoms/icons.js";
 import { Pill, PillButton } from "../atoms/Pill.js";
-import { bringComments } from "../../viewing/viewing.js";
+import { bringCommentsFrom } from "../../viewing/viewing.js";
+import { useOwnStore } from "../../state/own-store.js";
 import { TextButton } from "../atoms/TextButton.js";
 import { ThreadItem } from "../molecules/ThreadItem.js";
 import { ViewingChip } from "./ViewingChip.js";
@@ -34,6 +35,9 @@ const FILTERS: readonly { readonly id: ListFilter; readonly label: string }[] = 
   { id: "all", label: "All" },
 ];
 
+const SELECT =
+  "rounded border border-line bg-canvas px-1.5 py-0.5 font-mono text-xs text-ink " +
+  "focus-visible:outline-2 focus-visible:outline-accent";
 const FILTER =
   "rounded px-2 py-1 font-sans text-xs text-muted hover:bg-canvas hover:text-ink " +
   "aria-pressed:bg-ink aria-pressed:text-surface aria-pressed:hover:bg-ink " +
@@ -44,6 +48,13 @@ export function CommentList() {
   const mode = useStore((store) => store.mode);
   const setMode = useStore((store) => store.setMode);
   const viewingCode = useStore((store) => store.viewingCode);
+  const viewings = useOwnStore((store) => store.viewings);
+  // The other viewings this browser has been in, latest first: where comments can be brought from.
+  const others = Object.entries(viewings)
+    .filter(([code]) => code !== viewingCode)
+    .sort(([, a], [, b]) => b.at - a.at)
+    .map(([code]) => code);
+  const [bringFrom, setBringFrom] = useState<string | undefined>(undefined);
   const [isOpen, setOpen] = useState(false);
   const [filter, setFilter] = useState<ListFilter>("open");
   const plan = usePlan();
@@ -125,14 +136,29 @@ export function CommentList() {
               ))}
             </div>
           )}
-          {viewingCode !== undefined && (
-            <div className="border-t border-line px-2 py-1.5">
+          {viewingCode !== undefined && others.length > 0 && (
+            <div className="flex items-center gap-2 border-t border-line px-2 py-1.5">
+              <label htmlFor="bring-from" className="font-sans text-xs text-muted">
+                Bring comments from
+              </label>
+              <select
+                id="bring-from"
+                className={SELECT}
+                value={bringFrom ?? others[0]}
+                onChange={(event) => setBringFrom(event.target.value)}
+              >
+                {others.map((code) => (
+                  <option key={code} value={code}>
+                    {code}
+                  </option>
+                ))}
+              </select>
               <TextButton
                 onClick={() => {
-                  bringComments().catch(reportError);
+                  bringCommentsFrom(bringFrom ?? others[0] ?? "").catch(reportError);
                 }}
               >
-                Bring my comments in
+                Bring in
               </TextButton>
             </div>
           )}

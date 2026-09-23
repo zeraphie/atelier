@@ -33,6 +33,7 @@ export const useOwnStore = create<OwnStore>()(
         name: state.name,
         color: state.color,
         viewings: state.viewings,
+        home: state.home,
         pictures: state.pictures,
       }),
       onRehydrateStorage: () => (_state, error) => {

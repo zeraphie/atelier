@@ -1,16 +1,20 @@
 /**
  * ─ Use viewing ─
  *
- * The address decides the viewing: on load and whenever the hash
- * changes, the viewing it names is joined and any other left, and
- * unmounting leaves. Joining happens in the background, so the gallery
- * is never held up by the relays; until a peer arrives it is just you.
+ * The address decides the viewing: whenever the hash changes, the
+ * viewing it names is joined and any other left, and unmounting
+ * leaves. The first join is the arrival card's, once the person has
+ * come in, so nothing is joined behind the curtain unasked. Joining
+ * happens in the background; until a peer arrives it is just you.
  * Entering and leaving by the interface go through the address too, so
- * there is one way in and one way out.
- * Decision: DECISIONS.md, a viewing is opt-in by link and siloed.
+ * there is one way in and one way out; leaving goes home, the viewing
+ * this browser made for itself.
+ * Decision: DECISIONS.md, everyone is in a viewing.
  */
 
 import { useEffect } from "react";
+import { useOwnStore } from "../../state/own-store.js";
+import { newViewingCode } from "../../viewing/code.js";
 import { hashForViewing, viewingCodeFromHash } from "../../viewing/hash.js";
 import { joinViewing, leaveViewing } from "../../viewing/viewing.js";
 
@@ -24,7 +28,6 @@ export function useViewing(): void {
         void joinViewing(code);
       }
     };
-    follow();
     window.addEventListener("hashchange", follow);
     return () => {
       window.removeEventListener("hashchange", follow);
@@ -38,8 +41,13 @@ export function enterViewing(code: string): void {
   window.location.hash = hashForViewing(code);
 }
 
-/** Take the viewing out of the address, which leaves it, and leave the address clean. */
-export function exitViewing(): void {
-  window.location.hash = "";
-  window.history.replaceState(null, "", window.location.pathname + window.location.search);
+/** Go home: the viewing this browser made for itself, made now if it has none. */
+export function goHome(): void {
+  const own = useOwnStore.getState();
+  let { home } = own;
+  if (home === undefined) {
+    home = newViewingCode();
+    own.setHome(home);
+  }
+  enterViewing(home);
 }

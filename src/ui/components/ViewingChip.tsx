@@ -1,20 +1,20 @@
 /**
  * ─ Viewing chip ─
  *
- * The viewing's place in the top-right pill. Alone, a Share button:
- * it makes a code, puts it in the address, which joins the viewing,
- * and copies the link, saying so for a moment. In a viewing, who is
- * here: each peer as its initial in its own colour, then "Just you"
- * until a peer arrives and a count after, and Leave.
- * Decision: DECISIONS.md, a viewing is opt-in by link and siloed.
+ * The viewing's place in the top-right pill: who is here, each peer as
+ * its initial in its colour, then "Just you" until a peer arrives and a
+ * count after; Share, which copies this viewing's link and says so for
+ * a moment; and, away from home, Leave, which goes back to the viewing
+ * this browser made for itself.
+ * Decision: DECISIONS.md, everyone is in a viewing.
  */
 
 import { useEffect, useState, type CSSProperties } from "react";
+import { useOwnStore } from "../../state/own-store.js";
 import { useStore } from "../../state/store.js";
-import { newViewingCode } from "../../viewing/code.js";
 import { colorFor, initialOf } from "../../viewing/color.js";
 import { PillButton, PillLabel } from "../atoms/Pill.js";
-import { enterViewing, exitViewing } from "../utils/use-viewing.js";
+import { goHome } from "../utils/use-viewing.js";
 
 /** How long "Link copied" shows, in milliseconds. */
 const COPIED_MS = 2000;
@@ -25,6 +25,7 @@ const INITIAL =
 export function ViewingChip() {
   const code = useStore((store) => store.viewingCode);
   const peers = useStore((store) => store.peers);
+  const home = useOwnStore((store) => store.home);
   const [isCopied, setCopied] = useState(false);
   useEffect(() => {
     if (!isCopied) {
@@ -35,21 +36,16 @@ export function ViewingChip() {
       clearTimeout(timer);
     };
   }, [isCopied]);
+  if (code === undefined) {
+    return null;
+  }
   const share = (): void => {
-    enterViewing(newViewingCode());
-    // The link is the address once the hash is in it; a clipboard that will not take it is no failure.
+    // The link is the address; a clipboard that will not take it is no failure.
     navigator.clipboard
       ?.writeText(window.location.href)
       .then(() => setCopied(true))
       .catch(() => {});
   };
-  if (code === undefined) {
-    return (
-      <PillButton className="px-3" onClick={share} title="Share a link to view together">
-        Share
-      </PillButton>
-    );
-  }
   const named = Object.entries(peers).filter(([, peer]) => peer.name !== "");
   const count = Object.keys(peers).length;
   const here = isCopied ? "Link copied" : count === 0 ? "Just you" : `${count + 1} here`;
@@ -72,9 +68,14 @@ export function ViewingChip() {
         )}
         {here}
       </PillLabel>
-      <PillButton className="px-3" onClick={exitViewing} title="Leave the viewing">
-        Leave
+      <PillButton className="px-3" onClick={share} title="Copy a link to this viewing">
+        Share
       </PillButton>
+      {code !== home && (
+        <PillButton divided className="px-3" onClick={goHome} title="Back to your own viewing">
+          Leave
+        </PillButton>
+      )}
     </>
   );
 }

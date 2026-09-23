@@ -7,7 +7,7 @@
  * snapshot of a gallery for a peer who just arrived; a picture's record
  * sent ahead of its bytes; and what rides beside the bytes. Pure,
  * so a message from the network is judged before anything acts on it.
- * Decision: DECISIONS.md, a viewing is opt-in by link and siloed.
+ * Decision: DECISIONS.md, everyone is in a viewing.
  */
 
 import type { PictureRecord } from "../state/slices/collection.js";

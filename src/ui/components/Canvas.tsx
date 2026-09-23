@@ -22,6 +22,7 @@ import { useOwnStore } from "../../state/own-store.js";
 import { currentPlan, usePlan } from "../../state/utils/plan.js";
 import { useStore } from "../../state/store.js";
 import { whenHydrated } from "../../storage/index.js";
+import { whenArrived } from "../../viewing/arrival.js";
 import { useCanvas } from "../utils/canvas-context.js";
 import { failLoader, raiseCurtain } from "../utils/curtain.js";
 
@@ -103,8 +104,9 @@ export function Canvas() {
         mounted.dispose();
       };
       tour.set(mounted.tour);
-      // The curtain opens on the first frame of a whole gallery: the stores loaded too.
-      void Promise.all([mounted.firstFrame, whenHydrated()]).then(raiseCurtain);
+      // The curtain opens on the first frame of a whole gallery: the stores loaded, and the
+      // person come in to their viewing.
+      void Promise.all([mounted.firstFrame, whenHydrated(), whenArrived()]).then(raiseCurtain);
     };
     mount().catch((error: unknown) => {
       failLoader();

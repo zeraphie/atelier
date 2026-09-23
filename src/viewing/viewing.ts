@@ -9,24 +9,17 @@
  * solo gallery. Joining the viewing already joined is nothing, so
  * StrictMode's double mount joins once; a leave during a join cancels
  * it, and the store switches in order whatever the timing.
- * Decision: DECISIONS.md, a viewing is opt-in by link and siloed.
+ * Decision: DECISIONS.md, everyone is in a viewing.
  */
 
 import type { Thread } from "../comments/model.js";
 import { derivativeKey } from "../pictures/prepare.js";
 import { useOwnStore } from "../state/own-store.js";
 import type { Hanging } from "../state/slices/pictures.js";
-import {
-  absorbSnapshot,
-  GALLERY_KEY,
-  keyForViewing,
-  switchGallery,
-  useStore,
-} from "../state/store.js";
+import { absorbSnapshot, keyForViewing, switchGallery, useStore } from "../state/store.js";
 import { onAction } from "../state/utils/actions.js";
-import { getPicture, hydration, putPicture, stateStorage } from "../storage/index.js";
+import { getPicture, putPicture, stateStorage } from "../storage/index.js";
 import { swatchIdFor } from "./color.js";
-import { viewingCodeFromHash } from "./hash.js";
 import {
   isActionMessage,
   isBytesMetadata,
@@ -48,16 +41,12 @@ interface Joined {
   stopTelling: () => void;
   stopNaming: () => void;
   isLeft: boolean;
+  /** Resolves once the viewing's saved state is switched to and the transport is bound or given up. */
+  ready: Promise<void>;
 }
 
 let current: Joined | undefined;
 
-// A viewing named in the address at load is part of the roll call the curtain
-// waits on: its saved state is switched to before the gallery shows.
-const VIEWING_LOAD = "viewing";
-if (viewingCodeFromHash(window.location.hash) !== undefined) {
-  hydration.expect(VIEWING_LOAD);
-}
 // Switches of the gallery's key run one after another, so a leave that
 // follows a join always lands after it.
 let switching: Promise<void> = Promise.resolve();
@@ -67,33 +56,40 @@ function switchTo(key: string): Promise<void> {
   return switching;
 }
 
-/** Join the viewing `code`, leaving any other first; joining the viewing already joined is nothing. */
-export async function joinViewing(code: string): Promise<void> {
+/** Join the viewing `code`, leaving any other first; joining the one being joined shares its wait. */
+export function joinViewing(code: string): Promise<void> {
   if (current?.code === code) {
-    return;
+    return current.ready;
   }
-  await leaveViewing();
+  const previous = current;
   const joined: Joined = {
     code,
     transport: undefined,
     stopTelling: () => {},
     stopNaming: () => {},
     isLeft: false,
+    ready: Promise.resolve(),
   };
   current = joined;
-  try {
-    await switchTo(keyForViewing(code));
-  } finally {
-    hydration.loaded(VIEWING_LOAD);
+  joined.ready = join(joined, previous);
+  return joined.ready;
+}
+
+// The join itself: the one before left, the store switched to the viewing's
+// key, the viewing entered, and the transport bound once it is up.
+async function join(joined: Joined, previous: Joined | undefined): Promise<void> {
+  if (previous !== undefined) {
+    await leave(previous);
   }
+  await switchTo(keyForViewing(joined.code));
   if (joined.isLeft) {
     return;
   }
-  useStore.getState().enteredViewing(code);
-  useOwnStore.getState().noteViewing(code);
+  useStore.getState().enteredViewing(joined.code);
+  useOwnStore.getState().noteViewing(joined.code);
   let transport: Transport;
   try {
-    transport = await connect(code);
+    transport = await connect(joined.code);
   } catch (error: unknown) {
     reportError(error);
     return;
@@ -102,6 +98,11 @@ export async function joinViewing(code: string): Promise<void> {
     transport.leave().catch(reportError);
     return;
   }
+  bind(joined, transport);
+}
+
+// Everything the transport does for the viewing, once connected.
+function bind(joined: Joined, transport: Transport): void {
   joined.transport = transport;
   transport.onMessage((data, from, metadata) => {
     receive(data, from, metadata);
@@ -141,9 +142,9 @@ export async function joinViewing(code: string): Promise<void> {
   });
 }
 
-/** Replay the solo gallery's threads here, telling each, so the viewing has them too. */
-export async function bringComments(): Promise<number> {
-  const saved = await stateStorage.getItem(GALLERY_KEY);
+/** Replay another viewing's saved threads here, telling each, so this viewing has them too. */
+export async function bringCommentsFrom(code: string): Promise<number> {
+  const saved = await stateStorage.getItem(keyForViewing(code));
   if (saved === null) {
     return 0;
   }
@@ -229,14 +230,19 @@ export async function leaveViewing(): Promise<void> {
     return;
   }
   current = undefined;
+  await leave(joined);
+  await switchTo(keyForViewing(undefined));
+}
+
+// Unbind and let the room go; the store is the caller's to switch. The library
+// lets the room go a moment after it is told, and a join of the same room
+// before then would get the dying one back, so this waits for it.
+async function leave(joined: Joined): Promise<void> {
   joined.isLeft = true;
   joined.stopTelling();
   joined.stopNaming();
   useStore.getState().leftViewing();
-  // The library lets the room go a moment after it is told; a join of the same
-  // room before then would get the dying one back, so leaving waits for it.
   await joined.transport?.leave().catch(reportError);
-  await switchTo(keyForViewing(undefined));
 }
 
 /** The viewing joined, for the interface and the tests. */
