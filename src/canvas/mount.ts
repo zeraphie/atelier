@@ -39,8 +39,6 @@ export interface MountHooks {
   readonly onTap: (world: Point) => void;
   /** Whether the grid is drawn, as the interface switches it. */
   readonly gridShown: ValueStore<boolean>;
-  /** A double tap on a room's name in edit mode: the name is to be typed. */
-  readonly onRename: (roomId: string) => void;
 }
 
 export interface MountedCanvas {
@@ -68,7 +66,7 @@ export async function mountCanvas(
   const surface = tokenColor("--color-surface", { rgb: 0xffffff, alpha: 1 });
   const accent = tokenColor("--color-accent", { rgb: 0x3b5bdb, alpha: 1 });
   const colors: GalleryColors = {
-    room: { floor: { ...surface, alpha: 0.85 }, name: muted },
+    room: { floor: { ...surface, alpha: 0.85 } },
     wall: { ...ink, alpha: 0.9 },
     work: { edge: line, card: surface, ink, muted },
     outline: accent,
@@ -119,16 +117,7 @@ export async function mountCanvas(
     return target.kind === "room" ? target.room.rect : currentPlan().bounds;
   };
   const stopDoubleTap = input.onDoubleTap((at) => {
-    const point = camera.toWorld(at);
-    // In edit mode a room's name is for typing, not for fitting the room.
-    if (useStore.getState().mode === "edit") {
-      const named = gallery.roomNamedAt(point);
-      if (named !== undefined) {
-        hooks.onRename(named);
-        return;
-      }
-    }
-    const target = targetAt(currentPlan(), point);
+    const target = targetAt(currentPlan(), camera.toWorld(at));
     if (target.kind === "work") {
       tour.enterAt(target.work.work.id);
     }

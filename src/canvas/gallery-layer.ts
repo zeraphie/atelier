@@ -73,14 +73,6 @@ export class GalleryLayer {
     world.addChild(this.outline);
   }
 
-  /** The room whose name is under `point`, if any: a press on a name is not a press on the floor. */
-  roomNamedAt(point: Point): string | undefined {
-    return this.rooms.find((room) => {
-      const { left, top, right, bottom } = room.nameRect();
-      return point.x >= left && point.x <= right && point.y >= top && point.y <= bottom;
-    })?.id;
-  }
-
   /** Show a work at a centre for the length of a drag; the plan, and so the layer, still say where it is. */
   nudge(workId: string, centre: Point): void {
     this.byId.get(workId)?.moveTo(centre);
@@ -93,9 +85,6 @@ export class GalleryLayer {
 
   follow(state: CameraState): void {
     this.zoom = state.zoom;
-    for (const room of this.rooms) {
-      room.follow(state.zoom);
-    }
     for (const work of this.works) {
       work.follow(state.zoom);
     }
