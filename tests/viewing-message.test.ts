@@ -61,9 +61,10 @@ describe("isSnapshotMessage, isPictureMessage and isBytesMetadata", () => {
 
 describe("isHelloMessage", () => {
   test("a hello carries a name, and nothing else passes", () => {
-    expect(isHelloMessage({ kind: "hello", name: "Ren", user: "u1" })).toBe(true);
+    expect(isHelloMessage({ kind: "hello", name: "Ren", user: "u1", color: "pink" })).toBe(true);
+    expect(isHelloMessage({ kind: "hello", name: "Ren", user: "u1" })).toBe(false);
     expect(isHelloMessage({ kind: "hello", name: "Ren" })).toBe(false);
     expect(isHelloMessage({ kind: "hello" })).toBe(false);
-    expect(isHelloMessage({ kind: "action", name: "Ren", user: "u1" })).toBe(false);
+    expect(isHelloMessage({ kind: "action", name: "Ren", user: "u1", color: "pink" })).toBe(false);
   });
 });

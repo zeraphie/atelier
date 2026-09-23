@@ -135,6 +135,8 @@ export interface HelloMessage {
   readonly kind: "hello";
   readonly name: string;
   readonly user: string;
+  /** The colour, by swatch id. */
+  readonly color: string;
 }
 
 /** Whether `data` is a hello with a name. */
@@ -142,6 +144,16 @@ export function isHelloMessage(data: unknown): data is HelloMessage {
   if (typeof data !== "object" || data === null) {
     return false;
   }
-  const { kind, name, user } = data as { kind?: unknown; name?: unknown; user?: unknown };
-  return kind === "hello" && typeof name === "string" && typeof user === "string";
+  const { kind, name, user, color } = data as {
+    kind?: unknown;
+    name?: unknown;
+    user?: unknown;
+    color?: unknown;
+  };
+  return (
+    kind === "hello" &&
+    typeof name === "string" &&
+    typeof user === "string" &&
+    typeof color === "string"
+  );
 }

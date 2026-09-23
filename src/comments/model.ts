@@ -13,6 +13,8 @@ import type { Point } from "../geometry.js";
 export interface Comment {
   readonly id: string;
   readonly author: string;
+  /** The author's colour when it was made, by swatch id; absent for one made before colours. */
+  readonly color?: string;
   readonly text: string;
   /** Milliseconds since the epoch. */
   readonly createdAt: number;

@@ -17,6 +17,8 @@ export interface Peer {
   readonly name: string;
   /** The peer's browser id, from its hello: what its hangings are owned by. */
   readonly user?: string;
+  /** The peer's colour, by swatch id, from its hello. */
+  readonly color?: string;
 }
 
 export interface ViewingSlice {
@@ -28,7 +30,7 @@ export interface ViewingSlice {
   leftViewing(): void;
   peerJoined(peerId: string): void;
   /** A peer said hello, or said a new name. */
-  peerNamed(peerId: string, name: string, user: string): void;
+  peerNamed(peerId: string, name: string, user: string, color: string): void;
   peerLeft(peerId: string): void;
 }
 
@@ -47,8 +49,8 @@ export function createViewingSlice(set: Set<Store>, _get: Get<Store>): ViewingSl
         peers: { ...state.peers, [peerId]: state.peers[peerId] ?? { name: "" } },
       }));
     },
-    peerNamed: (peerId, name, user) => {
-      set((state) => ({ peers: { ...state.peers, [peerId]: { name, user } } }));
+    peerNamed: (peerId, name, user, color) => {
+      set((state) => ({ peers: { ...state.peers, [peerId]: { name, user, color } } }));
     },
     peerLeft: (peerId) => {
       set((state) => {

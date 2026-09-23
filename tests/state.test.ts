@@ -13,6 +13,7 @@ function gallery() {
   const told: ActionCall[] = [];
   const context = {
     who: () => "Izzy",
+    color: () => "teal",
     tell: (call: ActionCall) => {
       told.push(call);
     },
@@ -219,9 +220,9 @@ describe("viewing", () => {
     state().peerJoined("a");
     expect(state().viewingCode).toBe("r1");
     expect(state().peers).toEqual({ a: { name: "" }, b: { name: "" } });
-    state().peerNamed("a", "Ren", "u1");
-    state().peerNamed("c", "Kit", "u2");
-    expect(state().peers["a"]?.name).toBe("Ren");
+    state().peerNamed("a", "Ren", "u1", "pink");
+    state().peerNamed("c", "Kit", "u2", "teal");
+    expect(state().peers["a"]).toEqual({ name: "Ren", user: "u1", color: "pink" });
     expect(state().peers["c"]?.name).toBe("Kit");
     state().peerLeft("a");
     expect(Object.keys(state().peers)).toEqual(["b", "c"]);

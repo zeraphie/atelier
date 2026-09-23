@@ -25,6 +25,7 @@ import {
 } from "../state/store.js";
 import { onAction } from "../state/utils/actions.js";
 import { getPicture, hydration, putPicture, stateStorage } from "../storage/index.js";
+import { swatchIdFor } from "./color.js";
 import { viewingCodeFromHash } from "./hash.js";
 import {
   isActionMessage,
@@ -120,11 +121,13 @@ export async function joinViewing(code: string): Promise<void> {
     }
   });
   transport.onLeave((peerId) => useStore.getState().peerLeft(peerId));
-  // A new name is said to everyone.
-  let named = useOwnStore.getState().name;
+  // A new name or colour is said to everyone.
+  const saidOf = (own: { readonly name: string; readonly color: string | undefined }): string =>
+    own.name + "/" + swatchIdFor(own.name, own.color);
+  let said = saidOf(useOwnStore.getState());
   joined.stopNaming = useOwnStore.subscribe((own) => {
-    if (own.name !== named) {
-      named = own.name;
+    if (saidOf(own) !== said) {
+      said = saidOf(own);
       sayHello(transport);
     }
   });
@@ -178,7 +181,7 @@ function receive(data: unknown, from: string, metadata: unknown): void {
   if (isBytesMetadata(metadata) && bytes !== undefined) {
     void keepBytes(metadata.id, bytes);
   } else if (isHelloMessage(data)) {
-    useStore.getState().peerNamed(from, data.name, data.user);
+    useStore.getState().peerNamed(from, data.name, data.user, data.color);
   } else if (isPictureMessage(data)) {
     void keepRecord(data);
   } else if (isSnapshotMessage(data)) {
@@ -270,7 +273,12 @@ function asBlob(data: unknown): Blob | undefined {
 
 // Who this screen is, said to one peer or to all.
 function sayHello(transport: Transport, to?: string): void {
-  const { name, userId } = useOwnStore.getState();
-  const message: HelloMessage = { kind: "hello", name, user: userId };
+  const { name, userId, color } = useOwnStore.getState();
+  const message: HelloMessage = {
+    kind: "hello",
+    name,
+    user: userId,
+    color: swatchIdFor(name, color),
+  };
   transport.send(message, to);
 }

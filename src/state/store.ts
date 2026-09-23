@@ -19,6 +19,7 @@ import { createPicturesSlice, type PicturesSlice } from "./slices/pictures.js";
 import { createViewingSlice, type ViewingSlice } from "./slices/viewing.js";
 import { hydration, stateStorage } from "../storage/index.js";
 import { tell, type SliceContext } from "./utils/actions.js";
+import { swatchIdFor } from "../viewing/color.js";
 import { mergeSnapshot, snapshotOf, type Snapshot } from "../viewing/snapshot.js";
 import { useOwnStore } from "./own-store.js";
 
@@ -27,7 +28,14 @@ export type Store = CommentsSlice & PicturesSlice & GallerySlice & ViewingSlice;
 /** The solo gallery's key; a viewing's is this with the viewing's code after a dot. */
 export const GALLERY_KEY = "atelier.gallery";
 
-const context: SliceContext = { who: () => useOwnStore.getState().name, tell };
+const context: SliceContext = {
+  who: () => useOwnStore.getState().name,
+  color: () => {
+    const { name, color } = useOwnStore.getState();
+    return swatchIdFor(name, color);
+  },
+  tell,
+};
 
 hydration.expect("gallery");
 

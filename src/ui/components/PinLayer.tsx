@@ -65,7 +65,7 @@ function Pin({ thread, at }: { readonly thread: ThreadModel; readonly at: Point 
               <button
                 type="button"
                 className={PIN}
-                style={{ "--person": colorFor(author) } as CSSProperties}
+                style={{ "--person": colorFor(author, first?.color) } as CSSProperties}
                 data-resolved={thread.resolved}
                 data-open={isOpen}
                 aria-label={`Comment by ${author}${thread.resolved ? ", resolved" : ""}`}

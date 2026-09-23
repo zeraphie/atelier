@@ -34,6 +34,8 @@ export function tell(call: ActionCall): void {
 /** What a slice needs from outside itself: who is acting, and where to tell. */
 export interface SliceContext {
   readonly who: () => string;
+  /** The colour the person acts in, by swatch id. */
+  readonly color: () => string;
   readonly tell: (call: ActionCall) => void;
 }
 

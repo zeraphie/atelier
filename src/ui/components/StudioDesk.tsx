@@ -5,7 +5,8 @@
  * canvas: a DOM panel anchored to a point in the world, moved and
  * scaled by the same camera as everything else, so from the plan it is
  * a desk and up close it is a form. What sits on it is what nobody
- * needs at hand all the time: the name to comment under, the grid.
+ * needs at hand all the time: the name to comment under, the colour
+ * beside it, the grid.
  * Decision: DECISIONS.md, rooms as grouping on the canvas.
  */
 
@@ -14,6 +15,8 @@ import { useOwnStore } from "../../state/own-store.js";
 import { usePlan } from "../../state/utils/plan.js";
 import { Anchored } from "../atoms/Anchored.js";
 import { Input } from "../atoms/Field.js";
+import { swatchIdFor } from "../../viewing/color.js";
+import { ColorPicker } from "../molecules/ColorPicker.js";
 import { useCameraState, useCanvas, useGridShown } from "../utils/canvas-context.js";
 
 // The desk's width in centimetres, its width on screen at 100%; it is as tall as what sits on it.
@@ -38,6 +41,7 @@ export function StudioDesk() {
       className="p-3"
     >
       <NameField />
+      <ColorField />
       <GridToggle />
     </Anchored>
   );
@@ -62,6 +66,19 @@ function NameField() {
         }}
       />
     </label>
+  );
+}
+
+// The colour beside the name: one of the eight, kept with it.
+function ColorField() {
+  const name = useOwnStore((store) => store.name);
+  const color = useOwnStore((store) => store.color);
+  const setColor = useOwnStore((store) => store.setColor);
+  return (
+    <div className="mb-2">
+      <span className="mb-1 block font-sans text-xs text-muted">Your colour</span>
+      <ColorPicker value={swatchIdFor(name, color)} onChange={setColor} />
+    </div>
   );
 }
 

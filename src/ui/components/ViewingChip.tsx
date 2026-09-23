@@ -62,7 +62,7 @@ export function ViewingChip() {
               <span
                 key={id}
                 className={INITIAL}
-                style={{ "--person": colorFor(peer.name) } as CSSProperties}
+                style={{ "--person": colorFor(peer.name, peer.color) } as CSSProperties}
                 title={peer.name}
               >
                 {initialOf(peer.name)}

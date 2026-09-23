@@ -105,7 +105,13 @@ export const createCommentsSlice =
           id: crypto.randomUUID(),
           at,
           comments: [
-            { id: crypto.randomUUID(), author: context.who(), text, createdAt: Date.now() },
+            {
+              id: crypto.randomUUID(),
+              author: context.who(),
+              color: context.color(),
+              text,
+              createdAt: Date.now(),
+            },
           ],
           resolved: false,
         };
@@ -116,6 +122,7 @@ export const createCommentsSlice =
         get().putComment(threadId, {
           id: crypto.randomUUID(),
           author: context.who(),
+          color: context.color(),
           text,
           createdAt: Date.now(),
         });

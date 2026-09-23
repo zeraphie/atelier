@@ -31,6 +31,7 @@ export const useOwnStore = create<OwnStore>()(
       partialize: (state) => ({
         userId: state.userId,
         name: state.name,
+        color: state.color,
         viewings: state.viewings,
         pictures: state.pictures,
       }),
