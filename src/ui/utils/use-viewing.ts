@@ -9,12 +9,15 @@
  * Entering and leaving by the interface go through the address too, so
  * there is one way in and one way out; leaving goes home, the viewing
  * this browser made for itself. Your pointer is said to the viewing as
- * it moves over the canvas, from the canvas session's own record of it.
+ * it moves over the canvas, from the canvas session's own record of it,
+ * except while you follow someone: on a view that is not your own it
+ * would point at nothing of your choosing, so no screen shows it.
  * Decision: DECISIONS.md, everyone is in a viewing.
  */
 
 import { useEffect } from "react";
 import { useOwnStore } from "../../state/own-store.js";
+import { useStore } from "../../state/store.js";
 import { newViewingCode } from "../../viewing/code.js";
 import { hashForViewing, viewingCodeFromHash } from "../../viewing/hash.js";
 import { joinViewing, leaveViewing, sayCursor } from "../../viewing/viewing.js";
@@ -54,14 +57,20 @@ export function goHome(): void {
   enterViewing(home);
 }
 
-/** Your pointer, said to the viewing as it moves, and said gone when this unmounts. */
+/** Your pointer, said to the viewing as it moves, and said gone while you follow someone or when this unmounts. */
 export function useCursorSharing(): void {
   const { pointer } = useCanvas();
+  const isFollowing = useStore((store) => store.following !== undefined);
   useEffect(() => {
+    if (isFollowing) {
+      sayCursor(undefined);
+      return;
+    }
+    sayCursor(pointer.current);
     const stop = pointer.subscribe(sayCursor);
     return () => {
       stop();
       sayCursor(undefined);
     };
-  }, [pointer]);
+  }, [pointer, isFollowing]);
 }
