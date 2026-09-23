@@ -17,6 +17,8 @@ import { ContextMenu } from "radix-ui";
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 import type { Point, TapModifiers } from "../../camera/index.js";
 import { roomAt, workAt, type HungRoom, type HungWork } from "../../gallery/hang.js";
+import { mayHandle } from "../../gallery/works.js";
+import { useOwnStore } from "../../state/own-store.js";
 import { currentPlan, usePlan } from "../../state/utils/plan.js";
 import { useStore } from "../../state/store.js";
 import { whenHydrated } from "../../storage/index.js";
@@ -68,6 +70,7 @@ export function Canvas() {
   const removeSelected = useStore((store) => store.removeSelected);
   const askPicture = useStore((store) => store.askPicture);
   const takeDown = useStore((store) => store.takeDown);
+  const userId = useOwnStore((store) => store.userId);
   const plan = usePlan();
   // Of the rooms picked, the drawn ones, which are the ones a removal takes.
   const picked = plan.rooms.filter(
@@ -141,11 +144,13 @@ export function Canvas() {
               Hang a picture here
             </ContextMenu.Item>
           )}
-          {mode === "edit" && menuWork?.work.pictureId !== undefined && (
-            <ContextMenu.Item className={ITEM} onSelect={() => takeDown(menuWork.work.id)}>
-              Take down
-            </ContextMenu.Item>
-          )}
+          {mode === "edit" &&
+            menuWork?.work.pictureId !== undefined &&
+            mayHandle(menuWork.work, userId) && (
+              <ContextMenu.Item className={ITEM} onSelect={() => takeDown(menuWork.work.id)}>
+                Take down
+              </ContextMenu.Item>
+            )}
           {mode === "edit" && picked > 0 && (
             <ContextMenu.Item className={ITEM} onSelect={() => removeSelected()}>
               {picked === 1 ? "Remove the selected room" : `Remove the ${picked} selected rooms`}

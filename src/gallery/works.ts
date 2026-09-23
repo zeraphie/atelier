@@ -38,6 +38,13 @@ export interface Work {
   readonly wall?: Side;
   /** A picture of your own hung here: the picture in the collection, by the hash of its bytes. */
   readonly pictureId?: string;
+  /** Who hung it, by their browser's id: the one who may move, size or take it down. */
+  readonly by?: string;
+}
+
+/** Whether a person may handle a work: any gallery work, and a picture they hung or one hung before ids. */
+export function mayHandle(work: Work, userId: string): boolean {
+  return work.pictureId === undefined || work.by === undefined || work.by === userId;
 }
 
 export interface Room {

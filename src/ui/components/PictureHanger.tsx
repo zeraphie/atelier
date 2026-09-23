@@ -46,6 +46,7 @@ export function PictureHanger() {
   const askPicture = useStore((store) => store.askPicture);
   const hang = useStore((store) => store.hang);
   const addPicture = useOwnStore((store) => store.addPicture);
+  const userId = useOwnStore((store) => store.userId);
   const fileInput = useRef<HTMLInputElement>(null);
   const [pending, setPending] = useState<Pending | undefined>(undefined);
 
@@ -111,6 +112,7 @@ export function PictureHanger() {
     });
     hang({
       id: crypto.randomUUID(),
+      by: userId,
       pictureId: prepared.id,
       at: hangingAt,
       widthCm: details.widthCm,

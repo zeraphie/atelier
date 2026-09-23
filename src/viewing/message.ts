@@ -130,10 +130,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-/** A screen saying who it is, on arrival and whenever its name changes. */
+/** A screen saying who it is, on arrival and whenever its name changes: its name, and its browser's id. */
 export interface HelloMessage {
   readonly kind: "hello";
   readonly name: string;
+  readonly user: string;
 }
 
 /** Whether `data` is a hello with a name. */
@@ -141,6 +142,6 @@ export function isHelloMessage(data: unknown): data is HelloMessage {
   if (typeof data !== "object" || data === null) {
     return false;
   }
-  const { kind, name } = data as { kind?: unknown; name?: unknown };
-  return kind === "hello" && typeof name === "string";
+  const { kind, name, user } = data as { kind?: unknown; name?: unknown; user?: unknown };
+  return kind === "hello" && typeof name === "string" && typeof user === "string";
 }

@@ -24,9 +24,9 @@ import {
 } from "../camera/index.js";
 import { edgeSegment } from "../gallery/edges.js";
 import { rectOf, SPACING, type Plan } from "../gallery/hang.js";
+import { mayHandle, type Work } from "../gallery/works.js";
 import images from "../gallery/images.json";
 import { wallNear } from "../gallery/resize.js";
-import { cornerNear } from "../gallery/scale.js";
 import { targetAt, type Target } from "../gallery/targets.js";
 import { currentPlan, currentRoute, onPlanChange, planWith } from "../state/utils/plan.js";
 import { useOwnStore } from "../state/own-store.js";
@@ -165,6 +165,21 @@ export async function mountCanvas(
     return mode === "edit" && tool === "move";
   };
   const reachCm = (): number => Math.min(WALL_REACH_PX / camera.current.zoom, WALL_REACH_MOST_CM);
+  // Whether this person may move or size a work: any gallery work, and a picture they hung.
+  const mayHandleWork = (work: Work): boolean => mayHandle(work, useOwnStore.getState().userId);
+  const scaleTool = new ScaleTool({
+    plan: currentPlan,
+    mayHandle: mayHandleWork,
+    reachCm,
+    stretch: (id, rect) => gallery.stretch(id, rect),
+    resize: (id, centre, widthCm) => {
+      const hanging = useStore.getState().hangings[id]?.value;
+      if (hanging !== undefined && hanging !== null) {
+        useStore.getState().hang({ ...hanging, at: centre, widthCm });
+      }
+    },
+    host,
+  });
   const isPicturing = (): boolean => {
     const { mode, tool } = useStore.getState();
     return mode === "edit" && tool === "picture";
@@ -202,10 +217,14 @@ export async function mountCanvas(
       return doorTool.actionAt(world) === undefined ? target.kind : "edge";
     }
     if (isPicturing()) {
-      const hit = cornerNear(currentPlan(), world, reachCm());
+      const hit = scaleTool.cornerAt(world);
       if (hit !== undefined) {
         return hit.corner === "nw" || hit.corner === "se" ? "corner-nwse" : "corner-nesw";
       }
+    }
+    if (target.kind === "work" && !mayHandleWork(target.work.work)) {
+      // Another person's picture: nothing to take hold of, so no grab.
+      return "other";
     }
     if (target.kind !== "work" && isMoving()) {
       const hit = wallNear(currentPlan(), world, reachCm());
@@ -260,6 +279,7 @@ export async function mountCanvas(
     firstOf(
       new MoveTool({
         plan: currentPlan,
+        mayHandle: mayHandleWork,
         nudge: (id, centre) => gallery.nudge(id, centre),
         move: (id, centre) => useStore.getState().moveWork(id, centre),
         host,
@@ -302,22 +322,7 @@ export async function mountCanvas(
   const dooring = new PointerSession(stage.app.canvas, (at) => camera.toWorld(at), doorTool);
   // The Picture tool: a press on a corner of a picture of your own scales it;
   // a click on a room's floor asks for a picture, as a tap, below.
-  const picturing = new PointerSession(
-    stage.app.canvas,
-    (at) => camera.toWorld(at),
-    new ScaleTool({
-      plan: currentPlan,
-      reachCm,
-      stretch: (id, rect) => gallery.stretch(id, rect),
-      resize: (id, centre, widthCm) => {
-        const hanging = useStore.getState().hangings[id]?.value;
-        if (hanging !== undefined && hanging !== null) {
-          useStore.getState().hang({ ...hanging, at: centre, widthCm });
-        }
-      },
-      host,
-    })
-  );
+  const picturing = new PointerSession(stage.app.canvas, (at) => camera.toWorld(at), scaleTool);
   const stopTools = useStore.subscribe(() => {
     moving.setActive(isMoving());
     drawing.setActive(isDrawing());

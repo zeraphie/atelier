@@ -178,7 +178,7 @@ function receive(data: unknown, from: string, metadata: unknown): void {
   if (isBytesMetadata(metadata) && bytes !== undefined) {
     void keepBytes(metadata.id, bytes);
   } else if (isHelloMessage(data)) {
-    useStore.getState().peerNamed(from, data.name);
+    useStore.getState().peerNamed(from, data.name, data.user);
   } else if (isPictureMessage(data)) {
     void keepRecord(data);
   } else if (isSnapshotMessage(data)) {
@@ -270,6 +270,7 @@ function asBlob(data: unknown): Blob | undefined {
 
 // Who this screen is, said to one peer or to all.
 function sayHello(transport: Transport, to?: string): void {
-  const message: HelloMessage = { kind: "hello", name: useOwnStore.getState().name };
+  const { name, userId } = useOwnStore.getState();
+  const message: HelloMessage = { kind: "hello", name, user: userId };
   transport.send(message, to);
 }

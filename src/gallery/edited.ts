@@ -109,6 +109,7 @@ function workOf(hanging: Hanging, record: PictureRecord): Work {
     collection: record.credit,
     source: "",
     pictureId: record.id,
+    ...(hanging.by === undefined ? {} : { by: hanging.by }),
   };
 }
 

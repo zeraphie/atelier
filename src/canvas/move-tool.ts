@@ -14,9 +14,12 @@ import type { PointerSessionOwner } from "../camera/pointer-session.js";
 import type { Point } from "../geometry.js";
 import type { Plan } from "../gallery/hang.js";
 import { targetAt } from "../gallery/targets.js";
+import type { Work } from "../gallery/works.js";
 
 export interface MoveToolDeps {
   readonly plan: () => Plan;
+  /** Whether this person may move a work: not another's picture. */
+  readonly mayHandle: (work: Work) => boolean;
   /** Show a work at a centre without changing anything: the drag's preview. */
   readonly nudge: (workId: string, centre: Point) => void;
   /** The edit itself, once the picture is put down. */
@@ -41,12 +44,13 @@ export class MoveTool implements PointerSessionOwner {
   }
 
   takes(at: Point): boolean {
-    return targetAt(this.deps.plan(), at).kind === "work";
+    const target = targetAt(this.deps.plan(), at);
+    return target.kind === "work" && this.deps.mayHandle(target.work.work);
   }
 
   onDown(at: Point): boolean {
     const target = targetAt(this.deps.plan(), at);
-    if (target.kind !== "work") {
+    if (target.kind !== "work" || !this.deps.mayHandle(target.work.work)) {
       return false;
     }
     const { rect } = target.work;

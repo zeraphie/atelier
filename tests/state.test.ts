@@ -219,8 +219,8 @@ describe("viewing", () => {
     state().peerJoined("a");
     expect(state().viewingCode).toBe("r1");
     expect(state().peers).toEqual({ a: { name: "" }, b: { name: "" } });
-    state().peerNamed("a", "Ren");
-    state().peerNamed("c", "Kit");
+    state().peerNamed("a", "Ren", "u1");
+    state().peerNamed("c", "Kit", "u2");
     expect(state().peers["a"]?.name).toBe("Ren");
     expect(state().peers["c"]?.name).toBe("Kit");
     state().peerLeft("a");

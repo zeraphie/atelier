@@ -12,10 +12,13 @@
 import type { PointerSessionOwner } from "../camera/pointer-session.js";
 import type { Point, WorldRect } from "../geometry.js";
 import type { Plan } from "../gallery/hang.js";
-import { cornerNear, scaled, type Corner } from "../gallery/scale.js";
+import { cornerNear, scaled, type Corner, type CornerHit } from "../gallery/scale.js";
+import type { Work } from "../gallery/works.js";
 
 export interface ScaleToolDeps {
   readonly plan: () => Plan;
+  /** Whether this person may size a work: not another's picture. */
+  readonly mayHandle: (work: Work) => boolean;
   /** How near a corner a press must be, in world units, as the zoom stands. */
   readonly reachCm: () => number;
   /** Show a picture over a rect without changing anything: the drag's preview; none puts it back. */
@@ -45,11 +48,17 @@ export class ScaleTool implements PointerSessionOwner {
   }
 
   takes(at: Point): boolean {
-    return cornerNear(this.deps.plan(), at, this.deps.reachCm()) !== undefined;
+    return this.cornerAt(at) !== undefined;
+  }
+
+  /** The corner a press at `at` would take, of a picture this person may size. */
+  cornerAt(at: Point): CornerHit | undefined {
+    const hit = cornerNear(this.deps.plan(), at, this.deps.reachCm());
+    return hit !== undefined && this.deps.mayHandle(hit.work.work) ? hit : undefined;
   }
 
   onDown(at: Point): boolean {
-    const hit = cornerNear(this.deps.plan(), at, this.deps.reachCm());
+    const hit = this.cornerAt(at);
     if (hit === undefined) {
       return false;
     }

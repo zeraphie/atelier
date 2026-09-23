@@ -29,6 +29,7 @@ export const useOwnStore = create<OwnStore>()(
       version: 1,
       storage: createJSONStorage(() => stateStorage),
       partialize: (state) => ({
+        userId: state.userId,
         name: state.name,
         viewings: state.viewings,
         pictures: state.pictures,
@@ -38,6 +39,8 @@ export const useOwnStore = create<OwnStore>()(
           reportError(error);
         }
         hydration.loaded("own");
+        // Written back once loaded, so an id made on this load is kept for the next.
+        useOwnStore.setState({});
       },
     }
   )

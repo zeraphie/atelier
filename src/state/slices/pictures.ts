@@ -16,6 +16,8 @@ import type { Store } from "../store.js";
 
 export interface Hanging {
   readonly id: string;
+  /** Who hung it, by their browser's id; absent for one hung before ids, which anyone may handle. */
+  readonly by?: string;
   /** The picture in the collection, by the hash of its bytes. */
   readonly pictureId: string;
   /** Where it hangs, the picture's centre, in world units. */
