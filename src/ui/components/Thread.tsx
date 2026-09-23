@@ -7,16 +7,17 @@
  */
 
 import type { Thread as ThreadModel } from "../../comments/model.js";
-import { useCommentsStore } from "../../comments/store.js";
+import { useOwnStore } from "../../state/own-store.js";
+import { useStore } from "../../state/store.js";
 import { TextButton } from "../atoms/TextButton.js";
 import { Comment } from "../molecules/Comment.js";
 import { CommentForm } from "../molecules/CommentForm.js";
 
 export function Thread({ thread }: { readonly thread: ThreadModel }) {
-  const author = useCommentsStore((store) => store.author);
-  const edit = useCommentsStore((store) => store.edit);
-  const reply = useCommentsStore((store) => store.reply);
-  const resolve = useCommentsStore((store) => store.resolve);
+  const author = useOwnStore((store) => store.name);
+  const edit = useStore((store) => store.edit);
+  const reply = useStore((store) => store.reply);
+  const resolve = useStore((store) => store.resolve);
   return (
     <div className="flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-3">
       <ol className="flex flex-col gap-3">

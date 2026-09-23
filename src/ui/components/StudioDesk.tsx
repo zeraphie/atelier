@@ -10,8 +10,8 @@
  */
 
 import { useState } from "react";
-import { useCommentsStore } from "../../comments/store.js";
-import { PLAN } from "../../gallery/plan.js";
+import { useOwnStore } from "../../state/own-store.js";
+import { usePlan } from "../../state/plan.js";
 import { Anchored } from "../atoms/Anchored.js";
 import { Input } from "../atoms/Field.js";
 import { useCameraState, useCanvas, useGridShown } from "../utils/canvas-context.js";
@@ -21,7 +21,7 @@ const WIDTH_CM = 120;
 
 export function StudioDesk() {
   const camera = useCameraState();
-  const studio = PLAN.rooms.find((room) => room.room.id === "studio");
+  const studio = usePlan().rooms.find((room) => room.room.id === "studio");
   if (studio === undefined) {
     return null;
   }
@@ -44,8 +44,8 @@ export function StudioDesk() {
 }
 
 function NameField() {
-  const author = useCommentsStore((store) => store.author);
-  const setAuthor = useCommentsStore((store) => store.setAuthor);
+  const author = useOwnStore((store) => store.name);
+  const setAuthor = useOwnStore((store) => store.setName);
   const [draft, setDraft] = useState(author);
   return (
     <label htmlFor="comment-as" className="mb-2 block">

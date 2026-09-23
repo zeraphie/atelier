@@ -4,7 +4,9 @@
  * Everything the canvas needs, put together in one place and taken
  * apart in one place. This module is the canvas chunk's door: the
  * canvas host loads it on demand, so Pixi and the stage arrive after
- * the app and evaluate on their own.
+ * the app and evaluate on their own. The plan is read from the store
+ * and the gallery layer drawn again whenever it changes, so an edit
+ * here or from a peer is on the canvas at once.
  */
 
 import {
@@ -17,13 +19,13 @@ import {
   type ViewSize,
   type WorldRect,
 } from "../camera/index.js";
-import { SPACING } from "../gallery/hang.js";
+import { SPACING, type Plan } from "../gallery/hang.js";
 import images from "../gallery/images.json";
-import { PLAN, ROUTE } from "../gallery/plan.js";
 import { targetAt, type Target } from "../gallery/targets.js";
+import { currentPlan, currentRoute, onPlanChange } from "../state/plan.js";
 import { DotGrid } from "./dot-grid.js";
 import { whenFacesReady } from "./faces.js";
-import { GalleryLayer } from "./gallery-layer.js";
+import { GalleryLayer, type GalleryColors } from "./gallery-layer.js";
 import { Stage } from "./stage.js";
 import { tokenColor } from "./theme.js";
 import { Tour, type TourHandle } from "./tour.js";
@@ -60,32 +62,26 @@ export async function mountCanvas(
   const line = tokenColor("--color-line", { rgb: 0xd9dade, alpha: 1 });
   const surface = tokenColor("--color-surface", { rgb: 0xffffff, alpha: 1 });
   const accent = tokenColor("--color-accent", { rgb: 0x3b5bdb, alpha: 1 });
-  const plan = PLAN;
-  const route = ROUTE;
-  const gallery = new GalleryLayer(
-    stage.world,
-    plan,
-    SPACING.wallCm,
-    images,
-    {
-      room: { floor: { ...surface, alpha: 0.85 }, name: muted },
-      wall: { ...ink, alpha: 0.9 },
-      work: { edge: line, card: surface, ink, muted },
-      outline: accent,
-    },
-    requestFrame
-  );
+  const colors: GalleryColors = {
+    room: { floor: { ...surface, alpha: 0.85 }, name: muted },
+    wall: { ...ink, alpha: 0.9 },
+    work: { edge: line, card: surface, ink, muted },
+    outline: accent,
+  };
+  const layerOf = (plan: Plan): GalleryLayer =>
+    new GalleryLayer(stage.world, plan, SPACING.wallCm, images, colors, requestFrame);
+  let gallery = layerOf(currentPlan());
   const tour = new Tour({
     camera,
-    route,
+    route: currentRoute,
     view: () => stage.view,
     extentOf: (stop) => gallery.extentOf(stop.work),
     fitPadding: FIT_PADDING,
     isMotionReduced,
   });
   // The view opens on the first room, the Foyer, with the way on in sight.
-  const first = plan.rooms[0];
-  camera.fit(stage.view, first === undefined ? plan.bounds : first.rect, FIT_PADDING);
+  const first = currentPlan().rooms[0];
+  camera.fit(stage.view, first === undefined ? currentPlan().bounds : first.rect, FIT_PADDING);
   gallery.follow(camera.current);
   // Made after the fit, so its first cell is drawn for the zoom the view opens at.
   const grid = new DotGrid(
@@ -100,6 +96,14 @@ export async function mountCanvas(
     grid.follow(state);
     gallery.follow(state);
   });
+  // A new plan, from an edit here or elsewhere: the layer is drawn again from
+  // it. Textures are cached by their url, so a rebuild costs little.
+  const stopPlan = onPlanChange((plan) => {
+    gallery.destroy();
+    gallery = layerOf(plan);
+    gallery.follow(camera.current);
+    requestFrame();
+  });
   // A double tap fills the view with what is under it: a work with its
   // label, joining the tour there, else its room, else the whole plan.
   // Reduced motion jumps instead of gliding.
@@ -107,10 +111,10 @@ export async function mountCanvas(
     if (target.kind === "work") {
       return gallery.extentOf(target.work);
     }
-    return target.kind === "room" ? target.room.rect : plan.bounds;
+    return target.kind === "room" ? target.room.rect : currentPlan().bounds;
   };
   const stopDoubleTap = input.onDoubleTap((at) => {
-    const target = targetAt(plan, camera.toWorld(at));
+    const target = targetAt(currentPlan(), camera.toWorld(at));
     if (target.kind === "work") {
       tour.enterAt(target.work.work.id);
     }
@@ -125,7 +129,7 @@ export async function mountCanvas(
     }
     const rect = host.getBoundingClientRect();
     const at = { x: event.clientX - rect.left, y: event.clientY - rect.top };
-    gallery.highlight(targetAt(plan, camera.toWorld(at)));
+    gallery.highlight(targetAt(currentPlan(), camera.toWorld(at)));
   };
   const onLeave = (): void => gallery.highlight(undefined);
   host.addEventListener("pointermove", onHover);
@@ -148,6 +152,7 @@ export async function mountCanvas(
       stopDoubleTap();
       host.removeEventListener("pointermove", onHover);
       host.removeEventListener("pointerleave", onLeave);
+      stopPlan();
       stopResize();
       stopFollowing();
       grid.destroy();

@@ -9,15 +9,14 @@
  */
 
 import { Tooltip } from "radix-ui";
+import { useMemo } from "react";
 import { FIT_PADDING, moveTo, worldToScreen, type Point } from "../../camera/index.js";
-import { PLAN } from "../../gallery/plan.js";
 import { thresholdsOf, type Threshold } from "../../gallery/thresholds.js";
+import { usePlan } from "../../state/plan.js";
 import { ArrowIcon } from "../atoms/icons.js";
 import { Placed } from "../atoms/Placed.js";
 import { Tip } from "../atoms/Tip.js";
 import { useCameraState, useCanvas } from "../utils/canvas-context.js";
-
-const THRESHOLDS = thresholdsOf(PLAN);
 
 const ARROW =
   "pointer-events-auto flex size-9 items-center justify-center " +
@@ -27,9 +26,11 @@ const ARROW =
 
 export function ThresholdArrows() {
   const camera = useCameraState();
+  const plan = usePlan();
+  const thresholds = useMemo(() => thresholdsOf(plan), [plan]);
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      {THRESHOLDS.map((threshold) => (
+      {thresholds.map((threshold) => (
         <Arrow
           key={threshold.to.room.id}
           threshold={threshold}

@@ -12,8 +12,7 @@
 import { Popover, Tooltip } from "radix-ui";
 import { worldToScreen, type Point } from "../../camera/index.js";
 import type { Thread as ThreadModel } from "../../comments/model.js";
-import { useCommentsStore } from "../../comments/store.js";
-import { useUiStore } from "../../comments/ui-store.js";
+import { useStore } from "../../state/store.js";
 import { whenWas } from "../../comments/when.js";
 import { CARD } from "../atoms/Card.js";
 import { Placed } from "../atoms/Placed.js";
@@ -32,8 +31,8 @@ const POPOVER = `${CARD} z-10 p-3`;
 
 export function PinLayer() {
   const camera = useCameraState();
-  const threads = useCommentsStore((store) => store.threads);
-  const draftAt = useUiStore((store) => store.draftAt);
+  const threads = useStore((store) => store.threads);
+  const draftAt = useStore((store) => store.draftAt);
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
       {threads.map((thread) => (
@@ -46,9 +45,9 @@ export function PinLayer() {
 
 // A thread's pin, its tooltip, and the thread itself when open.
 function Pin({ thread, at }: { readonly thread: ThreadModel; readonly at: Point }) {
-  const isOpen = useUiStore((store) => store.openThreadId === thread.id);
-  const openThread = useUiStore((store) => store.openThread);
-  const closeThread = useUiStore((store) => store.closeThread);
+  const isOpen = useStore((store) => store.openThreadId === thread.id);
+  const showThread = useStore((store) => store.showThread);
+  const closeThread = useStore((store) => store.closeThread);
   const now = useNow();
   const first = thread.comments[0];
   const author = first?.author ?? "";
@@ -56,7 +55,7 @@ function Pin({ thread, at }: { readonly thread: ThreadModel; readonly at: Point 
     <Placed at={at}>
       <Popover.Root
         open={isOpen}
-        onOpenChange={(open) => (open ? openThread(thread.id) : closeThread())}
+        onOpenChange={(open) => (open ? showThread(thread.id) : closeThread())}
       >
         <Tooltip.Root>
           <Tooltip.Trigger asChild>
@@ -67,7 +66,7 @@ function Pin({ thread, at }: { readonly thread: ThreadModel; readonly at: Point 
                 data-resolved={thread.resolved}
                 data-open={isOpen}
                 aria-label={`Comment by ${author}${thread.resolved ? ", resolved" : ""}`}
-                onClick={() => (isOpen ? closeThread() : openThread(thread.id))}
+                onClick={() => (isOpen ? closeThread() : showThread(thread.id))}
               >
                 {author.slice(0, 1).toUpperCase()}
               </button>
@@ -99,9 +98,9 @@ function Pin({ thread, at }: { readonly thread: ThreadModel; readonly at: Point 
 
 // Where a comment is about to be written: a hollow pin, and the form beside it.
 function DraftPin({ world, at }: { readonly world: Point; readonly at: Point }) {
-  const cancelDraft = useUiStore((store) => store.cancelDraft);
-  const openThread = useUiStore((store) => store.openThread);
-  const post = useCommentsStore((store) => store.openThread);
+  const cancelDraft = useStore((store) => store.cancelDraft);
+  const showThread = useStore((store) => store.showThread);
+  const post = useStore((store) => store.openThread);
   return (
     <Placed at={at}>
       <Popover.Root open onOpenChange={(open) => !open && cancelDraft()}>
@@ -121,7 +120,7 @@ function DraftPin({ world, at }: { readonly world: Point; readonly at: Point }) 
             <CommentForm
               placeholder="Add a comment"
               submitLabel="Post"
-              onSubmit={(text) => openThread(post(world, text))}
+              onSubmit={(text) => showThread(post(world, text))}
               onCancel={cancelDraft}
             />
           </Popover.Content>

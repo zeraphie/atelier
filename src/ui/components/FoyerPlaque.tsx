@@ -11,7 +11,7 @@
  */
 
 import { Fragment } from "react";
-import { PLAN } from "../../gallery/plan.js";
+import { usePlan } from "../../state/plan.js";
 import { Anchored } from "../atoms/Anchored.js";
 import { useCameraState } from "../utils/canvas-context.js";
 
@@ -31,7 +31,7 @@ const CONTROLS: readonly (readonly [string, string])[] = [
 
 export function FoyerPlaque() {
   const camera = useCameraState();
-  const first = PLAN.rooms[0];
+  const first = usePlan().rooms[0];
   if (first === undefined) {
     return null;
   }

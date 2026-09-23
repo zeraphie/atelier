@@ -14,9 +14,8 @@ import { useState } from "react";
 import { centredOn, moveTo } from "../../camera/index.js";
 import { filterThreads, groupByRoom, type ListFilter } from "../../comments/list.js";
 import type { Thread } from "../../comments/model.js";
-import { useCommentsStore } from "../../comments/store.js";
-import { useUiStore } from "../../comments/ui-store.js";
-import { PLAN } from "../../gallery/plan.js";
+import { usePlan } from "../../state/plan.js";
+import { useStore } from "../../state/store.js";
 import { Card } from "../atoms/Card.js";
 import { CommentIcon } from "../atoms/icons.js";
 import { Pill, PillButton } from "../atoms/Pill.js";
@@ -38,14 +37,15 @@ const FILTER =
   "focus-visible:outline-2 focus-visible:outline-accent";
 
 export function CommentList() {
-  const threads = useCommentsStore((store) => store.threads);
-  const mode = useUiStore((store) => store.mode);
-  const setMode = useUiStore((store) => store.setMode);
+  const threads = useStore((store) => store.threads);
+  const mode = useStore((store) => store.mode);
+  const setMode = useStore((store) => store.setMode);
   const [isOpen, setOpen] = useState(false);
   const [filter, setFilter] = useState<ListFilter>("open");
+  const plan = usePlan();
   const isCommenting = mode === "comment";
   const openCount = threads.filter((thread) => !thread.resolved).length;
-  const groups = groupByRoom(PLAN, filterThreads(threads, filter));
+  const groups = groupByRoom(plan, filterThreads(threads, filter));
   return (
     <div className="absolute top-4 right-4 flex flex-col items-end gap-2">
       <Pill>
@@ -127,13 +127,13 @@ function emptyWording(filter: ListFilter): string {
 // A thread in the list, and what choosing it does: a glide to its pin, and the thread opened.
 function ListedThread({ thread }: { readonly thread: Thread }) {
   const { camera, view } = useCanvas();
-  const isOpen = useUiStore((store) => store.openThreadId === thread.id);
-  const openThread = useUiStore((store) => store.openThread);
+  const isOpen = useStore((store) => store.openThreadId === thread.id);
+  const showThread = useStore((store) => store.showThread);
   const jump = (): void => {
     const size = view.current;
     const zoom = Math.max(camera.current.zoom, READING_ZOOM);
     moveTo(camera, centredOn(thread.at, zoom, size), size);
-    openThread(thread.id);
+    showThread(thread.id);
   };
   return <ThreadItem thread={thread} isOpen={isOpen} onSelect={jump} />;
 }

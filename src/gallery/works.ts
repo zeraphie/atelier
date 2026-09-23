@@ -13,6 +13,14 @@
 
 export type Side = "top" | "right" | "bottom" | "left";
 
+/** A room's place and size on the plan's grid of metres. */
+export interface Cells {
+  readonly column: number;
+  readonly row: number;
+  readonly columns: number;
+  readonly rows: number;
+}
+
 export interface Work {
   /** Names the image set in public/works and the entry in images.json. */
   readonly id: string;

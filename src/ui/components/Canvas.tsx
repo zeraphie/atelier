@@ -13,7 +13,7 @@
 import { ContextMenu } from "radix-ui";
 import { useEffect, useRef, type MouseEvent } from "react";
 import type { Point } from "../../camera/index.js";
-import { useUiStore } from "../../comments/ui-store.js";
+import { useStore } from "../../state/store.js";
 import { whenHydrated } from "../../storage/index.js";
 import { useCanvas } from "../utils/canvas-context.js";
 import { failLoader, raiseCurtain } from "../utils/curtain.js";
@@ -26,7 +26,7 @@ const ITEM =
 // What a tap on empty canvas does: place a draft in comment mode, and
 // otherwise put away whatever is open.
 function onTap(world: Point): void {
-  const ui = useUiStore.getState();
+  const ui = useStore.getState();
   if (ui.mode === "comment") {
     ui.startDraft(world);
   } else {
@@ -37,8 +37,8 @@ function onTap(world: Point): void {
 
 export function Canvas() {
   const { camera, view, tour, gridShown } = useCanvas();
-  const mode = useUiStore((store) => store.mode);
-  const startDraft = useUiStore((store) => store.startDraft);
+  const mode = useStore((store) => store.mode);
+  const startDraft = useStore((store) => store.startDraft);
   const hostRef = useRef<HTMLDivElement>(null);
   // Where the last right click landed, in world units, for the menu's item.
   const menuAt = useRef<Point>({ x: 0, y: 0 });

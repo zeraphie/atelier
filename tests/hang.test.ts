@@ -71,10 +71,37 @@ describe("hangGallery", () => {
     expect(mid(bc!.gap).x).toBeCloseTo(500 - 200 / 3, 6);
   });
 
-  test("a tour between rooms that share no wall is a fault", () => {
-    expect(() => hangGallery([room("a", 0, 0, 1, 1), room("b", 2, 0, 1, 1)], spacing)).toThrow(
-      /share no wall/
+  test("a tour between rooms that share no wall has no doorway between them", () => {
+    const plan = hangGallery([room("a", 0, 0, 1, 1), room("b", 2, 0, 1, 1)], spacing);
+    expect(plan.doorways.map((d) => `${d.from}>${d.to}`)).toEqual(["outside>a"]);
+  });
+
+  test("a doorway moved to an edge on the shared wall sits centred on it; off the wall, the rule stands", () => {
+    const rooms = [room("a", 0, 0, 2, 2), room("b", 2, 0, 2, 2)];
+    const moved = hangGallery(rooms, spacing, {
+      doorways: { "a>b": { col: 1, row: 1, side: "east" } },
+    });
+    expect(moved.doorways[1]?.gap).toEqual({ a: { x: 200, y: 140 }, b: { x: 200, y: 160 } });
+    const offWall = hangGallery(rooms, spacing, {
+      doorways: { "a>b": { col: 1, row: 5, side: "east" } },
+    });
+    expect(offWall.doorways[1]?.gap).toEqual(hangGallery(rooms, spacing).doorways[1]?.gap);
+  });
+
+  test("a work placed by hand sits centred on its point, on no wall, after the hung ones", () => {
+    const plan = hangGallery(
+      [room("a", 0, 0, 2, 2, [work("w1", 30, 30), work("w2", 40, 20)])],
+      spacing,
+      {
+        placed: { w1: { x: 100, y: 100 } },
+      }
     );
+    const works = plan.rooms[0]!.works;
+    expect(works.map((h) => h.work.id)).toEqual(["w2", "w1"]);
+    expect(works[1]).toEqual({
+      work: work("w1", 30, 30),
+      rect: { left: 85, top: 85, right: 115, bottom: 115 },
+    });
   });
 
   test("works hang on the wall facing the entry first, centred, standing just off it", () => {
@@ -131,16 +158,20 @@ describe("hangGallery", () => {
     expect(rooms[0]!.works.map((h) => h.work.id)).toEqual(["w2", "w1"]);
   });
 
-  test("a work that names a wall with no space for it is a fault", () => {
+  test("a work that names a wall with no space for it sits at the room's centre, on no wall", () => {
     const named = { ...work("w1", 400, 30), wall: "top" as const };
-    expect(() => hangGallery([room("a", 0, 0, 3, 2, [named])], spacing)).toThrow(
-      /no space on its top wall/
-    );
+    const hung = hangGallery([room("a", 0, 0, 3, 2, [named])], spacing).rooms[0]!.works[0]!;
+    expect(hung.wall).toBeUndefined();
+    expect((hung.rect.left + hung.rect.right) / 2).toBe(150);
+    expect((hung.rect.top + hung.rect.bottom) / 2).toBe(100);
   });
 
-  test("a room with no wall left for a work is a fault", () => {
+  test("works a room has no wall left for sit at its centre, and none is lost", () => {
     const many = Array.from({ length: 12 }, (_, i) => work(`w${i}`, 60, 60));
-    expect(() => hangGallery([room("a", 0, 0, 2, 2, many)], spacing)).toThrow(/no wall left/);
+    const works = hangGallery([room("a", 0, 0, 2, 2, many)], spacing).rooms[0]!.works;
+    expect(works).toHaveLength(12);
+    expect(works.some((h) => h.wall === undefined)).toBe(true);
+    expect(works.some((h) => h.wall !== undefined)).toBe(true);
   });
 
   test("walls are each edge once, with the doorways cut out a wall wider", () => {

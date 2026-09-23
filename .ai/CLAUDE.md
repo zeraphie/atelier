@@ -69,7 +69,9 @@ for everything a person does.
 - `src/canvas/` — the Pixi stage, frame scheduler, rooms and works
 - `src/gallery/` — the works and rooms as data, the hang, the tiers
 - `src/comments/` — model, events, store, persistence
+- `src/state/` — the two zustand stores composed from slices, the live plan, the actions told
 - `src/storage/` — the IndexedDB database every store persists in, and the roll call the curtain waits on
+- `src/user/` — the user slice: the name, the rooms visited
 - `src/ui/` — React, by atomic design: `atoms/` (one element, no state of
   its own), `molecules/` (a few atoms with one purpose, props in, events
   out), `components/` (a piece of the screen that reads the stores or the

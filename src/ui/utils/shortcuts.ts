@@ -13,8 +13,8 @@
 
 import { useEffect } from "react";
 import { FIT_PADDING, LIFE_SIZE, moveTo, ZOOM_STEP } from "../../camera/index.js";
-import { useUiStore } from "../../comments/ui-store.js";
-import { PLAN } from "../../gallery/plan.js";
+import { currentPlan } from "../../state/plan.js";
+import { useStore } from "../../state/store.js";
 import { useCanvas } from "./canvas-context.js";
 import { keyActionFor } from "./keys.js";
 
@@ -29,7 +29,7 @@ export function useShortcuts(): void {
   const { camera, view, tour } = useCanvas();
   useEffect(() => {
     const escape = (): void => {
-      const ui = useUiStore.getState();
+      const ui = useStore.getState();
       if (ui.draftAt !== undefined) {
         ui.cancelDraft();
       } else if (ui.openThreadId !== undefined) {
@@ -65,7 +65,7 @@ export function useShortcuts(): void {
         return;
       }
       event.preventDefault();
-      const ui = useUiStore.getState();
+      const ui = useStore.getState();
       switch (action) {
         case "comment":
           ui.setMode(ui.mode === "comment" ? "browse" : "comment");
@@ -91,7 +91,7 @@ export function useShortcuts(): void {
         case "fit":
           moveTo(
             camera,
-            camera.fitted(view.current, PLAN.bounds, FIT_PADDING, LIFE_SIZE),
+            camera.fitted(view.current, currentPlan().bounds, FIT_PADDING, LIFE_SIZE),
             view.current
           );
           break;

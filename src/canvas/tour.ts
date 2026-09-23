@@ -44,7 +44,8 @@ export interface TourHandle {
 
 export interface TourOptions {
   readonly camera: Camera;
-  readonly route: Route;
+  /** The route as it stands; it changes when the plan does. */
+  readonly route: () => Route;
   readonly view: () => ViewSize;
   /** The work with its label, for the view to fit. */
   readonly extentOf: (stop: Stop) => WorldRect;
@@ -71,7 +72,7 @@ export class Tour implements TourHandle {
   }
 
   get count(): number {
-    return this.options.route.stops.length;
+    return this.options.route().stops.length;
   }
 
   start(): void {
@@ -79,7 +80,7 @@ export class Tour implements TourHandle {
   }
 
   enterAt(workId: string): void {
-    const index = this.options.route.stops.findIndex((stop) => stop.work.work.id === workId);
+    const index = this.options.route().stops.findIndex((stop) => stop.work.work.id === workId);
     if (index >= 0) {
       this.stop.set(index);
     }
@@ -132,7 +133,7 @@ export class Tour implements TourHandle {
 
   private go(index: number): void {
     const { camera, route, extentOf, fitPadding, isMotionReduced } = this.options;
-    const target = route.stops[index];
+    const target = route().stops[index];
     if (target === undefined) {
       return;
     }

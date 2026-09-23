@@ -28,9 +28,3 @@ export interface Thread {
   readonly comments: readonly Comment[];
   readonly resolved: boolean;
 }
-
-export interface CommentsState {
-  readonly threads: readonly Thread[];
-}
-
-export const EMPTY: CommentsState = { threads: [] };

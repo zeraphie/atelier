@@ -6,15 +6,20 @@
  * sharing walls with its neighbours. The rooms' order is the tour:
  * each pair in turn gets a doorway in the wall they share, a third of
  * the way along from the end farthest from the doorway before it, so
- * the route winds and no door looks straight through to the next. Works hang on the
- * walls, the wall facing the entry first, so the first thing seen
- * through a threshold is a work on the far wall, and the doorways'
- * stretches stay clear; a work that names its wall hangs there. World
+ * the route winds and no door looks straight through to the next; a
+ * pair that shares no wall gets none. Works hang on the walls, the wall
+ * facing the entry first, so the first thing seen through a threshold
+ * is a work on the far wall, and the doorways' stretches stay clear; a
+ * work that names its wall hangs there. The gallery's edits come in
+ * beside the data: a work placed by hand sits at its point on no wall,
+ * and a doorway moved to an edge sits there. A work a room has no wall
+ * for sits at the room's centre rather than failing the build. World
  * units are centimetres.
  * Decision: DECISIONS.md, layout from data: the hang.
  */
 
 import type { Point, WorldRect } from "../geometry.js";
+import { edgeOnWall, edgeSegment, pairKey, type Edge } from "./edges.js";
 import type { Room, Side, Work } from "./works.js";
 
 export interface Spacing {
@@ -44,8 +49,8 @@ export type { Side } from "./works.js";
 export interface HungWork {
   readonly work: Work;
   readonly rect: WorldRect;
-  /** The wall it hangs on. */
-  readonly wall: Side;
+  /** The wall it hangs on; none for a work placed by hand, or one its room had no wall for. */
+  readonly wall?: Side;
 }
 
 export interface HungRoom {
@@ -71,6 +76,14 @@ export interface Plan {
   readonly bounds: WorldRect;
 }
 
+/** The gallery's edits the hang honours: works placed by hand, and doorways moved to an edge. */
+export interface HangEdits {
+  /** By work id: the point the work's centre sits on, instead of a wall. */
+  readonly placed?: Readonly<Record<string, Point>>;
+  /** By pair key: the metre edge the doorway between two rooms sits on. */
+  readonly doorways?: Readonly<Record<string, Edge>>;
+}
+
 export const SPACING: Spacing = {
   unitCm: 100,
   gapCm: 40,
@@ -84,20 +97,28 @@ export const SPACING: Spacing = {
 const OPPOSITE: Record<Side, Side> = { top: "bottom", bottom: "top", left: "right", right: "left" };
 
 /** Lay the rooms out as a plan, cut the doorways of the tour, and hang the works on the walls. */
-export function hangGallery(rooms: readonly Room[], spacing: Spacing = SPACING): Plan {
+export function hangGallery(
+  rooms: readonly Room[],
+  spacing: Spacing = SPACING,
+  edits: HangEdits = {}
+): Plan {
   const rects = rooms.map((room) => ({
     left: room.column * spacing.unitCm,
     top: room.row * spacing.unitCm,
     right: (room.column + room.columns) * spacing.unitCm,
     bottom: (room.row + room.rows) * spacing.unitCm,
   }));
-  const doorways = cutDoorways(rooms, rects, spacing);
+  const doorways = cutDoorways(rooms, rects, spacing, edits.doorways ?? {});
   const hung = rooms.map((room, i) => {
     const rect = rects[i]!;
     const entry = doorways.find((d) => d.to === room.id);
     const entrySide = entry === undefined ? "bottom" : sideOf(rect, entry.gap);
     const onWalls = doorways.filter((d) => d.to === room.id || d.from === room.id);
-    return { room, rect, works: hangWorks(room, rect, entrySide, onWalls, spacing) };
+    return {
+      room,
+      rect,
+      works: hangWorks(room, rect, entrySide, onWalls, spacing, edits.placed ?? {}),
+    };
   });
   return {
     rooms: hung,
@@ -112,7 +133,8 @@ export function hangGallery(rooms: readonly Room[], spacing: Spacing = SPACING):
 function cutDoorways(
   rooms: readonly Room[],
   rects: readonly WorldRect[],
-  spacing: Spacing
+  spacing: Spacing,
+  chosen: Readonly<Record<string, Edge>>
 ): Doorway[] {
   const first = rooms[0];
   const firstRect = rects[0];
@@ -122,18 +144,27 @@ function cutDoorways(
   const next = rects[1];
   const towards =
     next === undefined ? centre(firstRect) : centre(sharedWall(firstRect, next) ?? edges(next).top);
-  const doorways: Doorway[] = [
-    { from: "outside", to: first.id, gap: doorNear(outerWall(firstRect, rects), towards, spacing) },
-  ];
+  const entrance = doorNear(outerWall(firstRect, rects), towards, spacing);
+  const doorways: Doorway[] = [{ from: "outside", to: first.id, gap: entrance }];
+  // Where the last doorway was, which the next winds away from; with no
+  // doorway into a room, the room's own centre stands in.
+  let before = centre(entrance);
   for (let i = 1; i < rooms.length; i += 1) {
     const from = rooms[i - 1]!;
     const to = rooms[i]!;
-    const shared = sharedWall(rects[i - 1]!, rects[i]!);
+    const rect = rects[i]!;
+    const shared = sharedWall(rects[i - 1]!, rect);
     if (shared === undefined) {
-      throw new Error(`the tour goes from "${from.id}" to "${to.id}", which share no wall`);
+      before = centre(rect);
+      continue;
     }
-    const before = doorways[doorways.length - 1]!.gap;
-    doorways.push({ from: from.id, to: to.id, gap: doorFar(shared, centre(before), spacing) });
+    const edge = chosen[pairKey(from.id, to.id)];
+    const gap =
+      edge !== undefined && edgeOnWall(shared, edge, spacing.unitCm)
+        ? doorOnEdge(edge, spacing)
+        : doorFar(shared, before, spacing);
+    doorways.push({ from: from.id, to: to.id, gap });
+    before = centre(gap);
   }
   return doorways;
 }
@@ -202,28 +233,41 @@ function doorAt(wall: Segment, end: "a" | "b", spacing: Spacing): Segment {
   return { a: along(wall, at - width / 2), b: along(wall, at + width / 2) };
 }
 
+// The doorway centred on a metre edge someone chose.
+function doorOnEdge(edge: Edge, spacing: Spacing): Segment {
+  const segment = edgeSegment(edge, spacing.unitCm);
+  const total = distance(segment.a, segment.b);
+  const width = Math.min(spacing.doorCm, total);
+  return { a: along(segment, (total - width) / 2), b: along(segment, (total + width) / 2) };
+}
+
 // ── Works on walls ──
 
 // Works that name a wall hang there. The rest take the walls in order: the
 // one facing the entry, then the two beside it, then the entry wall itself.
-// On each, the longest stretch no doorway breaks, and the works centred on it.
+// On each, the longest stretch no doorway breaks, and the works centred on
+// it. A work placed by hand skips the walls and sits at its point; one no
+// wall has room for sits at the room's centre.
 function hangWorks(
   room: Room,
   rect: WorldRect,
   entry: Side,
   doorways: readonly Doorway[],
-  spacing: Spacing
+  spacing: Spacing,
+  placed: Readonly<Record<string, Point>>
 ): HungWork[] {
   const sides = edges(rect);
   const order: Side[] = [OPPOSITE[entry], ...beside(entry), entry];
   const hung: HungWork[] = [];
+  const unhung: Work[] = [];
+  const toHang = room.works.filter((work) => placed[work.id] === undefined);
   const stretchOf = (side: Side): Segment => {
     const gaps = doorways.map((d) => d.gap).filter((gap) => onWall(sides[side], gap));
     return shrink(longestFree(sides[side], gaps), spacing.endMarginCm);
   };
   const measureOf = (side: Side) => (side === "top" || side === "bottom" ? "width" : "height");
   for (const side of order) {
-    const named = room.works.filter((work) => work.wall === side);
+    const named = toHang.filter((work) => work.wall === side);
     if (named.length === 0) {
       continue;
     }
@@ -234,14 +278,10 @@ function hangWorks(
       distance(stretch.a, stretch.b),
       spacing.gapCm
     );
-    if (taken.length < named.length) {
-      throw new Error(
-        `the room "${room.id}" has no space on its ${side} wall for "${named[taken.length]!.id}"`
-      );
-    }
+    unhung.push(...named.slice(taken.length));
     hung.push(...place(taken, side, stretch, rect, spacing));
   }
-  let remaining = room.works.filter((work) => work.wall === undefined);
+  let remaining = toHang.filter((work) => work.wall === undefined);
   for (const side of order) {
     if (remaining.length === 0) {
       break;
@@ -259,11 +299,29 @@ function hangWorks(
     remaining = remaining.slice(taken.length);
     hung.push(...place(taken, side, stretch, rect, spacing));
   }
-  if (remaining.length > 0) {
-    throw new Error(`the room "${room.id}" has no wall left for "${remaining[0]!.id}"`);
-  }
-  // In the order a walk meets them: wall by wall, the far wall first.
-  return order.flatMap((side) => hung.filter((h) => h.wall === side));
+  unhung.push(...remaining);
+  const middle = centre(rect);
+  return [
+    // In the order a walk meets them: wall by wall, the far wall first.
+    ...order.flatMap((side) => hung.filter((h) => h.wall === side)),
+    ...unhung.map((work) => centredOn(work, middle)),
+    ...room.works
+      .filter((work) => placed[work.id] !== undefined)
+      .map((work) => centredOn(work, placed[work.id]!)),
+  ];
+}
+
+// A work with its centre on a point, on no wall.
+function centredOn(work: Work, point: Point): HungWork {
+  return {
+    work,
+    rect: {
+      left: point.x - work.widthCm / 2,
+      top: point.y - work.heightCm / 2,
+      right: point.x + work.widthCm / 2,
+      bottom: point.y + work.heightCm / 2,
+    },
+  };
 }
 
 function beside(side: Side): Side[] {
