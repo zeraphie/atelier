@@ -38,6 +38,7 @@ function onTap(world: Point): void {
 export function Canvas() {
   const { camera, view, tour, gridShown } = useCanvas();
   const mode = useStore((store) => store.mode);
+  const tool = useStore((store) => store.tool);
   const startDraft = useStore((store) => store.startDraft);
   const hostRef = useRef<HTMLDivElement>(null);
   // Where the last right click landed, in world units, for the menu's item.
@@ -86,7 +87,8 @@ export function Canvas() {
         <div
           ref={hostRef}
           data-mode={mode}
-          className="absolute inset-0 cursor-grab touch-none select-none data-[mode=comment]:cursor-crosshair data-[mode=edit]:cursor-default data-[mode=edit]:data-[over=work]:cursor-grab data-[mode=edit]:data-[over=wall-x]:cursor-ew-resize data-[mode=edit]:data-[over=wall-y]:cursor-ns-resize data-[camera=panning]:cursor-grabbing data-[camera=moving]:cursor-grabbing"
+          data-tool={tool}
+          className="absolute inset-0 cursor-grab touch-none select-none data-[mode=comment]:cursor-crosshair data-[mode=edit]:cursor-default data-[mode=edit]:data-[over=work]:cursor-grab data-[mode=edit]:data-[over=wall-x]:cursor-ew-resize data-[mode=edit]:data-[over=wall-y]:cursor-ns-resize data-[camera=panning]:cursor-grabbing data-[camera=moving]:cursor-grabbing data-[mode=edit]:data-[tool=room]:data-[over=plan]:cursor-crosshair data-[camera=drawing]:cursor-crosshair"
           onContextMenu={rememberMenuPoint}
         />
       </ContextMenu.Trigger>

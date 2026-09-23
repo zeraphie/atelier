@@ -84,9 +84,15 @@ export function onPlanChange(listener: (plan: Plan) => void): () => void {
   });
 }
 
-/** The current plan with one room's cells swapped: a preview of a resize, derived each time and not kept. */
+/**
+ * The current plan with a room's cells put in: swapped if the room is there,
+ * added at the end if not. A preview of a resize or a draw, derived each time
+ * and not kept.
+ */
 export function planWith(roomId: string, cells: Cells): Plan {
   const edited = applyEdits(ROOMS, useStore.getState());
-  const rooms = edited.rooms.map((room) => (room.id === roomId ? { ...room, ...cells } : room));
+  const rooms = edited.rooms.some((room) => room.id === roomId)
+    ? edited.rooms.map((room) => (room.id === roomId ? { ...room, ...cells } : room))
+    : [...edited.rooms, { id: roomId, name: "", ...cells, works: [] }];
   return hangGallery(rooms, SPACING, { placed: edited.placed, doorways: edited.doorways });
 }

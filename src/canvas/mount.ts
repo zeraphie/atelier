@@ -28,6 +28,7 @@ import { targetAt, type Target } from "../gallery/targets.js";
 import { currentPlan, currentRoute, onPlanChange, planWith } from "../state/plan.js";
 import { useStore } from "../state/store.js";
 import { DotGrid } from "./dot-grid.js";
+import { DrawTool } from "./draw-tool.js";
 import { whenFacesReady } from "./faces.js";
 import { GalleryLayer, type GalleryColors } from "./gallery-layer.js";
 import { MoveTool } from "./move-tool.js";
@@ -55,6 +56,9 @@ export interface MountedCanvas {
 // How near a wall a press in edit mode must be: screen pixels, but never more than a stretch of floor.
 const WALL_REACH_PX = 8;
 const WALL_REACH_MOST_CM = 50;
+// A room being drawn, in the preview plan; and the name a drawn room has until it is given one.
+const DRAWING_ID = "drawing";
+const DRAWN_NAME = "Room";
 
 /** Put a stage on `host` that follows `camera`, bind the input to it, and hang the gallery over the grid. */
 export async function mountCanvas(
@@ -201,8 +205,42 @@ export async function mountCanvas(
       resizing
     )
   );
-  const stopTools = useStore.subscribe(() => moving.setActive(isMoving()));
+  // The Room tool: a drag on empty ground draws a room, previewed as the plan
+  // with it in, then drawn with a name to be given in place.
+  const isDrawing = (): boolean => {
+    const { mode, tool } = useStore.getState();
+    return mode === "edit" && tool === "room";
+  };
+  const drawing = new PointerSession(
+    stage.app.canvas,
+    (at) => camera.toWorld(at),
+    new DrawTool({
+      plan: currentPlan,
+      unitCm: SPACING.unitCm,
+      preview: (shown) =>
+        gallery.preview(
+          shown === undefined
+            ? undefined
+            : {
+                plan: planWith(DRAWING_ID, shown.cells),
+                ghost: rectOf(shown.cells, SPACING.unitCm),
+                label: shown.label,
+              }
+        ),
+      draw: (cells) => {
+        const id = crypto.randomUUID();
+        useStore.getState().drawRoom(id, DRAWN_NAME, cells);
+        useStore.getState().askName(id);
+      },
+      host,
+    })
+  );
+  const stopTools = useStore.subscribe(() => {
+    moving.setActive(isMoving());
+    drawing.setActive(isDrawing());
+  });
   moving.setActive(isMoving());
+  drawing.setActive(isDrawing());
   host.addEventListener("pointermove", onHover);
   host.addEventListener("pointerleave", onLeave);
   const stopTap = input.onTap((at) => hooks.onTap(camera.toWorld(at)));
@@ -225,6 +263,7 @@ export async function mountCanvas(
       host.removeEventListener("pointerleave", onLeave);
       stopTools();
       moving.dispose();
+      drawing.dispose();
       resizing.dispose();
       stopPlan();
       stopResize();

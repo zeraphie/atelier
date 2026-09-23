@@ -59,6 +59,8 @@ export class GalleryLayer {
   private readonly wallCm: number;
   private readonly rooms: RoomView[];
   private readonly walls = new Graphics({ label: "walls" });
+  // The floor of a room the plan does not have yet: the one being drawn.
+  private readonly drawnFloor = new Graphics({ label: "drawn" });
   private readonly works: WorkView[];
   private readonly byId = new Map<string, WorkView>();
   private readonly outline = new Graphics({ label: "outline" });
@@ -107,7 +109,7 @@ export class GalleryLayer {
     this.badge.visible = false;
     this.ghost.visible = false;
     world.addChild(...this.rooms.map((room) => room.container));
-    world.addChild(this.walls);
+    world.addChild(this.drawnFloor, this.walls);
     world.addChild(...this.works.map((work) => work.container));
     world.addChild(this.outline, this.ghost, this.badge);
   }
@@ -117,7 +119,7 @@ export class GalleryLayer {
     this.byId.get(workId)?.moveTo(centre);
   }
 
-  /** Show a drag of a wall, or, with nothing, the plan as it is. */
+  /** Show a drag, of a wall or of a room being drawn, or, with nothing, the plan as it is. */
   preview(shown: LayerPreview | undefined): void {
     this.shown = shown;
     const plan = shown?.plan ?? this.plan;
@@ -125,6 +127,16 @@ export class GalleryLayer {
       const hung = plan.rooms.find((candidate) => candidate.room.id === room.id);
       if (hung !== undefined) {
         room.reshape(hung.rect);
+      }
+    }
+    this.drawnFloor.clear();
+    for (const hung of plan.rooms) {
+      if (!this.rooms.some((room) => room.id === hung.room.id)) {
+        const { rect } = hung;
+        const { floor } = this.colors.room;
+        this.drawnFloor
+          .rect(rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top)
+          .fill({ color: floor.rgb, alpha: floor.alpha });
       }
     }
     drawWalls(this.walls, plan.walls, this.wallCm, this.colors.wall);
@@ -162,6 +174,7 @@ export class GalleryLayer {
       room.destroy();
     }
     this.walls.destroy();
+    this.drawnFloor.destroy();
     for (const work of this.works) {
       work.destroy();
     }

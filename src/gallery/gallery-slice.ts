@@ -34,6 +34,8 @@ export interface GallerySlice {
   readonly resetAt: number;
   readonly mode: Mode;
   readonly tool: Tool;
+  /** The room drawn here whose name is being asked for, in place; none otherwise. */
+  readonly naming: string | undefined;
   renameRoom(id: string, name: string, when?: When): void;
   resizeRoom(id: string, cells: Cells, when?: When): void;
   drawRoom(id: string, name: string, cells: Cells, when?: When): void;
@@ -42,6 +44,8 @@ export interface GallerySlice {
   reset(when?: When): void;
   setMode(mode: Mode): void;
   holdTool(tool: Tool): void;
+  /** Ask for a room's name in place, as after drawing it; with none, ask no more. */
+  askName(roomId: string | undefined): void;
 }
 
 export const createGallerySlice =
@@ -60,6 +64,7 @@ export const createGallerySlice =
       resetAt: 0,
       mode: "browse",
       tool: "move",
+      naming: undefined,
 
       renameRoom: (id, name, when) => {
         const { at, remote } = stamp(when);
@@ -127,6 +132,9 @@ export const createGallerySlice =
       },
       holdTool: (tool) => {
         set({ tool });
+      },
+      askName: (roomId) => {
+        set({ naming: roomId });
       },
     };
   };

@@ -5,15 +5,17 @@
  * one size on screen like a pin, so it is crisp at every zoom and, in
  * edit mode, edited in place: a click puts the caret in it, Enter or a
  * click elsewhere keeps what was typed, Escape keeps what was there.
- * Out of edit mode the names take no pointer, so the floor under them
- * still pans. The editable name is keyed by its text: the browser
- * rewrites the node as you type, so a name changed elsewhere, by a
- * peer or by putting everything back, mounts afresh rather than
+ * A room just drawn has its name asked for the same way: the name
+ * takes the caret with its placeholder selected, so typing replaces
+ * it. Out of edit mode the names take no pointer, so the floor under
+ * them still pans. The editable name is keyed by its text: the
+ * browser rewrites the node as you type, so a name changed elsewhere,
+ * by a peer or by putting everything back, mounts afresh rather than
  * trusting React to find the node again.
  * Decision: DECISIONS.md, the edit rail holds the tools.
  */
 
-import type { FocusEvent, KeyboardEvent } from "react";
+import { useEffect, useRef, type FocusEvent, type KeyboardEvent } from "react";
 import { worldToScreen, type Point } from "../../camera/index.js";
 import type { HungRoom } from "../../gallery/hang.js";
 import { usePlan } from "../../state/plan.js";
@@ -45,7 +47,24 @@ export function RoomNames() {
 function RoomName({ room, isEditable }: { readonly room: HungRoom; readonly isEditable: boolean }) {
   const camera = useCameraState();
   const renameRoom = useStore((store) => store.renameRoom);
+  const naming = useStore((store) => store.naming);
+  const askName = useStore((store) => store.askName);
+  const field = useRef<HTMLDivElement>(null);
   const { id, name } = room.room;
+  // Asked for its name: the caret goes in with the whole placeholder selected, once.
+  useEffect(() => {
+    const element = field.current;
+    if (naming !== id || element === null) {
+      return;
+    }
+    element.focus();
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    const selection = getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+    askName(undefined);
+  }, [naming, id, askName]);
   const at = worldToScreen(camera, {
     x: room.rect.left + NAME_INSET_CM,
     y: room.rect.top + NAME_INSET_CM,
@@ -79,6 +98,7 @@ function RoomName({ room, isEditable }: { readonly room: HungRoom; readonly isEd
   return (
     <div
       key={name}
+      ref={field}
       className={EDITABLE}
       style={placedAt(at)}
       // Textbox is the role for a contenteditable element; the rule only
