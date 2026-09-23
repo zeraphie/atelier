@@ -7,12 +7,15 @@
  * canvas that finishes after that is torn down at once: StrictMode's
  * double mount is a real test of the teardown, not a special case.
  * A tap on the canvas reaches the comment interface through here, and
- * a right click opens the menu that places a comment where it was.
+ * a right click opens the menu that places a comment where it was,
+ * and, in edit mode on a room drawn here, takes the room away.
  */
 
 import { ContextMenu } from "radix-ui";
-import { useEffect, useRef, type MouseEvent } from "react";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
 import type { Point } from "../../camera/index.js";
+import { roomAt, type HungRoom } from "../../gallery/hang.js";
+import { usePlan } from "../../state/plan.js";
 import { useStore } from "../../state/store.js";
 import { whenHydrated } from "../../storage/index.js";
 import { useCanvas } from "../utils/canvas-context.js";
@@ -40,9 +43,13 @@ export function Canvas() {
   const mode = useStore((store) => store.mode);
   const tool = useStore((store) => store.tool);
   const startDraft = useStore((store) => store.startDraft);
+  const removeRoom = useStore((store) => store.removeRoom);
+  const plan = usePlan();
   const hostRef = useRef<HTMLDivElement>(null);
   // Where the last right click landed, in world units, for the menu's item.
   const menuAt = useRef<Point>({ x: 0, y: 0 });
+  // The room under the last right click, for the item that takes a drawn one away.
+  const [menuRoom, setMenuRoom] = useState<HungRoom | undefined>(undefined);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -79,6 +86,7 @@ export function Canvas() {
   const rememberMenuPoint = (event: MouseEvent<HTMLDivElement>): void => {
     const rect = event.currentTarget.getBoundingClientRect();
     menuAt.current = camera.toWorld({ x: event.clientX - rect.left, y: event.clientY - rect.top });
+    setMenuRoom(roomAt(plan, menuAt.current));
   };
 
   return (
@@ -97,6 +105,11 @@ export function Canvas() {
           <ContextMenu.Item className={ITEM} onSelect={() => startDraft(menuAt.current)}>
             Add comment here
           </ContextMenu.Item>
+          {mode === "edit" && menuRoom?.room.drawn === true && (
+            <ContextMenu.Item className={ITEM} onSelect={() => removeRoom(menuRoom.room.id)}>
+              Remove this room
+            </ContextMenu.Item>
+          )}
         </ContextMenu.Content>
       </ContextMenu.Portal>
     </ContextMenu.Root>

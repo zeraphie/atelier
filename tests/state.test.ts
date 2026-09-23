@@ -124,6 +124,16 @@ describe("gallery", () => {
     expect(state().rooms["b"]?.drawn?.at).toBe(300);
   });
 
+  test("a drawn room is taken away by a later removal, not by an earlier one, and the removal is told", () => {
+    const { state, told } = gallery();
+    state().drawRoom("b", "Annex", { column: 5, row: 0, columns: 2, rows: 2 }, { at: 300 });
+    state().removeRoom("b", { at: 200, remote: true });
+    expect(state().rooms["b"]?.drawn?.value).toBe(true);
+    state().removeRoom("b", { at: 400 });
+    expect(state().rooms["b"]?.drawn?.value).toBe(false);
+    expect(told.at(-1)).toEqual({ action: "removeRoom", args: ["b"], at: 400 });
+  });
+
   test("a reset forgets every edit and placement from before it, and is told once", () => {
     const { state, told } = gallery();
     state().renameRoom("a", "Old", { at: 100 });

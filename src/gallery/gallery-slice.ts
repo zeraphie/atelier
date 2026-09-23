@@ -4,7 +4,7 @@
  * The rooms and doorways as this gallery has changed them, and what
  * the interface is doing: the mode, and the tool held in edit mode.
  * A room keeps a renamed name, resized cells, or a mark that it was
- * drawn here; a doorway keeps the edge it was moved to. Latest wins
+ * drawn here, or removed again; a doorway keeps the edge it was moved to. Latest wins
  * by stamp, and a reset is a moment before which nothing counts, for
  * the pictures too.
  * Decision: DECISIONS.md, the wall is curated by default, yours to rearrange here.
@@ -22,8 +22,8 @@ export type Tool = "move" | "room" | "door" | "picture";
 export interface RoomEdit {
   readonly name?: Stamped<string>;
   readonly cells?: Stamped<Cells>;
-  /** Set when the room was drawn here rather than shipped; its time orders the drawn rooms. */
-  readonly drawn?: Stamped<true>;
+  /** True once drawn here rather than shipped, false once removed again, the later winning; its time orders the drawn rooms. */
+  readonly drawn?: Stamped<boolean>;
 }
 
 export interface GallerySlice {
@@ -39,6 +39,8 @@ export interface GallerySlice {
   renameRoom(id: string, name: string, when?: When): void;
   resizeRoom(id: string, cells: Cells, when?: When): void;
   drawRoom(id: string, name: string, cells: Cells, when?: When): void;
+  /** A room drawn here, taken away again. */
+  removeRoom(id: string, when?: When): void;
   moveDoor(pair: string, edge: Edge, when?: When): void;
   /** Every edit forgotten, pictures included: the gallery as it shipped. */
   reset(when?: When): void;
@@ -95,6 +97,16 @@ export const createGallerySlice =
         }));
         if (done && !remote) {
           context.tell({ action: "drawRoom", args: [id, name, cells], at });
+        }
+      },
+      removeRoom: (id, when) => {
+        const { at, remote } = stamp(when);
+        const done = room(id, at, (edit) => ({
+          ...edit,
+          drawn: latest(edit.drawn, { value: false, at }),
+        }));
+        if (done && !remote) {
+          context.tell({ action: "removeRoom", args: [id], at });
         }
       },
       moveDoor: (pair, edge, when) => {

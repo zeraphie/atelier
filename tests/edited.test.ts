@@ -61,3 +61,23 @@ describe("applyEdits", () => {
     expect(edited.doorways).toEqual({ "a>b": { col: 1, row: 1, side: "east" } });
   });
 });
+
+describe("applyEdits, a room removed again", () => {
+  test("a drawn room whose drawing was marked false is no room", () => {
+    const edited = applyEdits(base, {
+      rooms: {
+        gone: {
+          drawn: { value: false, at: 30 },
+          cells: { value: { column: 6, row: 0, columns: 2, rows: 2 }, at: 20 },
+        },
+        kept: {
+          drawn: { value: true, at: 40 },
+          cells: { value: { column: 8, row: 0, columns: 2, rows: 2 }, at: 40 },
+        },
+      },
+      doorways: {},
+      placed: {},
+    });
+    expect(edited.rooms.map((room) => room.id)).toEqual(["a", "b", "kept"]);
+  });
+});
