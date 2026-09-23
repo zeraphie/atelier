@@ -6,9 +6,9 @@
  */
 
 import type { ComponentProps } from "react";
+import { FOCUS_RING } from "./styles.js";
 
-const BASE =
-  "rounded-md px-3 py-1.5 font-sans text-sm focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2";
+const BASE = `rounded-md px-3 py-1.5 font-sans text-sm ${FOCUS_RING} focus-visible:outline-offset-2`;
 const TONES = {
   primary:
     "bg-accent font-bold text-accent-ink hover:brightness-110 disabled:opacity-40 disabled:hover:brightness-100",

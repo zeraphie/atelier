@@ -10,10 +10,11 @@
 import { RadioGroup } from "radix-ui";
 import type { CSSProperties } from "react";
 import { colorOf, PALETTE } from "../../viewing/color.js";
+import { FOCUS_RING } from "../atoms/styles.js";
 
 const SWATCH =
   "size-7 rounded-full bg-[var(--swatch)] ring-surface transition-[box-shadow] " +
-  "hover:ring-2 focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2 " +
+  `hover:ring-2 ${FOCUS_RING} focus-visible:outline-offset-2 ` +
   "data-[state=checked]:ring-2 data-[state=checked]:shadow-[0_0_0_4px_var(--color-ink)]";
 
 /** The eight colours as a row of circles, one chosen. */

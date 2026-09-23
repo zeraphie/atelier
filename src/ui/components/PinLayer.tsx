@@ -10,7 +10,6 @@
  */
 
 import { Popover, Tooltip } from "radix-ui";
-import type { CSSProperties } from "react";
 import { worldToScreen, type Point } from "../../camera/index.js";
 import type { Thread as ThreadModel } from "../../comments/model.js";
 import { useStore } from "../../state/store.js";
@@ -18,6 +17,7 @@ import { colorFor } from "../../viewing/color.js";
 import { whenWas } from "../../comments/when.js";
 import { CARD } from "../atoms/Card.js";
 import { OnScreen } from "../atoms/OnScreen.js";
+import { FOCUS_RING, INITIAL, personStyle } from "../atoms/styles.js";
 import { Tip } from "../atoms/Tip.js";
 import { CommentForm } from "../molecules/CommentForm.js";
 import { useCameraState } from "../utils/canvas-context.js";
@@ -25,10 +25,9 @@ import { useNow } from "../utils/use-now.js";
 import { Thread } from "./Thread.js";
 
 const PIN =
-  "pointer-events-auto flex size-7 items-center justify-center " +
-  "rounded-full border-2 border-surface font-sans text-xs font-bold shadow-md transition-[scale] " +
-  "hover:scale-110 focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2 " +
-  "bg-[var(--person)] text-accent-ink data-[resolved=true]:bg-resolved data-[open=true]:scale-110";
+  `${INITIAL} ${FOCUS_RING} focus-visible:outline-offset-2 pointer-events-auto size-7 ` +
+  "border-2 border-surface shadow-md transition-[scale] hover:scale-110 " +
+  "data-[resolved=true]:bg-resolved data-[open=true]:scale-110";
 const POPOVER = `${CARD} z-10 p-3`;
 
 export function PinLayer() {
@@ -65,7 +64,7 @@ function Pin({ thread, at }: { readonly thread: ThreadModel; readonly at: Point 
               <button
                 type="button"
                 className={PIN}
-                style={{ "--person": colorFor(author, first?.color) } as CSSProperties}
+                style={personStyle(colorFor(author, first?.color))}
                 data-resolved={thread.resolved}
                 data-open={isOpen}
                 aria-label={`Comment by ${author}${thread.resolved ? ", resolved" : ""}`}

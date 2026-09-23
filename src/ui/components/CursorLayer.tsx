@@ -9,18 +9,16 @@
  * Decision: DECISIONS.md, everyone is in a viewing.
  */
 
-import type { CSSProperties } from "react";
 import { worldToScreen } from "../../camera/index.js";
 import { useStore } from "../../state/store.js";
 import { colorFor } from "../../viewing/color.js";
 import { cursors } from "../../viewing/cursors.js";
 import { CursorIcon } from "../atoms/icons.js";
+import { PERSON, personStyle } from "../atoms/styles.js";
 import { useCameraState } from "../utils/canvas-context.js";
 import { useValue } from "../utils/use-value.js";
 
-const NAME =
-  "absolute top-4 left-3.5 rounded-full bg-[var(--person)] px-1.5 py-0.5 " +
-  "font-sans text-xs font-bold whitespace-nowrap text-accent-ink shadow-sm";
+const NAME = `${PERSON} absolute top-4 left-3.5 rounded-full px-1.5 py-0.5 font-sans text-xs font-bold whitespace-nowrap shadow-sm`;
 
 export function CursorLayer() {
   const camera = useCameraState();
@@ -38,12 +36,10 @@ export function CursorLayer() {
           <div
             key={peerId}
             className="absolute top-0 left-0"
-            style={
-              {
-                transform: `translate(${screen.x}px, ${screen.y}px)`,
-                "--person": colorFor(peer.name, peer.color),
-              } as CSSProperties
-            }
+            style={{
+              transform: `translate(${screen.x}px, ${screen.y}px)`,
+              ...personStyle(colorFor(peer.name, peer.color)),
+            }}
           >
             <CursorIcon />
             {peer.name !== "" && <span className={NAME}>{peer.name}</span>}

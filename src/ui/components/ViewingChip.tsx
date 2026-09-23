@@ -10,20 +10,20 @@
  * Decision: DECISIONS.md, everyone is in a viewing.
  */
 
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useState } from "react";
 import { useOwnStore } from "../../state/own-store.js";
 import type { Peer } from "../../state/slices/viewing.js";
 import { useStore } from "../../state/store.js";
 import { colorFor, initialOf } from "../../viewing/color.js";
 import { PillButton, PillLabel } from "../atoms/Pill.js";
+import { FOCUS_RING, INITIAL, personStyle } from "../atoms/styles.js";
 import { goHome } from "../utils/use-viewing.js";
 
 /** How long "Link copied" shows, in milliseconds. */
 const COPIED_MS = 2000;
-const INITIAL =
-  "flex size-6 items-center justify-center rounded-full bg-[var(--person)] font-sans text-xs " +
-  "font-bold text-accent-ink ring-2 ring-surface hover:ring-ink aria-pressed:ring-ink " +
-  "focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-1";
+const PEER =
+  `${INITIAL} ${FOCUS_RING} focus-visible:outline-offset-1 size-6 ` +
+  "ring-2 ring-surface hover:ring-ink aria-pressed:ring-ink";
 
 export function ViewingChip() {
   const code = useStore((store) => store.viewingCode);
@@ -68,8 +68,8 @@ export function ViewingChip() {
                 <button
                   key={id}
                   type="button"
-                  className={INITIAL}
-                  style={{ "--person": colorFor(peer.name, peer.color) } as CSSProperties}
+                  className={PEER}
+                  style={personStyle(colorFor(peer.name, peer.color))}
                   aria-pressed={isFollowed}
                   aria-label={isFollowed ? `Stop following ${peer.name}` : `Follow ${peer.name}`}
                   title={isFollowed ? `Stop following ${peer.name}` : `Follow ${peer.name}`}

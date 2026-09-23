@@ -19,6 +19,7 @@ import { useStore } from "../../state/store.js";
 import { Card } from "../atoms/Card.js";
 import { CommentIcon, PenIcon } from "../atoms/icons.js";
 import { Pill, PillButton } from "../atoms/Pill.js";
+import { FOCUS_RING } from "../atoms/styles.js";
 import { bringCommentsFrom } from "../../viewing/viewing.js";
 import { useOwnStore } from "../../state/own-store.js";
 import { TextButton } from "../atoms/TextButton.js";
@@ -35,13 +36,10 @@ const FILTERS: readonly { readonly id: ListFilter; readonly label: string }[] = 
   { id: "all", label: "All" },
 ];
 
-const SELECT =
-  "rounded border border-line bg-canvas px-1.5 py-0.5 font-mono text-xs text-ink " +
-  "focus-visible:outline-2 focus-visible:outline-accent";
+const SELECT = `rounded border border-line bg-canvas px-1.5 py-0.5 font-mono text-xs text-ink ${FOCUS_RING}`;
 const FILTER =
   "rounded px-2 py-1 font-sans text-xs text-muted hover:bg-canvas hover:text-ink " +
-  "aria-pressed:bg-ink aria-pressed:text-surface aria-pressed:hover:bg-ink " +
-  "focus-visible:outline-2 focus-visible:outline-accent";
+  `aria-pressed:bg-ink aria-pressed:text-surface aria-pressed:hover:bg-ink ${FOCUS_RING}`;
 
 export function CommentList() {
   const threads = useStore((store) => store.threads);

@@ -214,6 +214,13 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 - `ResetIcon()`: The mark for putting everything back.
 - `CursorIcon()`: A peer's pointer: an arrow in the person's colour, its tip at the top-left corner.
 
+**ui/atoms/styles.ts**
+- `FOCUS_RING`: The focus ring, for keyboard focus only; an element adds its own offset.
+- `TOOL`: A tool's button: ink on the surface, lit under the pointer, in the accent while pressed or checked, the ring inside its edge.
+- `PERSON`: A person's colour as the ground, with the ink that reads on it; the colour comes in by `personStyle`.
+- `INITIAL`: A person's initial on a round mark in their colour; the element adds its size and its edge.
+- `personStyle()`: The custom property `PERSON` reads: the person's colour, as a style.
+
 ## ui: molecules
 
 **ui/molecules/ColorPicker.tsx**

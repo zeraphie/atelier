@@ -7,8 +7,7 @@
  */
 
 import type { ComponentProps } from "react";
-
-const FOCUS = "focus-visible:outline-2 focus-visible:outline-accent";
+import { FOCUS_RING as FOCUS } from "./styles.js";
 const TEXTAREA =
   "w-full resize-none rounded-md border border-line bg-surface px-3 py-2 font-serif text-base " +
   `leading-snug text-ink placeholder:text-muted ${FOCUS}`;

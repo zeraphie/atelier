@@ -18,13 +18,11 @@ import { Card, DIALOG_CONTENT, DIALOG_OVERLAY, DIALOG_TITLE } from "../atoms/Car
 import { DoorIcon, MoveIcon, PictureIcon, ResetIcon, RoomIcon } from "../atoms/icons.js";
 import { TextButton } from "../atoms/TextButton.js";
 import { Tip } from "../atoms/Tip.js";
+import { TOOL } from "../atoms/styles.js";
 
 // The held tool by aria-checked, not data-state: the tooltip trigger shares the
 // element and writes its own data-state over the toggle's.
-const TOOL =
-  "flex size-9 items-center justify-center rounded text-ink hover:bg-canvas " +
-  "aria-checked:bg-accent aria-checked:text-accent-ink aria-checked:hover:bg-accent " +
-  "focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2";
+const RAIL_TOOL = `${TOOL} size-9 rounded`;
 
 const TOOLS: readonly { readonly tool: Tool; readonly label: string; readonly icon: ReactNode }[] =
   [
@@ -58,7 +56,7 @@ export function EditRail() {
           {TOOLS.map(({ tool: which, label, icon }) => (
             <Tooltip.Root key={which}>
               <Tooltip.Trigger asChild>
-                <Toolbar.ToggleItem value={which} aria-label={label} className={TOOL}>
+                <Toolbar.ToggleItem value={which} aria-label={label} className={RAIL_TOOL}>
                   {icon}
                 </Toolbar.ToggleItem>
               </Tooltip.Trigger>
@@ -81,7 +79,7 @@ function PutEverythingBack() {
       <Tooltip.Root>
         <Tooltip.Trigger asChild>
           <AlertDialog.Trigger asChild>
-            <Toolbar.Button aria-label="Put everything back" className={`${TOOL} text-muted`}>
+            <Toolbar.Button aria-label="Put everything back" className={`${RAIL_TOOL} text-muted`}>
               <ResetIcon />
             </Toolbar.Button>
           </AlertDialog.Trigger>
