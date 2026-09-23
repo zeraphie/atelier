@@ -70,7 +70,8 @@ The shared names, generated; look here before writing anything new.
 ## Key paths
 
 - `DECISIONS.md` — the design doc: product and technical decisions
-- `README.md` — setup, links, map of the code
+- `README.md` — setup and links; never a map of the code, which dates
+  in a week (the catalogue is the map)
 - `.ai/STYLE.md`, `.ai/TESTING.md` — code style and tests
 - `.ai/REUSE.md` — how code stays in one place: the layers, the
   catalogue, the reuse reading
