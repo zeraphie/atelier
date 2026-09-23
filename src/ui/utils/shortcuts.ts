@@ -34,6 +34,8 @@ export function useShortcuts(): void {
         ui.cancelDraft();
       } else if (ui.openThreadId !== undefined) {
         ui.closeThread();
+      } else if (ui.selected.length > 0) {
+        ui.clearSelection();
       } else if (ui.mode === "edit" && ui.tool !== "move") {
         ui.holdTool("move");
       } else if (ui.mode === "comment" || ui.mode === "edit") {
@@ -77,6 +79,11 @@ export function useShortcuts(): void {
           break;
         case "escape":
           escape();
+          break;
+        case "remove":
+          if (ui.mode === "edit") {
+            ui.removeSelected();
+          }
           break;
         case "next":
           stepOn();

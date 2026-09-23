@@ -8,7 +8,8 @@
  * double mount is a real test of the teardown, not a special case.
  * A tap on the canvas reaches the comment interface through here, and
  * a right click opens the menu that places a comment where it was,
- * and, in edit mode on a room drawn here, takes the room away.
+ * and, in edit mode, takes away the room drawn here under it, or the
+ * rooms picked with a Ctrl click.
  */
 
 import { ContextMenu } from "radix-ui";
@@ -44,6 +45,8 @@ export function Canvas() {
   const tool = useStore((store) => store.tool);
   const startDraft = useStore((store) => store.startDraft);
   const removeRoom = useStore((store) => store.removeRoom);
+  const selected = useStore((store) => store.selected);
+  const removeSelected = useStore((store) => store.removeSelected);
   const plan = usePlan();
   const hostRef = useRef<HTMLDivElement>(null);
   // Where the last right click landed, in world units, for the menu's item.
@@ -105,7 +108,14 @@ export function Canvas() {
           <ContextMenu.Item className={ITEM} onSelect={() => startDraft(menuAt.current)}>
             Add comment here
           </ContextMenu.Item>
-          {mode === "edit" && menuRoom?.room.drawn === true && (
+          {mode === "edit" && selected.length > 0 && (
+            <ContextMenu.Item className={ITEM} onSelect={() => removeSelected()}>
+              {selected.length === 1
+                ? "Remove the selected room"
+                : `Remove the ${selected.length} selected rooms`}
+            </ContextMenu.Item>
+          )}
+          {mode === "edit" && selected.length === 0 && menuRoom?.room.drawn === true && (
             <ContextMenu.Item className={ITEM} onSelect={() => removeRoom(menuRoom.room.id)}>
               Remove this room
             </ContextMenu.Item>

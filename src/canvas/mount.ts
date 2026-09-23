@@ -33,6 +33,7 @@ import { whenFacesReady } from "./faces.js";
 import { GalleryLayer, type GalleryColors } from "./gallery-layer.js";
 import { MoveTool } from "./move-tool.js";
 import { ResizeTool } from "./resize-tool.js";
+import { SelectTool } from "./select-tool.js";
 import { Stage } from "./stage.js";
 import { tokenColor } from "./theme.js";
 import { Tour, type TourHandle } from "./tour.js";
@@ -77,7 +78,7 @@ export async function mountCanvas(
   const surface = tokenColor("--color-surface", { rgb: 0xffffff, alpha: 1 });
   const accent = tokenColor("--color-accent", { rgb: 0x3b5bdb, alpha: 1 });
   const colors: GalleryColors = {
-    room: { floor: { ...surface, alpha: 0.85 } },
+    room: { floor: { ...surface, alpha: 0.85 }, selection: { ...accent, alpha: 0.16 } },
     wall: { ...ink, alpha: 0.9 },
     work: { edge: line, card: surface, ink, muted },
     outline: accent,
@@ -117,7 +118,16 @@ export async function mountCanvas(
     gallery.destroy();
     gallery = layerOf(plan);
     gallery.follow(camera.current);
+    gallery.select(useStore.getState().selected);
     requestFrame();
+  });
+  // The rooms picked for removal, shown as they change.
+  let selected = useStore.getState().selected;
+  const stopSelection = useStore.subscribe((state) => {
+    if (state.selected !== selected) {
+      selected = state.selected;
+      gallery.select(selected);
+    }
   });
   // A double tap fills the view with what is under it: a work with its
   // label, joining the tour there, else its room, else the whole plan.
@@ -135,8 +145,9 @@ export async function mountCanvas(
     }
     moveTo(camera, camera.fitted(stage.view, rectOfTarget(target), FIT_PADDING), stage.view);
   });
-  // In edit mode with Move held, a press on a picture drags it and a press
-  // near a wall drags the wall; any other press falls through to the camera.
+  // In edit mode with Move held, a Ctrl click on a drawn room picks it, a
+  // press on a picture drags it and a press near a wall drags the wall; any
+  // other press falls through to the camera.
   const isMoving = (): boolean => {
     const { mode, tool } = useStore.getState();
     return mode === "edit" && tool === "move";
@@ -196,6 +207,10 @@ export async function mountCanvas(
     stage.app.canvas,
     (at) => camera.toWorld(at),
     firstOf(
+      new SelectTool({
+        plan: currentPlan,
+        toggle: (id) => useStore.getState().toggleSelected(id),
+      }),
       new MoveTool({
         plan: currentPlan,
         nudge: (id, centre) => gallery.nudge(id, centre),
@@ -265,6 +280,7 @@ export async function mountCanvas(
       moving.dispose();
       drawing.dispose();
       resizing.dispose();
+      stopSelection();
       stopPlan();
       stopResize();
       stopFollowing();

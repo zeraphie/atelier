@@ -44,3 +44,19 @@ describe("keyActionFor", () => {
     expect(keyActionFor(press("x", "KeyX"))).toBeUndefined();
   });
 });
+
+describe("keyActionFor, removal", () => {
+  const plain = (key: string): KeyPress => ({
+    key,
+    code: key,
+    shiftKey: false,
+    ctrlKey: false,
+    metaKey: false,
+    altKey: false,
+  });
+
+  test("Delete and Backspace ask for a removal", () => {
+    expect(keyActionFor(plain("Delete"))).toBe("remove");
+    expect(keyActionFor(plain("Backspace"))).toBe("remove");
+  });
+});

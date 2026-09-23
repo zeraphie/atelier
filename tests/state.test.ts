@@ -155,3 +155,28 @@ describe("gallery", () => {
     expect(state().rooms["a"]?.name?.value).toBe("Foyer");
   });
 });
+
+describe("selection", () => {
+  const cells = { column: 5, row: 0, columns: 2, rows: 2 };
+
+  test("a pick toggles, a change of mode lets every pick go, and a removal removes each picked room", () => {
+    const { state, told } = gallery();
+    state().drawRoom("b", "Annex", cells, { at: 100 });
+    state().drawRoom("c", "Wing", { ...cells, column: 7 }, { at: 100 });
+    state().setMode("edit");
+    state().toggleSelected("b");
+    state().toggleSelected("c");
+    state().toggleSelected("b");
+    expect(state().selected).toEqual(["c"]);
+    state().setMode("browse");
+    expect(state().selected).toEqual([]);
+    state().setMode("edit");
+    state().toggleSelected("b");
+    state().toggleSelected("c");
+    state().removeSelected({ at: 200 });
+    expect(state().selected).toEqual([]);
+    expect(state().rooms["b"]?.drawn?.value).toBe(false);
+    expect(state().rooms["c"]?.drawn?.value).toBe(false);
+    expect(told.filter((call) => call.action === "removeRoom")).toHaveLength(2);
+  });
+});

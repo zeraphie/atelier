@@ -17,7 +17,8 @@ export type KeyAction =
   | "zoomIn"
   | "zoomOut"
   | "actualSize"
-  | "fit";
+  | "fit"
+  | "remove";
 
 /** The parts of a keyboard event the table reads. */
 export interface KeyPress {
@@ -52,6 +53,9 @@ export function keyActionFor(press: KeyPress): KeyAction | undefined {
       return "edit";
     case "Escape":
       return "escape";
+    case "Delete":
+    case "Backspace":
+      return "remove";
     case "ArrowRight":
       return "next";
     case "ArrowLeft":

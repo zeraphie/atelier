@@ -159,6 +159,14 @@ export class GalleryLayer {
     this.drawGhost();
   }
 
+  /** Show which rooms are picked for removal, by id. */
+  select(ids: readonly string[]): void {
+    for (const room of this.rooms) {
+      room.select(ids.includes(room.id));
+    }
+    this.requestFrame();
+  }
+
   /** Show what a double tap would fill the view with, or nothing when the pointer is elsewhere. */
   highlight(target: Target | undefined): void {
     this.target = target;
