@@ -69,3 +69,14 @@ describe("edgesNear", () => {
     expect(edgesNear({ x: 250, y: 250 }, 100, 10)).toEqual([]);
   });
 });
+
+describe("edgesNear, with a wide reach", () => {
+  test("every line within reach, nearest first, so a wall beyond a nearer line is still found", () => {
+    expect(edgesNear({ x: 240, y: 250 }, 100, 60)).toEqual([
+      { col: 1, row: 2, side: "east" },
+      { col: 2, row: 1, side: "south" },
+      { col: 2, row: 2, side: "south" },
+      { col: 2, row: 2, side: "east" },
+    ]);
+  });
+});

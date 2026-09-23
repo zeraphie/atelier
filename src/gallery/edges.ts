@@ -53,29 +53,30 @@ export function edgeOnWall(wall: Segment, edge: Edge, unitCm: number): boolean {
 }
 
 /**
- * The edges nearest `point` within `reachCm` of it, nearest first: at most
- * the nearest vertical line's and the nearest horizontal line's, so a
- * caller can take the first that is on a wall.
+ * The edges within `reachCm` of `point`, nearest first: one for every
+ * vertical and every horizontal grid line within reach, in the cell the
+ * point is in, so a caller can take the first that is on a wall even
+ * when a nearer line is on none.
  */
 export function edgesNear(point: Point, unitCm: number, reachCm: number): Edge[] {
   const col = Math.floor(point.x / unitCm);
   const row = Math.floor(point.y / unitCm);
-  const vertical = Math.round(point.x / unitCm);
-  const horizontal = Math.round(point.y / unitCm);
-  const candidates: { readonly edge: Edge; readonly distance: number }[] = [
-    {
-      edge: { col: vertical - 1, row, side: "east" },
-      distance: Math.abs(point.x - vertical * unitCm),
-    },
-    {
-      edge: { col, row: horizontal - 1, side: "south" },
-      distance: Math.abs(point.y - horizontal * unitCm),
-    },
-  ];
-  return candidates
-    .filter((candidate) => candidate.distance <= reachCm)
-    .sort((a, b) => a.distance - b.distance)
-    .map((candidate) => candidate.edge);
+  const candidates: { readonly edge: Edge; readonly distance: number }[] = [];
+  const first = (at: number): number => Math.ceil((at - reachCm) / unitCm);
+  const last = (at: number): number => Math.floor((at + reachCm) / unitCm);
+  for (let line = first(point.x); line <= last(point.x); line += 1) {
+    candidates.push({
+      edge: { col: line - 1, row, side: "east" },
+      distance: Math.abs(point.x - line * unitCm),
+    });
+  }
+  for (let line = first(point.y); line <= last(point.y); line += 1) {
+    candidates.push({
+      edge: { col, row: line - 1, side: "south" },
+      distance: Math.abs(point.y - line * unitCm),
+    });
+  }
+  return candidates.sort((a, b) => a.distance - b.distance).map((candidate) => candidate.edge);
 }
 
 /** The edge nearest `point`, within `reachCm` of it; none when the point is nowhere near a line. */

@@ -56,9 +56,9 @@ export interface MountedCanvas {
   dispose(): void;
 }
 
-// How near a wall a press in edit mode must be: screen pixels, but never more than a stretch of floor.
-const WALL_REACH_PX = 8;
-const WALL_REACH_MOST_CM = 50;
+// How near a wall a press in edit mode must be: screen pixels, but never more than a metre of floor.
+const WALL_REACH_PX = 20;
+const WALL_REACH_MOST_CM = 100;
 // A room being drawn, in the preview plan; and the name a drawn room has until it is given one.
 const DRAWING_ID = "drawing";
 const DRAWN_NAME = "Room";
