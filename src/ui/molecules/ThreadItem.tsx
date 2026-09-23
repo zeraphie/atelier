@@ -20,6 +20,7 @@ interface ThreadItemProps {
   readonly onSelect: () => void;
 }
 
+/** One thread as a row of the list: who opened it and when, its opening words, its replies and state. */
 export function ThreadItem({ thread, isOpen, onSelect }: ThreadItemProps) {
   const now = useNow();
   const first = thread.comments[0];

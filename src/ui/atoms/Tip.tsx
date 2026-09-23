@@ -11,6 +11,7 @@ import type { ReactNode } from "react";
 
 const TIP = "z-20 rounded-md bg-ink px-2 py-1 font-sans text-xs text-surface shadow-md";
 
+/** The tooltip's bubble, in ink beside whatever it describes. */
 export function Tip({
   side = "top",
   children,

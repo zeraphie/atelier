@@ -16,6 +16,7 @@ const STROKE = {
   strokeLinejoin: "round",
 } as const;
 
+/** A speech bubble: a comment. */
 export function CommentIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
@@ -29,6 +30,7 @@ export function CommentIcon() {
   );
 }
 
+/** A pen: editing the gallery. */
 export function PenIcon() {
   return (
     <svg
@@ -49,6 +51,7 @@ export function PenIcon() {
 const TURNS =
   "data-[direction=down]:rotate-90 data-[direction=left]:rotate-180 data-[direction=up]:-rotate-90";
 
+/** An arrow turned to a direction, for a threshold. */
 export function ArrowIcon({ direction }: { readonly direction: Direction }) {
   return (
     <svg
@@ -68,6 +71,7 @@ export function ArrowIcon({ direction }: { readonly direction: Direction }) {
 
 // ── The edit rail's tools ──
 
+/** The Move tool's mark. */
 export function MoveIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" {...STROKE} aria-hidden="true">
@@ -76,6 +80,7 @@ export function MoveIcon() {
   );
 }
 
+/** The Room tool's mark. */
 export function RoomIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" {...STROKE} aria-hidden="true">
@@ -85,6 +90,7 @@ export function RoomIcon() {
   );
 }
 
+/** The Door tool's mark. */
 export function DoorIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" {...STROKE} aria-hidden="true">
@@ -93,6 +99,7 @@ export function DoorIcon() {
   );
 }
 
+/** The Picture tool's mark. */
 export function PictureIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" {...STROKE} aria-hidden="true">
@@ -102,6 +109,7 @@ export function PictureIcon() {
   );
 }
 
+/** The mark for putting everything back. */
 export function ResetIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" {...STROKE} aria-hidden="true">

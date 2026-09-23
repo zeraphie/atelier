@@ -23,6 +23,7 @@ import { hashForViewing, viewingCodeFromHash } from "../../viewing/hash.js";
 import { joinViewing, leaveViewing, sayCursor } from "../../viewing/viewing.js";
 import { useCanvas } from "./canvas-context.js";
 
+/** Follows the address: the viewing it names is joined and any other left, and unmounting leaves. */
 export function useViewing(): void {
   useEffect(() => {
     const follow = (): void => {

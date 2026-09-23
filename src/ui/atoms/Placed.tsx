@@ -13,6 +13,7 @@
 import type { ReactNode } from "react";
 import type { Point } from "../../camera/index.js";
 
+/** A thing in the DOM overlay at a screen point, by its centre. */
 export function Placed({ at, children }: { readonly at: Point; readonly children: ReactNode }) {
   return (
     <div

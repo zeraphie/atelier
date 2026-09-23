@@ -15,6 +15,7 @@ const TONES = {
   quiet: "text-muted hover:bg-canvas hover:text-ink",
 } as const;
 
+/** A button that is a word: the one action of a form, or a quiet one beside it. */
 export function TextButton({
   tone = "quiet",
   className = "",

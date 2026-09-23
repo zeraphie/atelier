@@ -53,6 +53,15 @@
         "no-console": "off",
         "no-shadow": "off"
       }
+    },
+    {
+      "files": ["tools/**/*.ts"],
+      "env": {
+        "node": true
+      },
+      "rules": {
+        "no-console": "off"
+      }
     }
   ],
   "ignorePatterns": ["node_modules", "dist", ".git"]

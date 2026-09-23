@@ -14,10 +14,12 @@ const TEXTAREA =
   `leading-snug text-ink placeholder:text-muted ${FOCUS}`;
 const INPUT = `w-full rounded border border-line bg-canvas px-2 py-1 font-sans text-xs text-ink ${FOCUS}`;
 
+/** Where a comment is typed, in the reading face. */
 export function Textarea({ className = "", ...props }: ComponentProps<"textarea">) {
   return <textarea className={`${TEXTAREA} ${className}`} {...props} />;
 }
 
+/** Where a short answer is typed, such as a name or a code. */
 export function Input({ className = "", ...props }: ComponentProps<"input">) {
   return <input className={`${INPUT} ${className}`} {...props} />;
 }

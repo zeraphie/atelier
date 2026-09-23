@@ -28,6 +28,7 @@ export interface CanvasSession {
 
 const CanvasContext = createContext<CanvasSession | undefined>(undefined);
 
+/** Makes the one camera, the canvas size, the tour, the grid switch and the pointer, and hands them down by context. */
 export function CanvasProvider({ children }: { readonly children: ReactNode }) {
   const [session] = useState<CanvasSession>(() => ({
     camera: new Camera(),

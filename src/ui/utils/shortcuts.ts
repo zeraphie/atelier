@@ -25,6 +25,7 @@ function isTyping(target: EventTarget | null): boolean {
   );
 }
 
+/** Listens for the keys the interface answers to, for as long as the app is mounted. */
 export function useShortcuts(): void {
   const { camera, view, tour } = useCanvas();
   useEffect(() => {

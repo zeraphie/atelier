@@ -19,6 +19,7 @@ interface CommentProps {
   readonly onEdit: (text: string) => void;
 }
 
+/** One comment as it reads: who, when, the text, and for its author a way to change it. */
 export function Comment({ comment, isMine, onEdit }: CommentProps) {
   const [isEditing, setEditing] = useState(false);
   const now = useNow();

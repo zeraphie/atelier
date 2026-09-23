@@ -81,10 +81,12 @@ export function usePlan(): Plan {
   return useStore((state) => planOf(state, pictures));
 }
 
+/** The plan as it stands now, for code outside React. */
 export function currentPlan(): Plan {
   return planOf(useStore.getState());
 }
 
+/** The route as it stands now, for code outside React. */
 export function currentRoute(): Route {
   return routeOf(useStore.getState());
 }

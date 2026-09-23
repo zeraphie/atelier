@@ -24,6 +24,7 @@ interface AnchoredProps extends ComponentProps<"section"> {
   readonly layoutPx?: number;
 }
 
+/** A card at a world point, as wide as it says in centimetres, scaled by the camera. */
 export function Anchored({
   camera,
   at,

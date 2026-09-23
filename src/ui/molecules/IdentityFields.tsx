@@ -17,6 +17,7 @@ import { ColorPicker } from "./ColorPicker.js";
 
 const LABEL = "flex flex-col gap-1 font-sans text-xs text-muted";
 
+/** The viewing's code with a button for a new one, the name, and the colour, as one set of fields. */
 export function IdentityFields({
   idPrefix,
   code,

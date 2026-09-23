@@ -18,6 +18,7 @@ interface CommentFormProps {
   readonly onCancel?: () => void;
 }
 
+/** A place to write a comment: Enter sends, Shift+Enter breaks a line, Escape cancels. */
 export function CommentForm({
   placeholder,
   submitLabel,

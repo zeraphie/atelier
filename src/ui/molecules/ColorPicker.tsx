@@ -16,6 +16,7 @@ const SWATCH =
   "hover:ring-2 focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2 " +
   "data-[state=checked]:ring-2 data-[state=checked]:shadow-[0_0_0_4px_var(--color-ink)]";
 
+/** The eight colours as a row of circles, one chosen. */
 export function ColorPicker({
   value,
   onChange,

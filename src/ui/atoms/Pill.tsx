@@ -17,10 +17,12 @@ const TOOL =
   "aria-expanded:bg-canvas focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2";
 const LABEL = "flex h-8 items-center border-x border-line px-3 font-sans text-sm text-muted";
 
+/** A corner's worth of controls in one rounded surface. */
 export function Pill({ className = "", ...props }: ComponentProps<"div">) {
   return <div className={`${PILL} ${className}`} {...props} />;
 }
 
+/** A tool in a pill, showing pressed and expanded in colour. */
 export function PillButton({
   divided = false,
   className = "",
