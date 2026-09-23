@@ -313,23 +313,36 @@ function touches(edge: Segment, rect: WorldRect): boolean {
 // A doorway a third of the way along `wall` from the end farthest from `point`.
 function doorFar(wall: Segment, point: Point, spacing: Spacing): Segment {
   const nearA = distance(wall.a, point) <= distance(wall.b, point);
-  return doorAt(wall, nearA ? "b" : "a", spacing);
+  return doorThirdAlong(wall, nearA ? "b" : "a", spacing);
 }
 
 // A doorway a third of the way along `wall` from the end nearest to `point`.
 function doorNear(wall: Segment, point: Point, spacing: Spacing): Segment {
   const nearA = distance(wall.a, point) <= distance(wall.b, point);
-  return doorAt(wall, nearA ? "a" : "b", spacing);
+  return doorThirdAlong(wall, nearA ? "a" : "b", spacing);
 }
 
 // The doorway a third of the way along a wall from one end: off centre, so a
 // door never looks straight through the room, and clear of the corner.
-function doorAt(wall: Segment, end: "a" | "b", spacing: Spacing): Segment {
+function doorThirdAlong(wall: Segment, end: "a" | "b", spacing: Spacing): Segment {
   const total = distance(wall.a, wall.b);
+  return doorInMetreAt(wall, end === "a" ? total / 3 : total - total / 3, spacing, end);
+}
+
+// The doorway in the metre of `wall` that holds the point `at` along it: every
+// door sits in the middle of one metre edge of the grid, as a click puts one.
+// A point on a line between two metres takes the metre `towards` the end the
+// door was measured from, so it stays off centre the way the rule meant.
+function doorInMetreAt(wall: Segment, at: number, spacing: Spacing, towards: "a" | "b"): Segment {
+  const total = distance(wall.a, wall.b);
+  const metres = Math.max(1, Math.ceil(total / spacing.unitCm));
+  const held =
+    towards === "a" ? Math.ceil(at / spacing.unitCm) - 1 : Math.floor(at / spacing.unitCm);
+  const metre = Math.min(Math.max(0, held), metres - 1);
+  // A wall shorter than a metre, which the grid never makes, takes its middle.
+  const middle = total < spacing.unitCm ? total / 2 : metre * spacing.unitCm + spacing.unitCm / 2;
   const width = Math.min(spacing.doorCm, total);
-  const third = Math.min(Math.max(total / 3, width / 2), total - width / 2);
-  const at = end === "a" ? third : total - third;
-  return { a: along(wall, at - width / 2), b: along(wall, at + width / 2) };
+  return { a: along(wall, middle - width / 2), b: along(wall, middle + width / 2) };
 }
 
 // The doorway centred on a metre edge someone chose.
@@ -337,11 +350,9 @@ function doorOnEdge(edge: Edge, spacing: Spacing): Segment {
   return doorCentred(edgeSegment(edge, spacing.unitCm), spacing);
 }
 
-// The doorway in the middle of a wall: a drawn room's, with no route to wind.
+// The doorway in the middle metre of a wall: a drawn room's, with no route to wind.
 function doorCentred(wall: Segment, spacing: Spacing): Segment {
-  const total = distance(wall.a, wall.b);
-  const width = Math.min(spacing.doorCm, total);
-  return { a: along(wall, (total - width) / 2), b: along(wall, (total + width) / 2) };
+  return doorInMetreAt(wall, distance(wall.a, wall.b) / 2, spacing, "b");
 }
 
 // ── Works on walls ──

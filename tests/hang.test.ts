@@ -47,17 +47,17 @@ describe("hangGallery", () => {
     expect(rooms[0]!.rect).toEqual({ left: 200, top: 100, right: 500, bottom: 300 });
   });
 
-  test("the entrance is in the first room's bottom wall, a third along from the end nearest the next room", () => {
+  test("the entrance is in the first room's bottom wall, in the metre a third along from the end nearest the next room", () => {
     const { doorways } = hangGallery([room("a", 0, 0, 3, 2), room("b", 3, 0, 2, 2)], spacing);
     const entrance = doorways[0]!;
     expect(entrance.from).toBe("outside");
     expect(entrance.gap.a.y).toBe(200);
     expect(length(entrance.gap)).toBe(20);
-    // The next room is to the right, so a third of the way from the right end.
-    expect(mid(entrance.gap).x).toBe(200);
+    // The next room is to the right, so in the metre a third of the way from the right end.
+    expect(mid(entrance.gap).x).toBe(250);
   });
 
-  test("each doorway sits a third along the shared wall from the end farthest from the one before, so the route winds", () => {
+  test("each doorway sits in the metre a third along the shared wall from the end farthest from the one before, so the route winds", () => {
     const { doorways } = hangGallery(
       [room("a", 0, 0, 3, 2), room("b", 3, 0, 2, 2), room("c", 3, 2, 2, 2)],
       spacing
@@ -65,11 +65,11 @@ describe("hangGallery", () => {
     const [entrance, ab, bc] = doorways;
     // The entrance is on a's bottom wall; a to b is on x = 300, so it goes towards the top end.
     expect(ab!.gap.a.x).toBe(300);
-    expect(mid(ab!.gap).y).toBeCloseTo(200 / 3, 6);
+    expect(mid(ab!.gap).y).toBe(50);
     expect(mid(entrance!.gap).y).toBe(200);
     // b to c is on y = 200 across x 300..500; the door before is up near the left, so it goes right.
     expect(bc!.gap.a.y).toBe(200);
-    expect(mid(bc!.gap).x).toBeCloseTo(500 - 200 / 3, 6);
+    expect(mid(bc!.gap).x).toBe(450);
   });
 
   test("a tour between rooms that share no wall has no doorway between them", () => {
@@ -142,7 +142,7 @@ describe("hangGallery", () => {
     const door = doorways[0]!.gap;
     const last = rooms[0]!.works[6]!.rect;
     const doorEnd = Math.max(door.a.x, door.b.x);
-    expect(Math.min(door.a.x, door.b.x)).toBeCloseTo(200 / 3 - 10, 6);
+    expect(Math.min(door.a.x, door.b.x)).toBe(40);
     expect(last.left).toBeGreaterThan(doorEnd);
     expect((last.left + last.right) / 2).toBeCloseTo((doorEnd + 20 + 200 - 20) / 2, 6);
   });
@@ -235,11 +235,11 @@ describe("doorways of drawn rooms", () => {
     expect(pairs([...shipped, drawn("e", 7, 7, 2, 2)])).toEqual(["outside>a", "a>b"]);
   });
 
-  test("a drawn room's door is centred on the wall it shares", () => {
+  test("a drawn room's door is in the middle metre of the wall it shares", () => {
     const { doorways } = hangGallery([...shipped, drawn("c", 0, 2, 5, 2)], spacing);
     const toC = doorways.find((d) => d.from === "b" && d.to === "c")!;
     expect(toC.gap.a.y).toBe(200);
-    expect(mid(toC.gap).x).toBe(400);
+    expect(mid(toC.gap).x).toBe(450);
     expect(length(toC.gap)).toBe(20);
   });
 
