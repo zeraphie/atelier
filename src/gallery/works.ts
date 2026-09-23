@@ -36,6 +36,8 @@ export interface Work {
   readonly source: string;
   /** The wall to hang it on; left unsaid, the hang picks one facing the entry. */
   readonly wall?: Side;
+  /** A picture of your own hung here: the picture in the collection, by the hash of its bytes. */
+  readonly pictureId?: string;
 }
 
 export interface Room {

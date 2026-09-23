@@ -19,10 +19,14 @@ import type { CameraState, Point, WorldRect } from "../camera/index.js";
 import type { Plan, Segment } from "../gallery/hang.js";
 import type { Target } from "../gallery/targets.js";
 import type { ImageEntry } from "../gallery/tiers.js";
+import type { Work } from "../gallery/works.js";
+import { DERIVATIVE_PX } from "../pictures/prepare.js";
+import type { PictureRecord } from "../state/slices/collection.js";
 import type { PackedColor } from "./css-color.js";
 import { RoomView, type RoomColors } from "./room-view.js";
+import { loadOwnPicture, loadPicture } from "./textures.js";
 import { drawPosts, drawWalls } from "./walls-view.js";
-import { WorkView, type WorkColors } from "./work-view.js";
+import { WorkView, type PictureSource, type WorkColors } from "./work-view.js";
 
 export interface GalleryColors {
   readonly room: RoomColors;
@@ -90,6 +94,7 @@ export class GalleryLayer {
     plan: Plan,
     wallCm: number,
     images: Readonly<Record<string, ImageEntry>>,
+    pictures: Readonly<Record<string, PictureRecord>>,
     colors: GalleryColors,
     requestFrame: () => void
   ) {
@@ -102,11 +107,11 @@ export class GalleryLayer {
     drawPosts(this.walls, plan.doorways, wallCm, colors.wall);
     this.works = plan.rooms.flatMap((hung) =>
       hung.works.map((work) => {
-        const entry = images[work.work.id];
+        const entry = entryFor(work.work, images, pictures);
         if (entry === undefined) {
-          throw new Error(`images.json has no entry for the work "${work.work.id}"`);
+          throw new Error(`no picture is known for the work "${work.work.id}"`);
         }
-        return new WorkView(work, entry, colors.work, requestFrame);
+        return new WorkView(work, entry, sourceFor(work.work), colors.work, requestFrame);
       })
     );
     for (const [i, hung] of plan.rooms.flatMap((room) => room.works).entries()) {
@@ -300,4 +305,29 @@ function dashed(shapes: Graphics, a: Point, b: Point, dash: number, gap: number)
     const end = Math.min(at + dash, length);
     shapes.moveTo(a.x + ux * at, a.y + uy * at).lineTo(a.x + ux * end, a.y + uy * end);
   }
+}
+
+// What images.json says of a gallery work, or what the collection says of a picture of your own.
+function entryFor(
+  work: Work,
+  images: Readonly<Record<string, ImageEntry>>,
+  pictures: Readonly<Record<string, PictureRecord>>
+): ImageEntry | undefined {
+  if (work.pictureId === undefined) {
+    return images[work.id];
+  }
+  const record = pictures[work.pictureId];
+  if (record === undefined) {
+    return undefined;
+  }
+  const { width, height } = record.size;
+  return { color: record.color, width, height, sizes: [{ px: DERIVATIVE_PX, width, height }] };
+}
+
+// The site's image set for a gallery work; the database for a picture of your own.
+function sourceFor(work: Work): PictureSource {
+  const { pictureId } = work;
+  return pictureId === undefined
+    ? (px) => loadPicture(work.id, px)
+    : (px) => loadOwnPicture(pictureId, px);
 }

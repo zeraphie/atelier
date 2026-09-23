@@ -28,6 +28,7 @@ import images from "../gallery/images.json";
 import { wallNear } from "../gallery/resize.js";
 import { targetAt, type Target } from "../gallery/targets.js";
 import { currentPlan, currentRoute, onPlanChange, planWith } from "../state/utils/plan.js";
+import { useOwnStore } from "../state/own-store.js";
 import { useStore } from "../state/store.js";
 import { DoorTool } from "./door-tool.js";
 import { DotGrid } from "./dot-grid.js";
@@ -87,7 +88,15 @@ export async function mountCanvas(
     badge: { back: accent, ink: surface },
   };
   const layerOf = (plan: Plan): GalleryLayer =>
-    new GalleryLayer(stage.world, plan, SPACING.wallCm, images, colors, requestFrame);
+    new GalleryLayer(
+      stage.world,
+      plan,
+      SPACING.wallCm,
+      images,
+      useOwnStore.getState().pictures,
+      colors,
+      requestFrame
+    );
   let gallery = layerOf(currentPlan());
   const tour = new Tour({
     camera,

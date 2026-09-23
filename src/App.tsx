@@ -6,6 +6,7 @@ import { CommentList } from "./ui/components/CommentList.js";
 import { EditRail } from "./ui/components/EditRail.js";
 import { FoyerPlaque } from "./ui/components/FoyerPlaque.js";
 import { MiniMap } from "./ui/components/MiniMap.js";
+import { PictureHanger } from "./ui/components/PictureHanger.js";
 import { PinLayer } from "./ui/components/PinLayer.js";
 import { RoomNames } from "./ui/components/RoomNames.js";
 import { useShortcuts } from "./ui/utils/shortcuts.js";
@@ -37,6 +38,7 @@ function Workspace() {
       <PinLayer />
       <CommentList />
       <EditRail />
+      <PictureHanger />
       <TourControls />
       <div className="absolute right-4 bottom-4 flex flex-col items-end gap-2">
         <MiniMap />

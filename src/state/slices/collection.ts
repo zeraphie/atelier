@@ -24,6 +24,8 @@ export interface PictureRecord {
   readonly heightCm: number;
   /** The picture's dominant colour, for the far tier. */
   readonly color: string;
+  /** The derivative's pixels, for the tiers. */
+  readonly size: { readonly width: number; readonly height: number };
   /** Whose it is when it came from a peer; absent for your own. */
   readonly from?: string;
 }

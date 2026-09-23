@@ -8,14 +8,15 @@
  * double mount is a real test of the teardown, not a special case.
  * A tap on the canvas reaches the comment interface through here, and
  * a right click opens the menu that places a comment where it was,
- * and, in edit mode, takes away the room drawn here under it, or the
- * drawn rooms picked with the Room tool.
+ * and, in edit mode, hangs a picture of your own there, takes one down,
+ * or takes away the room drawn here under it or the drawn rooms picked
+ * with the Room tool.
  */
 
 import { ContextMenu } from "radix-ui";
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 import type { Point, TapModifiers } from "../../camera/index.js";
-import { roomAt, type HungRoom } from "../../gallery/hang.js";
+import { roomAt, workAt, type HungRoom, type HungWork } from "../../gallery/hang.js";
 import { currentPlan, usePlan } from "../../state/utils/plan.js";
 import { useStore } from "../../state/store.js";
 import { whenHydrated } from "../../storage/index.js";
@@ -27,12 +28,15 @@ const ITEM =
   "cursor-default rounded px-2 py-1.5 font-sans text-sm text-ink outline-none " +
   "data-[highlighted]:bg-accent data-[highlighted]:text-accent-ink";
 
-// What a tap on the canvas does: with the Room tool, pick the room under it,
-// alone or, with Ctrl or Command held, beside the others; place a draft in
-// comment mode; and otherwise put away whatever is open.
+// What a tap on the canvas does: with the Picture tool, ask for a picture to
+// hang there; with the Room tool, pick the room under it, alone or, with Ctrl
+// or Command held, beside the others; place a draft in comment mode; and
+// otherwise put away whatever is open.
 function onTap(world: Point, modifiers: TapModifiers): void {
   const ui = useStore.getState();
-  if (ui.mode === "edit" && ui.tool === "room") {
+  if (ui.mode === "edit" && ui.tool === "picture") {
+    ui.askPicture(world);
+  } else if (ui.mode === "edit" && ui.tool === "room") {
     const room = roomAt(currentPlan(), world);
     if (room === undefined) {
       ui.clearSelection();
@@ -57,6 +61,8 @@ export function Canvas() {
   const removeRoom = useStore((store) => store.removeRoom);
   const selected = useStore((store) => store.selected);
   const removeSelected = useStore((store) => store.removeSelected);
+  const askPicture = useStore((store) => store.askPicture);
+  const takeDown = useStore((store) => store.takeDown);
   const plan = usePlan();
   // Of the rooms picked, the drawn ones, which are the ones a removal takes.
   const picked = plan.rooms.filter(
@@ -67,6 +73,8 @@ export function Canvas() {
   const menuAt = useRef<Point>({ x: 0, y: 0 });
   // The room under the last right click, for the item that takes a drawn one away.
   const [menuRoom, setMenuRoom] = useState<HungRoom | undefined>(undefined);
+  // The work under it, for the item that takes a picture of your own down.
+  const [menuWork, setMenuWork] = useState<HungWork | undefined>(undefined);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -104,6 +112,7 @@ export function Canvas() {
     const rect = event.currentTarget.getBoundingClientRect();
     menuAt.current = camera.toWorld({ x: event.clientX - rect.left, y: event.clientY - rect.top });
     setMenuRoom(roomAt(plan, menuAt.current));
+    setMenuWork(workAt(plan, menuAt.current));
   };
 
   return (
@@ -122,6 +131,16 @@ export function Canvas() {
           <ContextMenu.Item className={ITEM} onSelect={() => startDraft(menuAt.current)}>
             Add comment here
           </ContextMenu.Item>
+          {mode === "edit" && (
+            <ContextMenu.Item className={ITEM} onSelect={() => askPicture(menuAt.current)}>
+              Hang a picture here
+            </ContextMenu.Item>
+          )}
+          {mode === "edit" && menuWork?.work.pictureId !== undefined && (
+            <ContextMenu.Item className={ITEM} onSelect={() => takeDown(menuWork.work.id)}>
+              Take down
+            </ContextMenu.Item>
+          )}
           {mode === "edit" && picked > 0 && (
             <ContextMenu.Item className={ITEM} onSelect={() => removeSelected()}>
               {picked === 1 ? "Remove the selected room" : `Remove the ${picked} selected rooms`}

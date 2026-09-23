@@ -10,6 +10,7 @@
  * Decision: DECISIONS.md, the wall is curated by default, yours to rearrange here.
  */
 
+import type { Point } from "../../geometry.js";
 import type { Get, Set, SliceContext } from "../utils/actions.js";
 import { keptAfter, latest, stamp, type Stamped, type When } from "../utils/stamped.js";
 import type { Store } from "../store.js";
@@ -38,6 +39,8 @@ export interface GallerySlice {
   readonly naming: string | undefined;
   /** The rooms picked with a click in the Room tool, any room, the drawn ones to be removed together; never kept. */
   readonly selected: readonly string[];
+  /** Where a picture of your own is being hung: a file, then its details, are being asked for; none otherwise. */
+  readonly hangingAt: Point | undefined;
   renameRoom(id: string, name: string, when?: When): void;
   resizeRoom(id: string, cells: Cells, when?: When): void;
   drawRoom(id: string, name: string, cells: Cells, when?: When): void;
@@ -60,6 +63,8 @@ export interface GallerySlice {
   clearSelection(): void;
   /** Remove every drawn room picked, one removal each, and let the selection go. */
   removeSelected(when?: When): void;
+  /** Ask for a picture to hang at a point; with none, ask no more. */
+  askPicture(at: Point | undefined): void;
 }
 
 export const createGallerySlice =
@@ -80,6 +85,7 @@ export const createGallerySlice =
       tool: "move",
       naming: undefined,
       selected: [],
+      hangingAt: undefined,
 
       renameRoom: (id, name, when) => {
         const { at, remote } = stamp(when);
@@ -199,6 +205,9 @@ export const createGallerySlice =
             removeRoom(id, when);
           }
         }
+      },
+      askPicture: (at) => {
+        set({ hangingAt: at });
       },
     };
   };

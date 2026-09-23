@@ -11,12 +11,14 @@
  * Decision: DECISIONS.md, levels of detail by zoom.
  */
 
-import { Container, Graphics, Sprite, Text } from "pixi.js";
+import { Container, Graphics, Sprite, Text, type Texture } from "pixi.js";
 import type { Point, WorldRect } from "../camera/index.js";
 import type { HungWork } from "../gallery/hang.js";
 import { imageSizeFor, workTier, type ImageEntry, type WorkTier } from "../gallery/tiers.js";
 import { parseCssColor, type PackedColor } from "./css-color.js";
-import { loadPicture } from "./textures.js";
+
+/** Where a view gets its picture at a size: the site's image set, or a picture of your own. */
+export type PictureSource = (px: number) => Promise<Texture>;
 
 export interface WorkColors {
   readonly edge: PackedColor;
@@ -40,6 +42,7 @@ export class WorkView {
   readonly container = new Container();
   private readonly hung: HungWork;
   private readonly entry: ImageEntry;
+  private readonly source: PictureSource;
   private readonly colors: WorkColors;
   private readonly requestFrame: () => void;
   private readonly picture = new Sprite();
@@ -48,9 +51,16 @@ export class WorkView {
   private shownPx = 0;
   private isDestroyed = false;
 
-  constructor(hung: HungWork, entry: ImageEntry, colors: WorkColors, requestFrame: () => void) {
+  constructor(
+    hung: HungWork,
+    entry: ImageEntry,
+    source: PictureSource,
+    colors: WorkColors,
+    requestFrame: () => void
+  ) {
     this.hung = hung;
     this.entry = entry;
+    this.source = source;
     this.colors = colors;
     this.requestFrame = requestFrame;
     const { rect } = hung;
@@ -129,7 +139,7 @@ export class WorkView {
     if (px <= this.shownPx) {
       return;
     }
-    void loadPicture(this.hung.work.id, px).then((texture) => {
+    void this.source(px).then((texture) => {
       if (this.isDestroyed || px <= this.shownPx) {
         return;
       }

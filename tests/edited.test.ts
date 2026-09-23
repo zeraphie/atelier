@@ -81,3 +81,62 @@ describe("applyEdits, a room removed again", () => {
     expect(edited.rooms.map((room) => room.id)).toEqual(["a", "b", "kept"]);
   });
 });
+
+describe("applyEdits, pictures of your own", () => {
+  const record = {
+    id: "pic",
+    title: "Bridge",
+    artist: "M",
+    year: "1991",
+    credit: "LoC",
+    description: "A drawing",
+    widthCm: 60,
+    heightCm: 40,
+    color: "#cccccc",
+    size: { width: 1024, height: 683 },
+  };
+  const hanging = (id: string, at: { x: number; y: number }, pictureId = "pic") => ({
+    value: { id, pictureId, at, widthCm: 60 },
+    at: 10,
+  });
+
+  test("a hanging is a work of the room its point is in, placed there, at the picture's proportions", () => {
+    const edited = applyEdits(base, {
+      rooms: {},
+      doorways: {},
+      placed: {},
+      hangings: { h1: hanging("h1", { x: 250, y: 100 }) },
+      pictures: { pic: record },
+    });
+    expect(edited.rooms[0]!.works).toEqual([]);
+    expect(edited.rooms[1]!.works.map((work) => work.id)).toEqual(["h1"]);
+    expect(edited.rooms[1]!.works[0]).toMatchObject({
+      title: "Bridge",
+      widthCm: 60,
+      heightCm: 40,
+      medium: "A drawing",
+      collection: "LoC",
+      pictureId: "pic",
+    });
+    expect(edited.placed["h1"]).toEqual({ x: 250, y: 100 });
+  });
+
+  test("a point it was moved to wins; one taken down, of an unknown picture, or outside every room is no work", () => {
+    const edited = applyEdits(base, {
+      rooms: {},
+      doorways: {},
+      placed: { h1: { value: { x: 50, y: 50 }, at: 20 } },
+      hangings: {
+        h1: hanging("h1", { x: 250, y: 100 }),
+        h2: { value: null, at: 10 },
+        h3: hanging("h3", { x: 100, y: 100 }, "nope"),
+        h4: hanging("h4", { x: 900, y: 900 }),
+      },
+      pictures: { pic: record },
+    });
+    expect(edited.rooms[0]!.works.map((work) => work.id)).toEqual(["h1"]);
+    expect(edited.rooms[1]!.works).toEqual([]);
+    expect(edited.placed["h1"]).toEqual({ x: 50, y: 50 });
+    expect(edited.placed["h4"]).toBeUndefined();
+  });
+});
