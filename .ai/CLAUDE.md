@@ -35,7 +35,9 @@ Research → decisions → plan → execute, step by step.
 See [STYLE.md](STYLE.md). Formatting is oxfmt's job, linting is
 oxlint's — style review is about what tools can't check. Tests follow
 [TESTING.md](TESTING.md): logic tests for pure logic, and the browser
-for everything a person does.
+for everything a person does. Reuse follows [REUSE.md](REUSE.md): look
+for what exists before writing, put a thing in the folder that says
+what it is, and end every report on what was reused.
 
 ## House rules
 
@@ -64,6 +66,8 @@ for everything a person does.
 - `DECISIONS.md` — the design doc: product and technical decisions
 - `README.md` — setup, links, map of the code
 - `.ai/STYLE.md`, `.ai/TESTING.md` — code style and tests
+- `.ai/REUSE.md` — how code stays in one place: the layers, the
+  catalogue, the reuse reading
 - `.plan/` — local-only plans (gitignored)
 - `src/camera/` — pan and zoom math and input, one transform
 - `src/canvas/` — the Pixi stage, frame scheduler, rooms and works
