@@ -4,14 +4,11 @@
  * Where the others' pointers are, in the world: a point per peer for
  * as long as it is over its canvas, gone when it leaves it or the
  * viewing. Kept apart from the store, since a cursor moves every frame
- * and only its layer needs to know. And the saying of your own: the
- * latest point once a frame at most, only when it changed, whole
- * centimetres since that is the world's unit, and once that it is
- * gone. Pure, so the pace is tested without a browser.
+ * and only its layer needs to know. Your own is said to the centimetre,
+ * the world's unit, so a pointer at rest says nothing new.
  * Decision: DECISIONS.md, everyone is in a viewing.
  */
 
-import { FrameScheduler } from "../canvas/frame-scheduler.js";
 import { ValueStore } from "../canvas/value-store.js";
 import type { Point } from "../geometry.js";
 
@@ -45,51 +42,11 @@ export function clearCursors(): void {
   }
 }
 
-/**
- * Says where your pointer is: once a frame at most, however often it
- * moved, and only when the point said would differ from the last; that
- * it is nowhere is said once, and never before anything was.
- */
-export class CursorSayer {
-  private latest: Point | undefined;
-  /** What was said last; nothing yet, or nowhere. */
-  private said: Point | null | undefined;
-  private readonly frames: FrameScheduler;
-
-  /** `refresh` runs its callback at the next screen refresh; `send` is what the saying is. */
-  constructor(
-    refresh: (tell: () => void) => void,
-    private readonly send: (at: Point | null) => void
-  ) {
-    this.frames = new FrameScheduler(refresh, () => this.flush());
-  }
-
-  /** The pointer is at `at` in the world, or off the canvas. */
-  say(at: Point | undefined): void {
-    this.latest = at === undefined ? undefined : { x: Math.round(at.x), y: Math.round(at.y) };
-    this.frames.ask();
-  }
-
-  /** Say the latest again whatever was said, as to a peer who just arrived. */
-  sayAgain(): void {
-    this.said = undefined;
-    this.frames.ask();
-  }
-
-  private flush(): void {
-    const next = this.latest ?? null;
-    const isUnchanged = this.said === undefined ? next === null : isSame(this.said, next);
-    if (isUnchanged) {
-      return;
-    }
-    this.said = next;
-    this.send(next);
-  }
+/** A point to the centimetre. */
+export function roundedPoint(at: Point): Point {
+  return { x: Math.round(at.x), y: Math.round(at.y) };
 }
 
-function isSame(a: Point | null, b: Point | null): boolean {
-  if (a === null || b === null) {
-    return a === b;
-  }
+export function samePoint(a: Point, b: Point): boolean {
   return a.x === b.x && a.y === b.y;
 }

@@ -3,9 +3,11 @@ import {
   isActionMessage,
   isBytesMetadata,
   isCursorMessage,
+  isFollowMessage,
   isHelloMessage,
   isPictureMessage,
   isSnapshotMessage,
+  isViewMessage,
 } from "../src/viewing/message.js";
 
 describe("isActionMessage", () => {
@@ -81,5 +83,24 @@ describe("isCursorMessage", () => {
     expect(isCursorMessage({ kind: "cursor", at: { x: 1, y: Number.NaN } })).toBe(false);
     expect(isCursorMessage({ kind: "cursor" })).toBe(false);
     expect(isCursorMessage({ kind: "hello", at: { x: 1, y: 2 } })).toBe(false);
+  });
+});
+
+describe("isViewMessage", () => {
+  test("a view message is a middle point and a zoom above nothing, or null for a screen gone", () => {
+    expect(isViewMessage({ kind: "view", at: { centre: { x: 1, y: 2 }, zoom: 0.5 } })).toBe(true);
+    expect(isViewMessage({ kind: "view", at: null })).toBe(true);
+    expect(isViewMessage({ kind: "view", at: { centre: { x: 1, y: 2 }, zoom: 0 } })).toBe(false);
+    expect(isViewMessage({ kind: "view", at: { zoom: 1 } })).toBe(false);
+    expect(isViewMessage({ kind: "cursor", at: { centre: { x: 1, y: 2 }, zoom: 1 } })).toBe(false);
+  });
+});
+
+describe("isFollowMessage", () => {
+  test("a follow message says whether, and nothing else is one", () => {
+    expect(isFollowMessage({ kind: "follow", is: true })).toBe(true);
+    expect(isFollowMessage({ kind: "follow", is: false })).toBe(true);
+    expect(isFollowMessage({ kind: "follow", is: "yes" })).toBe(false);
+    expect(isFollowMessage({ kind: "follow" })).toBe(false);
   });
 });

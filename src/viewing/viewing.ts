@@ -5,8 +5,8 @@
  * viewing's own key, the viewing is joined in the background, and from then on every
  * action this screen takes is sent to the peers and every action a peer
  * takes is replayed here by name, marked remote so it is not told again;
- * your pointer goes the same way, once a frame, and theirs are kept for
- * the cursor layer.
+ * your pointer and your view go the same way, once a frame, and theirs
+ * are kept for the cursor layer and for following.
  * Leaving unbinds, leaves the viewing and switches the store back to the
  * solo gallery. Joining the viewing already joined is nothing, so
  * StrictMode's double mount joins once; a leave during a join cancels
@@ -23,23 +23,29 @@ import { absorbSnapshot, keyForViewing, switchGallery, useStore } from "../state
 import { onAction } from "../state/utils/actions.js";
 import { getPicture, putPicture, stateStorage } from "../storage/index.js";
 import { swatchIdFor } from "./color.js";
-import { clearCursors, CursorSayer, dropCursor, placeCursor } from "./cursors.js";
+import { clearCursors, dropCursor, placeCursor, roundedPoint, samePoint } from "./cursors.js";
 import {
   isActionMessage,
   isBytesMetadata,
   isCursorMessage,
+  isFollowMessage,
   isHelloMessage,
   isPictureMessage,
   isSnapshotMessage,
+  isViewMessage,
   type ActionMessage,
   type BytesMetadata,
   type CursorMessage,
+  type FollowMessage,
   type HelloMessage,
   type PictureMessage,
   type SnapshotMessage,
+  type ViewMessage,
 } from "./message.js";
+import { Sayer } from "./sayer.js";
 import { snapshotOf } from "./snapshot.js";
 import { connect, type Transport } from "./transport.js";
+import { clearViews, dropView, placeView, sameView, type View } from "./views.js";
 
 interface Joined {
   readonly code: string;
@@ -53,18 +59,46 @@ interface Joined {
 
 let current: Joined | undefined;
 
-// Your pointer, said once a frame to whichever transport is bound; to no one while none is.
-const sayer = new CursorSayer(
-  (tell) => requestAnimationFrame(tell),
+// Your pointer and your view, each said once a frame to whichever transport
+// is bound, and to no one while none is.
+const refresh = (tell: () => void): void => {
+  requestAnimationFrame(tell);
+};
+const cursorSayer = new Sayer<Point>(
+  refresh,
   (at) => {
     const message: CursorMessage = { kind: "cursor", at };
     current?.transport?.send(message);
-  }
+  },
+  samePoint
+);
+const viewSayer = new Sayer<View>(
+  refresh,
+  (at) => {
+    const message: ViewMessage = { kind: "view", at };
+    current?.transport?.send(message);
+  },
+  sameView
 );
 
-/** Say where your pointer is in the world, or that it is off the canvas; said once a frame at most. */
+/** Say where your pointer is in the world, to the centimetre, or that it is off the canvas; once a frame at most. */
 export function sayCursor(at: Point | undefined): void {
-  sayer.say(at);
+  cursorSayer.say(at === undefined ? undefined : roundedPoint(at));
+}
+
+/** Say where you are looking; once a frame at most, and only when it changed. */
+export function sayView(view: View): void {
+  viewSayer.say(view);
+}
+
+/** Tell a peer you are following them, or no longer; nothing to one who has gone. */
+export function sayFollowing(peerId: string, is: boolean): void {
+  const transport = current?.transport;
+  if (transport === undefined || !transport.peers().includes(peerId)) {
+    return;
+  }
+  const message: FollowMessage = { kind: "follow", is };
+  transport.send(message, peerId);
 }
 
 // Switches of the gallery's key run one after another, so a leave that
@@ -132,7 +166,8 @@ function bind(joined: Joined, transport: Transport): void {
   transport.onJoin((peerId) => {
     useStore.getState().peerJoined(peerId);
     sayHello(transport, peerId);
-    sayer.sayAgain();
+    cursorSayer.sayAgain();
+    viewSayer.sayAgain();
     const state = useStore.getState();
     const message: SnapshotMessage = { kind: "snapshot", state: snapshotOf(state) };
     transport.send(message, peerId);
@@ -145,6 +180,7 @@ function bind(joined: Joined, transport: Transport): void {
   transport.onLeave((peerId) => {
     useStore.getState().peerLeft(peerId);
     dropCursor(peerId);
+    dropView(peerId);
   });
   // A new name or colour is said to everyone.
   const saidOf = (own: { readonly name: string; readonly color: string | undefined }): string =>
@@ -198,7 +234,8 @@ async function sendPicture(transport: Transport, pictureId: string, to?: string)
   transport.send(blob, to, metadata);
 }
 
-// What a peer sent: where its pointer is, a hello with its name, an action to
+// What a peer sent: where its pointer is or where it is looking, that it is
+// following this screen or no longer, a hello with its name, an action to
 // replay, a snapshot to merge, a picture's record to keep, or its bytes, which
 // the library may hand over as a buffer.
 function receive(data: unknown, from: string, metadata: unknown): void {
@@ -207,6 +244,10 @@ function receive(data: unknown, from: string, metadata: unknown): void {
     void keepBytes(metadata.id, bytes);
   } else if (isCursorMessage(data)) {
     placeCursor(from, data.at);
+  } else if (isViewMessage(data)) {
+    placeView(from, data.at);
+  } else if (isFollowMessage(data)) {
+    useStore.getState().followedBy(from, data.is);
   } else if (isHelloMessage(data)) {
     useStore.getState().peerNamed(from, data.name, data.user, data.color);
   } else if (isPictureMessage(data)) {
@@ -269,6 +310,7 @@ async function leave(joined: Joined): Promise<void> {
   joined.stopNaming();
   useStore.getState().leftViewing();
   clearCursors();
+  clearViews();
   await joined.transport?.leave().catch(reportError);
 }
 

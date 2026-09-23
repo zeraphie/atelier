@@ -231,3 +231,45 @@ describe("viewing", () => {
     expect(state().peers).toEqual({});
   });
 });
+
+describe("following", () => {
+  test("following a peer is one at a time, and stopping clears it", () => {
+    const { state } = gallery();
+    state().peerJoined("a");
+    state().peerJoined("b");
+    state().follow("a");
+    expect(state().following).toBe("a");
+    state().follow("b");
+    expect(state().following).toBe("b");
+    state().unfollow();
+    expect(state().following).toBeUndefined();
+  });
+
+  test("followers are kept once each, added when they say so and let go when they stop", () => {
+    const { state } = gallery();
+    state().followedBy("a", true);
+    state().followedBy("a", true);
+    state().followedBy("b", true);
+    expect(state().followers).toEqual(["a", "b"]);
+    state().followedBy("a", false);
+    expect(state().followers).toEqual(["b"]);
+  });
+
+  test("a peer leaving is followed no more and follows no more, and leaving the viewing forgets both", () => {
+    const { state } = gallery();
+    state().peerJoined("a");
+    state().peerJoined("b");
+    state().follow("a");
+    state().followedBy("b", true);
+    state().peerLeft("a");
+    expect(state().following).toBeUndefined();
+    expect(state().followers).toEqual(["b"]);
+    state().peerLeft("b");
+    expect(state().followers).toEqual([]);
+    state().follow("c");
+    state().followedBy("d", true);
+    state().leftViewing();
+    expect(state().following).toBeUndefined();
+    expect(state().followers).toEqual([]);
+  });
+});

@@ -5,8 +5,9 @@
  * message is one: an action a screen took, named, with its arguments
  * and its time, and only one of the actions a peer may replay; a
  * snapshot of a gallery for a peer who just arrived; a picture's record
- * sent ahead of its bytes, and what rides beside the bytes; and where a
- * screen's pointer is, or that it has gone. Pure,
+ * sent ahead of its bytes, and what rides beside the bytes; where a
+ * screen's pointer is and where it is looking, or that it has gone; and
+ * that a screen is following the one it tells. Pure,
  * so a message from the network is judged before anything acts on it.
  * Decision: DECISIONS.md, everyone is in a viewing.
  */
@@ -15,6 +16,7 @@ import type { Point } from "../geometry.js";
 import type { PictureRecord } from "../state/slices/collection.js";
 import type { ActionCall } from "../state/utils/actions.js";
 import type { Snapshot } from "./snapshot.js";
+import type { View } from "./views.js";
 
 /** An action one screen took, for the others to replay. */
 export interface ActionMessage {
@@ -177,4 +179,42 @@ export function isCursorMessage(data: unknown): data is CursorMessage {
 
 function isPoint(value: unknown): value is Point {
   return isRecord(value) && Number.isFinite(value["x"]) && Number.isFinite(value["y"]);
+}
+
+/** Where a screen is looking: the world point at the middle of its window and its zoom, or null once it is gone. */
+export interface ViewMessage {
+  readonly kind: "view";
+  readonly at: View | null;
+}
+
+/** Whether `data` is a view message with a whole view, or none. */
+export function isViewMessage(data: unknown): data is ViewMessage {
+  if (typeof data !== "object" || data === null) {
+    return false;
+  }
+  const { kind, at } = data as { kind?: unknown; at?: unknown };
+  return kind === "view" && (at === null || isView(at));
+}
+
+function isView(value: unknown): value is View {
+  if (!isRecord(value)) {
+    return false;
+  }
+  const zoom = value["zoom"];
+  return isPoint(value["centre"]) && typeof zoom === "number" && Number.isFinite(zoom) && zoom > 0;
+}
+
+/** A screen saying it is following the one it sends this to, or no longer. */
+export interface FollowMessage {
+  readonly kind: "follow";
+  readonly is: boolean;
+}
+
+/** Whether `data` is a follow message. */
+export function isFollowMessage(data: unknown): data is FollowMessage {
+  if (typeof data !== "object" || data === null) {
+    return false;
+  }
+  const { kind, is } = data as { kind?: unknown; is?: unknown };
+  return kind === "follow" && typeof is === "boolean";
 }

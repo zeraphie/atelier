@@ -2,15 +2,17 @@
  * ─ Viewing chip ─
  *
  * The viewing's place in the top-right pill: who is here, each peer as
- * its initial in its colour, then "Just you" until a peer arrives and a
- * count after; Share, which copies this viewing's link and says so for
- * a moment; and, away from home, Leave, which goes back to the viewing
- * this browser made for itself.
+ * its initial in its colour, pressed to follow their view and again to
+ * stop; then a reading: "Just you" until a peer arrives and a count
+ * after, whom you follow, or who follows you; Share, which copies this
+ * viewing's link and says so for a moment; and, away from home, Leave,
+ * which goes back to the viewing this browser made for itself.
  * Decision: DECISIONS.md, everyone is in a viewing.
  */
 
 import { useEffect, useState, type CSSProperties } from "react";
 import { useOwnStore } from "../../state/own-store.js";
+import type { Peer } from "../../state/slices/viewing.js";
 import { useStore } from "../../state/store.js";
 import { colorFor, initialOf } from "../../viewing/color.js";
 import { PillButton, PillLabel } from "../atoms/Pill.js";
@@ -20,11 +22,16 @@ import { goHome } from "../utils/use-viewing.js";
 const COPIED_MS = 2000;
 const INITIAL =
   "flex size-6 items-center justify-center rounded-full bg-[var(--person)] font-sans text-xs " +
-  "font-bold text-accent-ink ring-2 ring-surface";
+  "font-bold text-accent-ink ring-2 ring-surface hover:ring-ink aria-pressed:ring-ink " +
+  "focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-1";
 
 export function ViewingChip() {
   const code = useStore((store) => store.viewingCode);
   const peers = useStore((store) => store.peers);
+  const following = useStore((store) => store.following);
+  const followers = useStore((store) => store.followers);
+  const follow = useStore((store) => store.follow);
+  const unfollow = useStore((store) => store.unfollow);
   const home = useOwnStore((store) => store.home);
   const [isCopied, setCopied] = useState(false);
   useEffect(() => {
@@ -47,26 +54,34 @@ export function ViewingChip() {
       .catch(() => {});
   };
   const named = Object.entries(peers).filter(([, peer]) => peer.name !== "");
-  const count = Object.keys(peers).length;
-  const here = isCopied ? "Link copied" : count === 0 ? "Just you" : `${count + 1} here`;
+  const reading = isCopied
+    ? "Link copied"
+    : wording(Object.keys(peers).length, peers, following, followers);
   return (
     <>
       <PillLabel className="gap-2 border-l-0" aria-live="polite">
         {named.length > 0 && (
-          <span className="flex -space-x-1.5" aria-hidden="true">
-            {named.map(([id, peer]) => (
-              <span
-                key={id}
-                className={INITIAL}
-                style={{ "--person": colorFor(peer.name, peer.color) } as CSSProperties}
-                title={peer.name}
-              >
-                {initialOf(peer.name)}
-              </span>
-            ))}
+          <span className="flex -space-x-1.5">
+            {named.map(([id, peer]) => {
+              const isFollowed = following === id;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  className={INITIAL}
+                  style={{ "--person": colorFor(peer.name, peer.color) } as CSSProperties}
+                  aria-pressed={isFollowed}
+                  aria-label={isFollowed ? `Stop following ${peer.name}` : `Follow ${peer.name}`}
+                  title={isFollowed ? `Stop following ${peer.name}` : `Follow ${peer.name}`}
+                  onClick={() => (isFollowed ? unfollow() : follow(id))}
+                >
+                  {initialOf(peer.name)}
+                </button>
+              );
+            })}
           </span>
         )}
-        {here}
+        {reading}
       </PillLabel>
       <PillButton className="px-3" onClick={share} title="Copy a link to this viewing">
         Share
@@ -78,4 +93,31 @@ export function ViewingChip() {
       )}
     </>
   );
+}
+
+// The reading beside the initials: whom you follow first, then who follows
+// you, then how many are here.
+function wording(
+  count: number,
+  peers: Readonly<Record<string, Peer>>,
+  following: string | undefined,
+  followers: readonly string[]
+): string {
+  const nameOf = (id: string): string => {
+    const name = peers[id]?.name ?? "";
+    return name === "" ? "Someone" : name;
+  };
+  if (following !== undefined) {
+    return `Following ${nameOf(following)}`;
+  }
+  if (followers.length === 1) {
+    return `${nameOf(followers[0]!)} is following you`;
+  }
+  if (followers.length === 2) {
+    return `${nameOf(followers[0]!)} and ${nameOf(followers[1]!)} are following you`;
+  }
+  if (followers.length > 2) {
+    return `${followers.length} following you`;
+  }
+  return count === 0 ? "Just you" : `${count + 1} here`;
 }
