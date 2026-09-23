@@ -6,11 +6,11 @@
  * camera change is passed on as the zoom, which is the one thing the
  * views react to: a room holds its name at one screen size, and a
  * work picks its tier and picture. The layer also shows what a double
- * tap would fill the view with, under the pointer: a room lit, a work
- * outlined with its label, or the whole plan lifted by a shadow.
+ * tap would fill the view with, under the pointer: a room lit, or a work
+ * outlined with its label.
  */
 
-import { BlurFilter, Graphics, type Container } from "pixi.js";
+import { Graphics, type Container } from "pixi.js";
 import type { CameraState, WorldRect } from "../camera/index.js";
 import type { Plan } from "../gallery/hang.js";
 import type { Target } from "../gallery/targets.js";
@@ -26,13 +26,10 @@ export interface GalleryColors {
   readonly work: WorkColors;
   /** The outline around a work under the pointer. */
   readonly outline: PackedColor;
-  /** The shadow under the plan when the pointer is off it. */
-  readonly shadow: PackedColor;
 }
 
-// Screen pixels: the outline's clearance from a work and its label, and how far the shadow reaches.
+// Screen pixels the outline keeps clear of a work and its label.
 const OUTLINE_PAD_PX = 6;
-const SHADOW_BLUR_PX = 16;
 
 /** Rooms, walls and works, drawn into `world` and following the camera. */
 export class GalleryLayer {
@@ -40,7 +37,6 @@ export class GalleryLayer {
   private readonly walls: Graphics;
   private readonly works: WorkView[];
   private readonly byId = new Map<string, WorkView>();
-  private readonly shadow: Graphics;
   private readonly outline = new Graphics({ label: "outline" });
   private readonly colors: GalleryColors;
   private readonly requestFrame: () => void;
@@ -57,7 +53,6 @@ export class GalleryLayer {
   ) {
     this.colors = colors;
     this.requestFrame = requestFrame;
-    this.shadow = shadowUnder(plan.bounds, wallCm, colors.shadow);
     this.rooms = plan.rooms.map((hung) => new RoomView(hung, colors.room));
     this.walls = drawWalls(plan.walls, wallCm, colors.wall);
     this.works = plan.rooms.flatMap((hung) =>
@@ -72,7 +67,6 @@ export class GalleryLayer {
     for (const [i, hung] of plan.rooms.flatMap((room) => room.works).entries()) {
       this.byId.set(hung.work.id, this.works[i]!);
     }
-    world.addChild(this.shadow);
     world.addChild(...this.rooms.map((room) => room.container));
     world.addChild(this.walls);
     world.addChild(...this.works.map((work) => work.container));
@@ -102,13 +96,11 @@ export class GalleryLayer {
     for (const room of this.rooms) {
       room.light(target?.kind === "room" && target.room.room.id === room.id);
     }
-    this.shadow.visible = target?.kind === "plan";
     this.drawOutline();
     this.requestFrame();
   }
 
   destroy(): void {
-    this.shadow.destroy();
     for (const room of this.rooms) {
       room.destroy();
     }
@@ -139,21 +131,4 @@ export class GalleryLayer {
       .stroke({ color: outline.rgb, alpha: outline.alpha, width: 1, pixelLine: true });
     this.outline.visible = true;
   }
-}
-
-// A soft dark rect under the plan, reaching a wall's width past its bounds
-// to sit under the outer walls' caps. Blurred in screen pixels, since a
-// filter works on the screen, so it is as soft at every zoom.
-function shadowUnder(bounds: WorldRect, wallCm: number, color: PackedColor): Graphics {
-  const shadow = new Graphics({ label: "shadow" })
-    .rect(
-      bounds.left - wallCm,
-      bounds.top - wallCm,
-      bounds.right - bounds.left + 2 * wallCm,
-      bounds.bottom - bounds.top + 2 * wallCm
-    )
-    .fill({ color: color.rgb, alpha: color.alpha });
-  shadow.filters = [new BlurFilter({ strength: SHADOW_BLUR_PX })];
-  shadow.visible = false;
-  return shadow;
 }

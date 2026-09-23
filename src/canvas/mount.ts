@@ -72,7 +72,6 @@ export async function mountCanvas(
       wall: { ...ink, alpha: 0.9 },
       work: { edge: line, card: surface, ink, muted },
       outline: accent,
-      shadow: { ...ink, alpha: 0.18 },
     },
     requestFrame
   );
