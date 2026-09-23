@@ -129,3 +129,18 @@ export function isPictureMessage(data: unknown): data is PictureMessage {
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
+
+/** A screen saying who it is, on arrival and whenever its name changes. */
+export interface HelloMessage {
+  readonly kind: "hello";
+  readonly name: string;
+}
+
+/** Whether `data` is a hello with a name. */
+export function isHelloMessage(data: unknown): data is HelloMessage {
+  if (typeof data !== "object" || data === null) {
+    return false;
+  }
+  const { kind, name } = data as { kind?: unknown; name?: unknown };
+  return kind === "hello" && typeof name === "string";
+}

@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import {
   isActionMessage,
   isBytesMetadata,
+  isHelloMessage,
   isPictureMessage,
   isSnapshotMessage,
 } from "../src/viewing/message.js";
@@ -55,5 +56,13 @@ describe("isSnapshotMessage, isPictureMessage and isBytesMetadata", () => {
     ).toBe(false);
     expect(isPictureMessage({ kind: "picture", record })).toBe(false);
     expect(isPictureMessage(undefined)).toBe(false);
+  });
+});
+
+describe("isHelloMessage", () => {
+  test("a hello carries a name, and nothing else passes", () => {
+    expect(isHelloMessage({ kind: "hello", name: "Ren" })).toBe(true);
+    expect(isHelloMessage({ kind: "hello" })).toBe(false);
+    expect(isHelloMessage({ kind: "action", name: "Ren" })).toBe(false);
   });
 });

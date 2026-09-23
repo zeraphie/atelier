@@ -211,18 +211,22 @@ describe("doorways", () => {
 });
 
 describe("viewing", () => {
-  test("entering a viewing names it and empties the peers; peers come and go once each; leaving clears all", () => {
+  test("entering a viewing names it and empties the peers; peers come, say their names and go; leaving clears all", () => {
     const { state } = gallery();
     state().enteredViewing("r1");
     state().peerJoined("a");
     state().peerJoined("b");
     state().peerJoined("a");
     expect(state().viewingCode).toBe("r1");
-    expect(state().peers).toEqual(["a", "b"]);
+    expect(state().peers).toEqual({ a: { name: "" }, b: { name: "" } });
+    state().peerNamed("a", "Ren");
+    state().peerNamed("c", "Kit");
+    expect(state().peers["a"]?.name).toBe("Ren");
+    expect(state().peers["c"]?.name).toBe("Kit");
     state().peerLeft("a");
-    expect(state().peers).toEqual(["b"]);
+    expect(Object.keys(state().peers)).toEqual(["b", "c"]);
     state().leftViewing();
     expect(state().viewingCode).toBeUndefined();
-    expect(state().peers).toEqual([]);
+    expect(state().peers).toEqual({});
   });
 });

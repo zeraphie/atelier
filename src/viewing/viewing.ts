@@ -29,10 +29,12 @@ import { viewingCodeFromHash } from "./hash.js";
 import {
   isActionMessage,
   isBytesMetadata,
+  isHelloMessage,
   isPictureMessage,
   isSnapshotMessage,
   type ActionMessage,
   type BytesMetadata,
+  type HelloMessage,
   type PictureMessage,
   type SnapshotMessage,
 } from "./message.js";
@@ -43,6 +45,7 @@ interface Joined {
   readonly code: string;
   transport: Transport | undefined;
   stopTelling: () => void;
+  stopNaming: () => void;
   isLeft: boolean;
 }
 
@@ -69,7 +72,13 @@ export async function joinViewing(code: string): Promise<void> {
     return;
   }
   await leaveViewing();
-  const joined: Joined = { code, transport: undefined, stopTelling: () => {}, isLeft: false };
+  const joined: Joined = {
+    code,
+    transport: undefined,
+    stopTelling: () => {},
+    stopNaming: () => {},
+    isLeft: false,
+  };
   current = joined;
   try {
     await switchTo(keyForViewing(code));
@@ -100,6 +109,7 @@ export async function joinViewing(code: string): Promise<void> {
   // sends its own back, and the two merge the same way on both sides.
   transport.onJoin((peerId) => {
     useStore.getState().peerJoined(peerId);
+    sayHello(transport, peerId);
     const state = useStore.getState();
     const message: SnapshotMessage = { kind: "snapshot", state: snapshotOf(state) };
     transport.send(message, peerId);
@@ -110,6 +120,14 @@ export async function joinViewing(code: string): Promise<void> {
     }
   });
   transport.onLeave((peerId) => useStore.getState().peerLeft(peerId));
+  // A new name is said to everyone.
+  let named = useOwnStore.getState().name;
+  joined.stopNaming = useOwnStore.subscribe((own) => {
+    if (own.name !== named) {
+      named = own.name;
+      sayHello(transport);
+    }
+  });
   joined.stopTelling = onAction((call) => {
     const message: ActionMessage = { kind: "action", call };
     transport.send(message);
@@ -152,12 +170,15 @@ async function sendPicture(transport: Transport, pictureId: string, to?: string)
   transport.send(blob, to, metadata);
 }
 
-// What a peer sent: an action to replay, a snapshot to merge, a picture's
-// record to keep, or its bytes, which the library may hand over as a buffer.
+// What a peer sent: a hello with its name, an action to replay, a snapshot to
+// merge, a picture's record to keep, or its bytes, which the library may hand
+// over as a buffer.
 function receive(data: unknown, from: string, metadata: unknown): void {
   const bytes = asBlob(data);
   if (isBytesMetadata(metadata) && bytes !== undefined) {
     void keepBytes(metadata.id, bytes);
+  } else if (isHelloMessage(data)) {
+    useStore.getState().peerNamed(from, data.name);
   } else if (isPictureMessage(data)) {
     void keepRecord(data);
   } else if (isSnapshotMessage(data)) {
@@ -207,6 +228,7 @@ export async function leaveViewing(): Promise<void> {
   current = undefined;
   joined.isLeft = true;
   joined.stopTelling();
+  joined.stopNaming();
   useStore.getState().leftViewing();
   // The library lets the room go a moment after it is told; a join of the same
   // room before then would get the dying one back, so leaving waits for it.
@@ -244,4 +266,10 @@ function asBlob(data: unknown): Blob | undefined {
     return new Blob([data as BlobPart], { type: "image/jpeg" });
   }
   return undefined;
+}
+
+// Who this screen is, said to one peer or to all.
+function sayHello(transport: Transport, to?: string): void {
+  const message: HelloMessage = { kind: "hello", name: useOwnStore.getState().name };
+  transport.send(message, to);
 }
