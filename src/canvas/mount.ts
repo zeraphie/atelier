@@ -14,6 +14,7 @@ import {
   FIT_PADDING,
   isMotionReduced,
   moveTo,
+  PointerSession,
   type Camera,
   type Point,
   type ViewSize,
@@ -23,9 +24,11 @@ import { SPACING, type Plan } from "../gallery/hang.js";
 import images from "../gallery/images.json";
 import { targetAt, type Target } from "../gallery/targets.js";
 import { currentPlan, currentRoute, onPlanChange } from "../state/plan.js";
+import { useStore } from "../state/store.js";
 import { DotGrid } from "./dot-grid.js";
 import { whenFacesReady } from "./faces.js";
 import { GalleryLayer, type GalleryColors } from "./gallery-layer.js";
+import { MoveTool } from "./move-tool.js";
 import { Stage } from "./stage.js";
 import { tokenColor } from "./theme.js";
 import { Tour, type TourHandle } from "./tour.js";
@@ -129,9 +132,34 @@ export async function mountCanvas(
     }
     const rect = host.getBoundingClientRect();
     const at = { x: event.clientX - rect.left, y: event.clientY - rect.top };
-    gallery.highlight(targetAt(currentPlan(), camera.toWorld(at)));
+    const target = targetAt(currentPlan(), camera.toWorld(at));
+    gallery.highlight(target);
+    // What is under the pointer, for the cursor to say what a press would take.
+    host.dataset["over"] = target.kind;
   };
-  const onLeave = (): void => gallery.highlight(undefined);
+  const onLeave = (): void => {
+    gallery.highlight(undefined);
+    delete host.dataset["over"];
+  };
+  // In edit mode with Move held, a press on a picture is the tool's and drags
+  // it; any other press falls through to the camera. The session lives on
+  // the canvas element, under the host, so a press it takes never starts a pan.
+  const moving = new PointerSession(
+    stage.app.canvas,
+    (at) => camera.toWorld(at),
+    new MoveTool({
+      plan: currentPlan,
+      nudge: (id, centre) => gallery.nudge(id, centre),
+      move: (id, centre) => useStore.getState().moveWork(id, centre),
+      host,
+    })
+  );
+  const isMoving = (): boolean => {
+    const { mode, tool } = useStore.getState();
+    return mode === "edit" && tool === "move";
+  };
+  const stopTools = useStore.subscribe(() => moving.setActive(isMoving()));
+  moving.setActive(isMoving());
   host.addEventListener("pointermove", onHover);
   host.addEventListener("pointerleave", onLeave);
   const stopTap = input.onTap((at) => hooks.onTap(camera.toWorld(at)));
@@ -152,6 +180,8 @@ export async function mountCanvas(
       stopDoubleTap();
       host.removeEventListener("pointermove", onHover);
       host.removeEventListener("pointerleave", onLeave);
+      stopTools();
+      moving.dispose();
       stopPlan();
       stopResize();
       stopFollowing();

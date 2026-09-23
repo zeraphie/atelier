@@ -11,7 +11,7 @@
  */
 
 import { Graphics, type Container } from "pixi.js";
-import type { CameraState, WorldRect } from "../camera/index.js";
+import type { CameraState, Point, WorldRect } from "../camera/index.js";
 import type { Plan } from "../gallery/hang.js";
 import type { Target } from "../gallery/targets.js";
 import type { ImageEntry } from "../gallery/tiers.js";
@@ -71,6 +71,11 @@ export class GalleryLayer {
     world.addChild(this.walls);
     world.addChild(...this.works.map((work) => work.container));
     world.addChild(this.outline);
+  }
+
+  /** Show a work at a centre for the length of a drag; the plan, and so the layer, still say where it is. */
+  nudge(workId: string, centre: Point): void {
+    this.byId.get(workId)?.moveTo(centre);
   }
 
   /** A work and its label together, for a view that fits both; the work's frame alone if unknown. */

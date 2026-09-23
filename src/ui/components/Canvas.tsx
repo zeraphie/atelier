@@ -86,7 +86,7 @@ export function Canvas() {
         <div
           ref={hostRef}
           data-mode={mode}
-          className="absolute inset-0 cursor-grab touch-none select-none data-[camera=panning]:cursor-grabbing data-[mode=comment]:cursor-crosshair"
+          className="absolute inset-0 cursor-grab touch-none select-none data-[mode=comment]:cursor-crosshair data-[mode=edit]:cursor-default data-[mode=edit]:data-[over=work]:cursor-grab data-[camera=panning]:cursor-grabbing data-[camera=moving]:cursor-grabbing"
           onContextMenu={rememberMenuPoint}
         />
       </ContextMenu.Trigger>

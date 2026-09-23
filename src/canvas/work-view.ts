@@ -12,7 +12,7 @@
  */
 
 import { Container, Graphics, Sprite, Text } from "pixi.js";
-import type { WorldRect } from "../camera/index.js";
+import type { Point, WorldRect } from "../camera/index.js";
 import type { HungWork } from "../gallery/hang.js";
 import { imageSizeFor, workTier, type ImageEntry, type WorkTier } from "../gallery/tiers.js";
 import { parseCssColor, type PackedColor } from "./css-color.js";
@@ -80,6 +80,12 @@ export class WorkView {
   destroy(): void {
     this.isDestroyed = true;
     this.container.destroy({ children: true });
+  }
+
+  /** Show the work with its centre on `centre`, plaque and all, without changing what it is. */
+  moveTo(centre: Point): void {
+    this.container.position.set(centre.x - this.width / 2, centre.y - this.height / 2);
+    this.requestFrame();
   }
 
   /** The work and its label together, in world units, for a view that fits both. */
