@@ -3,6 +3,7 @@ import "./state/utils/dev.js";
 import { Canvas } from "./ui/components/Canvas.js";
 import { CanvasProvider } from "./ui/utils/canvas-context.js";
 import { CommentList } from "./ui/components/CommentList.js";
+import { CursorLayer } from "./ui/components/CursorLayer.js";
 import { EditRail } from "./ui/components/EditRail.js";
 import { FoyerPlaque } from "./ui/components/FoyerPlaque.js";
 import { MiniMap } from "./ui/components/MiniMap.js";
@@ -10,7 +11,7 @@ import { Arrival } from "./ui/components/Arrival.js";
 import { PictureHanger } from "./ui/components/PictureHanger.js";
 import { PinLayer } from "./ui/components/PinLayer.js";
 import { RoomNames } from "./ui/components/RoomNames.js";
-import { useViewing } from "./ui/utils/use-viewing.js";
+import { useCursorSharing, useViewing } from "./ui/utils/use-viewing.js";
 import { useShortcuts } from "./ui/utils/shortcuts.js";
 import { StudioDesk } from "./ui/components/StudioDesk.js";
 import { ThresholdArrows } from "./ui/components/ThresholdArrows.js";
@@ -31,6 +32,7 @@ export function App() {
 function Workspace() {
   useShortcuts();
   useViewing();
+  useCursorSharing();
   return (
     <main className="relative h-dvh overflow-hidden bg-canvas text-ink">
       <Canvas />
@@ -39,6 +41,7 @@ function Workspace() {
       <RoomNames />
       <ThresholdArrows />
       <PinLayer />
+      <CursorLayer />
       <CommentList />
       <EditRail />
       <PictureHanger />

@@ -4,7 +4,9 @@
  * A shared viewing, joined by its code: the gallery store switches to the
  * viewing's own key, the viewing is joined in the background, and from then on every
  * action this screen takes is sent to the peers and every action a peer
- * takes is replayed here by name, marked remote so it is not told again.
+ * takes is replayed here by name, marked remote so it is not told again;
+ * your pointer goes the same way, once a frame, and theirs are kept for
+ * the cursor layer.
  * Leaving unbinds, leaves the viewing and switches the store back to the
  * solo gallery. Joining the viewing already joined is nothing, so
  * StrictMode's double mount joins once; a leave during a join cancels
@@ -13,6 +15,7 @@
  */
 
 import type { Thread } from "../comments/model.js";
+import type { Point } from "../geometry.js";
 import { derivativeKey } from "../pictures/prepare.js";
 import { useOwnStore } from "../state/own-store.js";
 import type { Hanging } from "../state/slices/pictures.js";
@@ -20,14 +23,17 @@ import { absorbSnapshot, keyForViewing, switchGallery, useStore } from "../state
 import { onAction } from "../state/utils/actions.js";
 import { getPicture, putPicture, stateStorage } from "../storage/index.js";
 import { swatchIdFor } from "./color.js";
+import { clearCursors, CursorSayer, dropCursor, placeCursor } from "./cursors.js";
 import {
   isActionMessage,
   isBytesMetadata,
+  isCursorMessage,
   isHelloMessage,
   isPictureMessage,
   isSnapshotMessage,
   type ActionMessage,
   type BytesMetadata,
+  type CursorMessage,
   type HelloMessage,
   type PictureMessage,
   type SnapshotMessage,
@@ -46,6 +52,20 @@ interface Joined {
 }
 
 let current: Joined | undefined;
+
+// Your pointer, said once a frame to whichever transport is bound; to no one while none is.
+const sayer = new CursorSayer(
+  (tell) => requestAnimationFrame(tell),
+  (at) => {
+    const message: CursorMessage = { kind: "cursor", at };
+    current?.transport?.send(message);
+  }
+);
+
+/** Say where your pointer is in the world, or that it is off the canvas; said once a frame at most. */
+export function sayCursor(at: Point | undefined): void {
+  sayer.say(at);
+}
 
 // Switches of the gallery's key run one after another, so a leave that
 // follows a join always lands after it.
@@ -112,6 +132,7 @@ function bind(joined: Joined, transport: Transport): void {
   transport.onJoin((peerId) => {
     useStore.getState().peerJoined(peerId);
     sayHello(transport, peerId);
+    sayer.sayAgain();
     const state = useStore.getState();
     const message: SnapshotMessage = { kind: "snapshot", state: snapshotOf(state) };
     transport.send(message, peerId);
@@ -121,7 +142,10 @@ function bind(joined: Joined, transport: Transport): void {
       }
     }
   });
-  transport.onLeave((peerId) => useStore.getState().peerLeft(peerId));
+  transport.onLeave((peerId) => {
+    useStore.getState().peerLeft(peerId);
+    dropCursor(peerId);
+  });
   // A new name or colour is said to everyone.
   const saidOf = (own: { readonly name: string; readonly color: string | undefined }): string =>
     own.name + "/" + swatchIdFor(own.name, own.color);
@@ -174,13 +198,15 @@ async function sendPicture(transport: Transport, pictureId: string, to?: string)
   transport.send(blob, to, metadata);
 }
 
-// What a peer sent: a hello with its name, an action to replay, a snapshot to
-// merge, a picture's record to keep, or its bytes, which the library may hand
-// over as a buffer.
+// What a peer sent: where its pointer is, a hello with its name, an action to
+// replay, a snapshot to merge, a picture's record to keep, or its bytes, which
+// the library may hand over as a buffer.
 function receive(data: unknown, from: string, metadata: unknown): void {
   const bytes = asBlob(data);
   if (isBytesMetadata(metadata) && bytes !== undefined) {
     void keepBytes(metadata.id, bytes);
+  } else if (isCursorMessage(data)) {
+    placeCursor(from, data.at);
   } else if (isHelloMessage(data)) {
     useStore.getState().peerNamed(from, data.name, data.user, data.color);
   } else if (isPictureMessage(data)) {
@@ -242,6 +268,7 @@ async function leave(joined: Joined): Promise<void> {
   joined.stopTelling();
   joined.stopNaming();
   useStore.getState().leftViewing();
+  clearCursors();
   await joined.transport?.leave().catch(reportError);
 }
 

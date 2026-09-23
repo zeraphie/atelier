@@ -5,11 +5,13 @@
  * message is one: an action a screen took, named, with its arguments
  * and its time, and only one of the actions a peer may replay; a
  * snapshot of a gallery for a peer who just arrived; a picture's record
- * sent ahead of its bytes; and what rides beside the bytes. Pure,
+ * sent ahead of its bytes, and what rides beside the bytes; and where a
+ * screen's pointer is, or that it has gone. Pure,
  * so a message from the network is judged before anything acts on it.
  * Decision: DECISIONS.md, everyone is in a viewing.
  */
 
+import type { Point } from "../geometry.js";
 import type { PictureRecord } from "../state/slices/collection.js";
 import type { ActionCall } from "../state/utils/actions.js";
 import type { Snapshot } from "./snapshot.js";
@@ -156,4 +158,23 @@ export function isHelloMessage(data: unknown): data is HelloMessage {
     typeof user === "string" &&
     typeof color === "string"
   );
+}
+
+/** Where a screen's pointer is in the world, or, with null, that it has left the canvas. */
+export interface CursorMessage {
+  readonly kind: "cursor";
+  readonly at: Point | null;
+}
+
+/** Whether `data` is a cursor message with a whole point, or none. */
+export function isCursorMessage(data: unknown): data is CursorMessage {
+  if (typeof data !== "object" || data === null) {
+    return false;
+  }
+  const { kind, at } = data as { kind?: unknown; at?: unknown };
+  return kind === "cursor" && (at === null || isPoint(at));
+}
+
+function isPoint(value: unknown): value is Point {
+  return isRecord(value) && Number.isFinite(value["x"]) && Number.isFinite(value["y"]);
 }

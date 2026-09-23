@@ -49,6 +49,8 @@ export interface MountHooks {
   readonly onTap: (world: Point, modifiers: TapModifiers) => void;
   /** Whether the grid is drawn, as the interface switches it. */
   readonly gridShown: ValueStore<boolean>;
+  /** Where the pointer is in the world, kept current for whoever shares it; nowhere off the canvas. */
+  readonly pointer: ValueStore<Point | undefined>;
 }
 
 export interface MountedCanvas {
@@ -235,17 +237,20 @@ export async function mountCanvas(
     return target.kind;
   };
   const onHover = (event: PointerEvent): void => {
+    const rect = host.getBoundingClientRect();
+    const world = camera.toWorld({ x: event.clientX - rect.left, y: event.clientY - rect.top });
+    hooks.pointer.set(world);
+    // A held pointer is a tool's or a pan's: nothing under it lights up.
     if (event.buttons !== 0) {
       return;
     }
-    const rect = host.getBoundingClientRect();
-    const world = camera.toWorld({ x: event.clientX - rect.left, y: event.clientY - rect.top });
     const target = targetAt(currentPlan(), world);
     gallery.highlight(target);
     gallery.hint(isDooring() ? hintAt(world) : undefined);
     host.dataset["over"] = overAt(target, world);
   };
   const onLeave = (): void => {
+    hooks.pointer.set(undefined);
     gallery.highlight(undefined);
     gallery.hint(undefined);
     delete host.dataset["over"];
@@ -356,6 +361,7 @@ export async function mountCanvas(
       stopDoubleTap();
       host.removeEventListener("pointermove", onHover);
       host.removeEventListener("pointerleave", onLeave);
+      hooks.pointer.set(undefined);
       stopTools();
       moving.dispose();
       drawing.dispose();

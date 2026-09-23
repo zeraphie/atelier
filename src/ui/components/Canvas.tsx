@@ -62,7 +62,7 @@ function onTap(world: Point, modifiers: TapModifiers): void {
 }
 
 export function Canvas() {
-  const { camera, view, tour, gridShown } = useCanvas();
+  const { camera, view, tour, gridShown, pointer } = useCanvas();
   const mode = useStore((store) => store.mode);
   const tool = useStore((store) => store.tool);
   const startDraft = useStore((store) => store.startDraft);
@@ -94,7 +94,7 @@ export function Canvas() {
     let teardown = (): void => {};
     const mount = async (): Promise<void> => {
       const { mountCanvas } = await import("../../canvas/mount.js");
-      const mounted = await mountCanvas(host, camera, view, { onTap, gridShown });
+      const mounted = await mountCanvas(host, camera, view, { onTap, gridShown, pointer });
       if (isDisposed) {
         mounted.dispose();
         return;
@@ -116,7 +116,7 @@ export function Canvas() {
       isDisposed = true;
       teardown();
     };
-  }, [camera, view, tour, gridShown]);
+  }, [camera, view, tour, gridShown, pointer]);
 
   const rememberMenuPoint = (event: MouseEvent<HTMLDivElement>): void => {
     const rect = event.currentTarget.getBoundingClientRect();

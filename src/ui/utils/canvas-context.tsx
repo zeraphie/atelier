@@ -10,7 +10,7 @@
  */
 
 import { createContext, useContext, useState, useSyncExternalStore, type ReactNode } from "react";
-import { Camera, type CameraState, type ViewSize } from "../../camera/index.js";
+import { Camera, type CameraState, type Point, type ViewSize } from "../../camera/index.js";
 import type { TourHandle } from "../../canvas/tour.js";
 import { ValueStore } from "../../canvas/value-store.js";
 
@@ -22,6 +22,8 @@ export interface CanvasSession {
   readonly tour: ValueStore<TourHandle | undefined>;
   /** Whether the dot grid is drawn. */
   readonly gridShown: ValueStore<boolean>;
+  /** Where the pointer is in the world while it is over the canvas; nowhere otherwise. */
+  readonly pointer: ValueStore<Point | undefined>;
 }
 
 const CanvasContext = createContext<CanvasSession | undefined>(undefined);
@@ -32,6 +34,7 @@ export function CanvasProvider({ children }: { readonly children: ReactNode }) {
     view: new ValueStore({ width: 0, height: 0 }),
     tour: new ValueStore<TourHandle | undefined>(undefined),
     gridShown: new ValueStore(true),
+    pointer: new ValueStore<Point | undefined>(undefined),
   }));
   return <CanvasContext value={session}>{children}</CanvasContext>;
 }

@@ -109,3 +109,18 @@ export function ResetIcon() {
     </svg>
   );
 }
+
+/** A peer's pointer: an arrow in the person's colour, its tip at the top-left corner. */
+export function CursorIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path
+        d="M1 1v14.5l3.8-3.6 2.6 5.8 2.5-1.1-2.6-5.7 5.2-.3z"
+        fill="var(--person)"
+        stroke="var(--color-surface)"
+        strokeWidth="1.2"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}

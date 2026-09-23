@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import {
   isActionMessage,
   isBytesMetadata,
+  isCursorMessage,
   isHelloMessage,
   isPictureMessage,
   isSnapshotMessage,
@@ -66,5 +67,19 @@ describe("isHelloMessage", () => {
     expect(isHelloMessage({ kind: "hello", name: "Ren" })).toBe(false);
     expect(isHelloMessage({ kind: "hello" })).toBe(false);
     expect(isHelloMessage({ kind: "action", name: "Ren", user: "u1", color: "pink" })).toBe(false);
+  });
+});
+
+describe("isCursorMessage", () => {
+  test("a cursor message is a world point, or null for a pointer gone off the canvas", () => {
+    expect(isCursorMessage({ kind: "cursor", at: { x: 120, y: -40 } })).toBe(true);
+    expect(isCursorMessage({ kind: "cursor", at: null })).toBe(true);
+  });
+
+  test("anything else is not: a point missing a side, one that is not finite, or another kind", () => {
+    expect(isCursorMessage({ kind: "cursor", at: { x: 1 } })).toBe(false);
+    expect(isCursorMessage({ kind: "cursor", at: { x: 1, y: Number.NaN } })).toBe(false);
+    expect(isCursorMessage({ kind: "cursor" })).toBe(false);
+    expect(isCursorMessage({ kind: "hello", at: { x: 1, y: 2 } })).toBe(false);
   });
 });
