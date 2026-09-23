@@ -20,8 +20,14 @@ import { TextButton } from "../atoms/TextButton.js";
 import { IdentityFields } from "../molecules/IdentityFields.js";
 import { whenLoaderDone } from "../utils/curtain.js";
 
-// Above the curtain, which sits at 999.
-const CONTENT = `${CARD} fixed top-1/2 left-1/2 z-[1000] flex w-96 max-w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/3 flex-col gap-3 p-5`;
+// Above the curtain, which sits at 999, and under its mark: the mark is centred in the
+// window and min(70vw, 440px) wide by 0.235 of that tall, so its foot is 0.1175 of its
+// width below the middle; the card starts a little under that and scrolls if the window
+// is too short for it. Written out in full, since Tailwind reads the classes off the source.
+const CONTENT =
+  `${CARD} fixed left-1/2 z-[1000] flex w-96 max-w-[calc(100vw-2rem)] -translate-x-1/2 flex-col gap-3 ` +
+  "overflow-y-auto p-5 top-[calc(50%_+_min(70vw,440px)_*_0.1175_+_1.5rem)] " +
+  "max-h-[calc(50%_-_min(70vw,440px)_*_0.1175_-_2.5rem)]";
 
 export function Arrival() {
   const name = useOwnStore((store) => store.name);

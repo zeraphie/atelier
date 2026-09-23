@@ -52,17 +52,21 @@ export function IdentityFields({
       <div className={LABEL}>
         <label htmlFor={`${idPrefix}-code`}>Viewing code</label>
         <span className="flex items-center gap-2">
-          <Input
-            id={`${idPrefix}-code`}
-            className="w-36 font-mono tracking-wider"
-            value={code}
-            spellCheck={false}
-            onChange={(event) => onCode(event.target.value)}
-            onKeyDown={doneOnEnter}
-            onBlur={onCodeDone}
-          />
+          {/* The input is as wide as its box, so the box says how wide a code is. */}
+          <span className="w-36">
+            <Input
+              id={`${idPrefix}-code`}
+              className="font-mono tracking-wider"
+              value={code}
+              spellCheck={false}
+              onChange={(event) => onCode(event.target.value)}
+              onKeyDown={doneOnEnter}
+              onBlur={onCodeDone}
+            />
+          </span>
           <TextButton
             type="button"
+            className="whitespace-nowrap"
             onClick={() => {
               onCode(newViewingCode());
               onCodeDone?.();

@@ -20,8 +20,10 @@ import { IdentityFields } from "../molecules/IdentityFields.js";
 import { useCameraState, useCanvas, useGridShown } from "../utils/canvas-context.js";
 import { enterViewing } from "../utils/use-viewing.js";
 
-// The desk's width in centimetres, its width on screen at 100%; it is as tall as what sits on it.
-const WIDTH_CM = 150;
+// The desk's width in centimetres, and the width its contents are laid out at: the arrival
+// card's, so the desk is that card scaled into the Studio, and as tall as what sits on it.
+const WIDTH_CM = 160;
+const LAYOUT_PX = 384;
 
 export function StudioDesk() {
   const camera = useCameraState();
@@ -40,8 +42,9 @@ export function StudioDesk() {
       camera={camera}
       at={{ x: left, y: top }}
       widthCm={WIDTH_CM}
+      layoutPx={LAYOUT_PX}
       aria-label="Studio desk"
-      className="flex flex-col gap-3 p-3"
+      className="flex flex-col gap-3 p-5"
     >
       <Identity key={`${viewingCode}:${name}`} viewingCode={viewingCode} name={name} />
       <GridToggle />
