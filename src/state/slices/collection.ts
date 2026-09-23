@@ -9,8 +9,8 @@
  * Decision: DECISIONS.md, a picture and its hanging are two things.
  */
 
-import type { Get, Set } from "../state/actions.js";
-import type { OwnStore } from "../state/own-store.js";
+import type { Get, Set } from "../actions.js";
+import type { OwnStore } from "../own-store.js";
 
 export interface PictureRecord {
   /** The SHA-256 of the file's bytes, as hex. */

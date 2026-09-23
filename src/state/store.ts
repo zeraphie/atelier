@@ -12,9 +12,9 @@
 
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { createCommentsSlice, type CommentsSlice } from "../comments/slice.js";
-import { createGallerySlice, type GallerySlice } from "../gallery/gallery-slice.js";
-import { createPicturesSlice, type PicturesSlice } from "../gallery/pictures-slice.js";
+import { createCommentsSlice, type CommentsSlice } from "./slices/comments.js";
+import { createGallerySlice, type GallerySlice } from "./slices/gallery.js";
+import { createPicturesSlice, type PicturesSlice } from "./slices/pictures.js";
 import { hydration, stateStorage } from "../storage/index.js";
 import { tell, type SliceContext } from "./actions.js";
 import { useOwnStore } from "./own-store.js";

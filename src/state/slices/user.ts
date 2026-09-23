@@ -7,8 +7,8 @@
  * Decision: DECISIONS.md, who is commenting.
  */
 
-import type { Get, Set } from "../state/actions.js";
-import type { OwnStore } from "../state/own-store.js";
+import type { Get, Set } from "../actions.js";
+import type { OwnStore } from "../own-store.js";
 
 export interface Visited {
   readonly name: string;

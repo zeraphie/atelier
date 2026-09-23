@@ -12,7 +12,7 @@
 import type { Point } from "../geometry.js";
 import type { Stamped } from "../state/stamped.js";
 import type { Edge } from "./edges.js";
-import type { RoomEdit } from "./gallery-slice.js";
+import type { RoomEdit } from "../state/slices/gallery.js";
 import type { Room } from "./works.js";
 
 /** What the slices hold that the plan depends on. */

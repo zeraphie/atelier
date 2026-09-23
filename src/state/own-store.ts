@@ -10,9 +10,9 @@
 
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { createCollectionSlice, type CollectionSlice } from "../gallery/collection-slice.js";
+import { createCollectionSlice, type CollectionSlice } from "./slices/collection.js";
 import { hydration, stateStorage } from "../storage/index.js";
-import { createUserSlice, type UserSlice } from "../user/user-slice.js";
+import { createUserSlice, type UserSlice } from "./slices/user.js";
 
 export type OwnStore = UserSlice & CollectionSlice;
 

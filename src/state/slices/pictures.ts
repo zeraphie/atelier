@@ -9,10 +9,10 @@
  * Decision: DECISIONS.md, the wall is curated by default, yours to rearrange here.
  */
 
-import type { Point } from "../geometry.js";
-import type { Get, Set, SliceContext } from "../state/actions.js";
-import { keptAfter, latest, stamp, type Stamped, type When } from "../state/stamped.js";
-import type { Store } from "../state/store.js";
+import type { Point } from "../../geometry.js";
+import type { Get, Set, SliceContext } from "../actions.js";
+import { keptAfter, latest, stamp, type Stamped, type When } from "../stamped.js";
+import type { Store } from "../store.js";
 
 export interface Hanging {
   readonly id: string;

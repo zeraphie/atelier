@@ -12,7 +12,7 @@
 
 import { AlertDialog, Toolbar, Tooltip } from "radix-ui";
 import type { ReactNode } from "react";
-import type { Tool } from "../../gallery/gallery-slice.js";
+import type { Tool } from "../../state/slices/gallery.js";
 import { useStore } from "../../state/store.js";
 import { Card, CARD } from "../atoms/Card.js";
 import { DoorIcon, MoveIcon, PictureIcon, ResetIcon, RoomIcon } from "../atoms/icons.js";

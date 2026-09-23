@@ -9,11 +9,11 @@
  * Decision: DECISIONS.md, threads: a root and its replies.
  */
 
-import type { Point } from "../geometry.js";
-import type { Get, Set, SliceContext } from "../state/actions.js";
-import { stamp, type When } from "../state/stamped.js";
-import type { Store } from "../state/store.js";
-import type { Comment, Thread } from "./model.js";
+import type { Point } from "../../geometry.js";
+import type { Get, Set, SliceContext } from "../actions.js";
+import { stamp, type When } from "../stamped.js";
+import type { Store } from "../store.js";
+import type { Comment, Thread } from "../../comments/model.js";
 
 export interface CommentsSlice {
   readonly threads: readonly Thread[];

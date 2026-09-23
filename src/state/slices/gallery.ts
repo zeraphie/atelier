@@ -10,11 +10,11 @@
  * Decision: DECISIONS.md, the wall is curated by default, yours to rearrange here.
  */
 
-import type { Get, Set, SliceContext } from "../state/actions.js";
-import { keptAfter, latest, stamp, type Stamped, type When } from "../state/stamped.js";
-import type { Store } from "../state/store.js";
-import type { Edge } from "./edges.js";
-import type { Cells } from "./works.js";
+import type { Get, Set, SliceContext } from "../actions.js";
+import { keptAfter, latest, stamp, type Stamped, type When } from "../stamped.js";
+import type { Store } from "../store.js";
+import type { Edge } from "../../gallery/edges.js";
+import type { Cells } from "../../gallery/works.js";
 
 export type Mode = "browse" | "comment" | "edit";
 export type Tool = "move" | "room" | "door" | "picture";

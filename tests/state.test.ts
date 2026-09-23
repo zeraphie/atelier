@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import { createStore } from "zustand/vanilla";
-import { createCommentsSlice } from "../src/comments/slice.js";
-import { createGallerySlice } from "../src/gallery/gallery-slice.js";
-import { createPicturesSlice } from "../src/gallery/pictures-slice.js";
+import { createCommentsSlice } from "../src/state/slices/comments.js";
+import { createGallerySlice } from "../src/state/slices/gallery.js";
+import { createPicturesSlice } from "../src/state/slices/pictures.js";
 import type { ActionCall } from "../src/state/actions.js";
 import type { Store } from "../src/state/store.js";
 
