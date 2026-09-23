@@ -6,8 +6,8 @@
  * and a ghost shows the span with its measure. The span grows only
  * over free ground: with the pointer over a room, the ghost stays
  * where it last fit. Release draws the room as one edit; a press let
- * go in its own cell draws nothing, so a click is not a room, and a
- * room is two cells at least. Escape drops it.
+ * go in its own cell draws nothing, so a click is not a room but a tap
+ * on the ground, and a room is two cells at least. Escape drops it.
  * Decision: DECISIONS.md, rooms stay on the metre grid.
  */
 
@@ -31,6 +31,8 @@ export interface DrawToolDeps {
   readonly preview: (shown: DrawPreview | undefined) => void;
   /** The edit itself, once the room is let go. */
   readonly draw: (cells: Cells) => void;
+  /** A press let go in its own cell: a click on the ground, which draws nothing. */
+  readonly tapped: () => void;
   /** The host, told while a room is drawn so the cursor can say so. */
   readonly host: HTMLElement;
 }
@@ -87,6 +89,8 @@ export class DrawTool implements PointerSessionOwner {
     this.deps.preview(undefined);
     if (held.span.columns * held.span.rows > 1) {
       this.deps.draw(held.span);
+    } else {
+      this.deps.tapped();
     }
   }
 

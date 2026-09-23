@@ -20,5 +20,5 @@ export { FIT_PADDING, isMotionReduced, LIFE_SIZE, MOVE_MS, moveTo, ZOOM_STEP } f
 export { CameraInput } from "./camera-input.js";
 export { firstOf, PointerSession } from "./pointer-session.js";
 export type { PointerSessionOwner } from "./pointer-session.js";
-export type { CanvasTapListener } from "./camera-input.js";
+export type { CanvasTapListener, TapModifiers } from "./camera-input.js";
 export type { Point, WorldRect } from "../geometry.js";

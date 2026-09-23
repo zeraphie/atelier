@@ -23,11 +23,18 @@ const TAP_THRESHOLD_PX = 4;
 const DOUBLE_TAP_MS = 300;
 const DOUBLE_TAP_PX = 24;
 
+/** The keys held as a tap was made, for a listener that reads them. */
+export interface TapModifiers {
+  readonly ctrlKey: boolean;
+  readonly metaKey: boolean;
+  readonly shiftKey: boolean;
+}
+
 /**
  * Called when a press on empty canvas ends without travelling: a click on
- * nothing, at that point on the canvas element.
+ * nothing, at that point on the canvas element, with the keys held.
  */
-export type CanvasTapListener = (at: Point) => void;
+export type CanvasTapListener = (at: Point, modifiers: TapModifiers) => void;
 
 /** Binds camera gestures to `target` until `dispose` is called. */
 export class CameraInput {
@@ -157,8 +164,13 @@ export class CameraInput {
         event.timeStamp - last.time < DOUBLE_TAP_MS &&
         Math.hypot(at.x - last.at.x, at.y - last.at.y) < DOUBLE_TAP_PX;
       this.lastTap = isDouble ? undefined : { at, time: event.timeStamp };
+      const modifiers = {
+        ctrlKey: event.ctrlKey,
+        metaKey: event.metaKey,
+        shiftKey: event.shiftKey,
+      };
       for (const listener of isDouble ? this.doubleTapListeners : this.tapListeners) {
-        listener(at);
+        listener(at, modifiers);
       }
     }
   };

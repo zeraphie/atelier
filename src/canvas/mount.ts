@@ -18,6 +18,7 @@ import {
   PointerSession,
   type Camera,
   type Point,
+  type TapModifiers,
   type ViewSize,
   type WorldRect,
 } from "../camera/index.js";
@@ -33,15 +34,14 @@ import { whenFacesReady } from "./faces.js";
 import { GalleryLayer, type GalleryColors } from "./gallery-layer.js";
 import { MoveTool } from "./move-tool.js";
 import { ResizeTool } from "./resize-tool.js";
-import { SelectTool } from "./select-tool.js";
 import { Stage } from "./stage.js";
 import { tokenColor } from "./theme.js";
 import { Tour, type TourHandle } from "./tour.js";
 import type { ValueStore } from "./value-store.js";
 
 export interface MountHooks {
-  /** A tap on empty canvas, as a world point. */
-  readonly onTap: (world: Point) => void;
+  /** A tap on empty canvas, as a world point, with the keys held. */
+  readonly onTap: (world: Point, modifiers: TapModifiers) => void;
   /** Whether the grid is drawn, as the interface switches it. */
   readonly gridShown: ValueStore<boolean>;
 }
@@ -145,9 +145,8 @@ export async function mountCanvas(
     }
     moveTo(camera, camera.fitted(stage.view, rectOfTarget(target), FIT_PADDING), stage.view);
   });
-  // In edit mode with Move held, a Ctrl click on a drawn room picks it, a
-  // press on a picture drags it and a press near a wall drags the wall; any
-  // other press falls through to the camera.
+  // In edit mode with Move held, a press on a picture drags it and a press
+  // near a wall drags the wall; any other press falls through to the camera.
   const isMoving = (): boolean => {
     const { mode, tool } = useStore.getState();
     return mode === "edit" && tool === "move";
@@ -207,10 +206,6 @@ export async function mountCanvas(
     stage.app.canvas,
     (at) => camera.toWorld(at),
     firstOf(
-      new SelectTool({
-        plan: currentPlan,
-        toggle: (id) => useStore.getState().toggleSelected(id),
-      }),
       new MoveTool({
         plan: currentPlan,
         nudge: (id, centre) => gallery.nudge(id, centre),
@@ -221,7 +216,8 @@ export async function mountCanvas(
     )
   );
   // The Room tool: a drag on empty ground draws a room, previewed as the plan
-  // with it in, then drawn with a name to be given in place.
+  // with it in, then drawn with a name to be given in place; a click on the
+  // ground lets the picked rooms go, and a click on a room is a tap, below.
   const isDrawing = (): boolean => {
     const { mode, tool } = useStore.getState();
     return mode === "edit" && tool === "room";
@@ -247,6 +243,7 @@ export async function mountCanvas(
         useStore.getState().drawRoom(id, DRAWN_NAME, cells);
         useStore.getState().askName(id);
       },
+      tapped: () => useStore.getState().clearSelection(),
       host,
     })
   );
@@ -258,7 +255,7 @@ export async function mountCanvas(
   drawing.setActive(isDrawing());
   host.addEventListener("pointermove", onHover);
   host.addEventListener("pointerleave", onLeave);
-  const stopTap = input.onTap((at) => hooks.onTap(camera.toWorld(at)));
+  const stopTap = input.onTap((at, modifiers) => hooks.onTap(camera.toWorld(at), modifiers));
   const stopGridSwitch = hooks.gridShown.subscribe((isShown) => grid.show(isShown));
   grid.show(hooks.gridShown.current);
   const stopResize = stage.onResize(() => {

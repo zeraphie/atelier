@@ -9,14 +9,14 @@
  * A tap on the canvas reaches the comment interface through here, and
  * a right click opens the menu that places a comment where it was,
  * and, in edit mode, takes away the room drawn here under it, or the
- * rooms picked with a Ctrl click.
+ * drawn rooms picked with the Room tool.
  */
 
 import { ContextMenu } from "radix-ui";
 import { useEffect, useRef, useState, type MouseEvent } from "react";
-import type { Point } from "../../camera/index.js";
+import type { Point, TapModifiers } from "../../camera/index.js";
 import { roomAt, type HungRoom } from "../../gallery/hang.js";
-import { usePlan } from "../../state/utils/plan.js";
+import { currentPlan, usePlan } from "../../state/utils/plan.js";
 import { useStore } from "../../state/store.js";
 import { whenHydrated } from "../../storage/index.js";
 import { useCanvas } from "../utils/canvas-context.js";
@@ -27,11 +27,21 @@ const ITEM =
   "cursor-default rounded px-2 py-1.5 font-sans text-sm text-ink outline-none " +
   "data-[highlighted]:bg-accent data-[highlighted]:text-accent-ink";
 
-// What a tap on empty canvas does: place a draft in comment mode, and
-// otherwise put away whatever is open.
-function onTap(world: Point): void {
+// What a tap on the canvas does: with the Room tool, pick the room under it,
+// alone or, with Ctrl or Command held, beside the others; place a draft in
+// comment mode; and otherwise put away whatever is open.
+function onTap(world: Point, modifiers: TapModifiers): void {
   const ui = useStore.getState();
-  if (ui.mode === "comment") {
+  if (ui.mode === "edit" && ui.tool === "room") {
+    const room = roomAt(currentPlan(), world);
+    if (room === undefined) {
+      ui.clearSelection();
+    } else if (modifiers.ctrlKey || modifiers.metaKey) {
+      ui.toggleSelected(room.room.id);
+    } else {
+      ui.selectOnly(room.room.id);
+    }
+  } else if (ui.mode === "comment") {
     ui.startDraft(world);
   } else {
     ui.closeThread();
@@ -48,6 +58,10 @@ export function Canvas() {
   const selected = useStore((store) => store.selected);
   const removeSelected = useStore((store) => store.removeSelected);
   const plan = usePlan();
+  // Of the rooms picked, the drawn ones, which are the ones a removal takes.
+  const picked = plan.rooms.filter(
+    (room) => room.room.drawn === true && selected.includes(room.room.id)
+  ).length;
   const hostRef = useRef<HTMLDivElement>(null);
   // Where the last right click landed, in world units, for the menu's item.
   const menuAt = useRef<Point>({ x: 0, y: 0 });
@@ -108,14 +122,12 @@ export function Canvas() {
           <ContextMenu.Item className={ITEM} onSelect={() => startDraft(menuAt.current)}>
             Add comment here
           </ContextMenu.Item>
-          {mode === "edit" && selected.length > 0 && (
+          {mode === "edit" && picked > 0 && (
             <ContextMenu.Item className={ITEM} onSelect={() => removeSelected()}>
-              {selected.length === 1
-                ? "Remove the selected room"
-                : `Remove the ${selected.length} selected rooms`}
+              {picked === 1 ? "Remove the selected room" : `Remove the ${picked} selected rooms`}
             </ContextMenu.Item>
           )}
-          {mode === "edit" && selected.length === 0 && menuRoom?.room.drawn === true && (
+          {mode === "edit" && picked === 0 && menuRoom?.room.drawn === true && (
             <ContextMenu.Item className={ITEM} onSelect={() => removeRoom(menuRoom.room.id)}>
               Remove this room
             </ContextMenu.Item>

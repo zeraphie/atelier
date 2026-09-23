@@ -36,7 +36,7 @@ export interface GallerySlice {
   readonly tool: Tool;
   /** The room drawn here whose name is being asked for, in place; none otherwise. */
   readonly naming: string | undefined;
-  /** The rooms drawn here picked with a Ctrl click, to be removed together; never kept. */
+  /** The rooms picked with a click in the Room tool, any room, the drawn ones to be removed together; never kept. */
   readonly selected: readonly string[];
   renameRoom(id: string, name: string, when?: When): void;
   resizeRoom(id: string, cells: Cells, when?: When): void;
@@ -50,10 +50,12 @@ export interface GallerySlice {
   holdTool(tool: Tool): void;
   /** Ask for a room's name in place, as after drawing it; with none, ask no more. */
   askName(roomId: string | undefined): void;
-  /** Pick a drawn room for removal, or let it go if picked. */
+  /** Pick a room and no other. */
+  selectOnly(roomId: string): void;
+  /** Pick a room beside the others, or let it go if picked. */
   toggleSelected(roomId: string): void;
   clearSelection(): void;
-  /** Remove every room picked, one removal each, and let the selection go. */
+  /** Remove every drawn room picked, one removal each, and let the selection go. */
   removeSelected(when?: When): void;
 }
 
@@ -152,10 +154,14 @@ export const createGallerySlice =
         set({ mode, selected: [] });
       },
       holdTool: (tool) => {
-        set({ tool });
+        // A change of tool lets the selection go: it only means something to the Room tool.
+        set({ tool, selected: [] });
       },
       askName: (roomId) => {
         set({ naming: roomId });
+      },
+      selectOnly: (roomId) => {
+        set({ selected: [roomId] });
       },
       toggleSelected: (roomId) => {
         set((state) => ({
@@ -168,10 +174,12 @@ export const createGallerySlice =
         set({ selected: [] });
       },
       removeSelected: (when) => {
-        const { selected, removeRoom } = get();
+        const { selected, rooms, removeRoom } = get();
         set({ selected: [] });
         for (const id of selected) {
-          removeRoom(id, when);
+          if (rooms[id]?.drawn?.value === true) {
+            removeRoom(id, when);
+          }
         }
       },
     };
