@@ -4,9 +4,9 @@
  * The keys the interface answers to, listened for on the window so
  * they work wherever focus is, except inside something being typed
  * in, and except a key something nearer has already answered, as a
- * popover answers Escape. C makes the next tap place a comment;
- * Escape backs out of whatever is furthest forward: a draft, an open
- * thread, comment mode, then the tour. The arrows step along the
+ * popover answers Escape. C makes the next tap place a comment and E
+ * opens the edit rail; Escape backs out of whatever is furthest
+ * forward: a draft, an open thread, a held tool, a mode, then the tour. The arrows step along the
  * tour; plus, minus, Shift+0 and Shift+1 zoom in, out, to life size and
  * to the whole plan, as the design tools have them.
  */
@@ -34,7 +34,9 @@ export function useShortcuts(): void {
         ui.cancelDraft();
       } else if (ui.openThreadId !== undefined) {
         ui.closeThread();
-      } else if (ui.mode === "comment") {
+      } else if (ui.mode === "edit" && ui.tool !== "move") {
+        ui.holdTool("move");
+      } else if (ui.mode === "comment" || ui.mode === "edit") {
         ui.setMode("browse");
       } else if (tour.current !== undefined && tour.current.stop.current >= 0) {
         tour.current.leave();
@@ -69,6 +71,9 @@ export function useShortcuts(): void {
       switch (action) {
         case "comment":
           ui.setMode(ui.mode === "comment" ? "browse" : "comment");
+          break;
+        case "edit":
+          ui.setMode(ui.mode === "edit" ? "browse" : "edit");
           break;
         case "escape":
           escape();

@@ -10,6 +10,7 @@
 
 export type KeyAction =
   | "comment"
+  | "edit"
   | "escape"
   | "next"
   | "previous"
@@ -46,6 +47,9 @@ export function keyActionFor(press: KeyPress): KeyAction | undefined {
     case "c":
     case "C":
       return "comment";
+    case "e":
+    case "E":
+      return "edit";
     case "Escape":
       return "escape";
     case "ArrowRight":

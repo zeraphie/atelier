@@ -6,9 +6,10 @@ function press(key: string, code: string, held: Partial<KeyPress> = {}): KeyPres
 }
 
 describe("keyActionFor", () => {
-  test("C in either case asks for comment mode, and Escape backs out", () => {
+  test("C in either case asks for comment mode, E for edit mode, and Escape backs out", () => {
     expect(keyActionFor(press("c", "KeyC"))).toBe("comment");
     expect(keyActionFor(press("C", "KeyC"))).toBe("comment");
+    expect(keyActionFor(press("e", "KeyE"))).toBe("edit");
     expect(keyActionFor(press("Escape", "Escape"))).toBe("escape");
   });
 

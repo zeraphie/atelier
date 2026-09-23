@@ -26,6 +26,7 @@ const CONTROLS: readonly (readonly [string, string])[] = [
   ["Zoom", "pinch, or Ctrl + scroll"],
   ["See a work", "double-click or double-tap it"],
   ["Comment", "press C, or right-click"],
+  ["Edit", "press E, or the pen"],
   ["Tour", "the Tour button, or the floor arrows"],
 ];
 

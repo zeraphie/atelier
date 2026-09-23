@@ -3,6 +3,7 @@ import "./state/dev.js";
 import { Canvas } from "./ui/components/Canvas.js";
 import { CanvasProvider } from "./ui/utils/canvas-context.js";
 import { CommentList } from "./ui/components/CommentList.js";
+import { EditRail } from "./ui/components/EditRail.js";
 import { FoyerPlaque } from "./ui/components/FoyerPlaque.js";
 import { MiniMap } from "./ui/components/MiniMap.js";
 import { PinLayer } from "./ui/components/PinLayer.js";
@@ -33,6 +34,7 @@ function Workspace() {
       <ThresholdArrows />
       <PinLayer />
       <CommentList />
+      <EditRail />
       <TourControls />
       <div className="absolute right-4 bottom-4 flex flex-col items-end gap-2">
         <MiniMap />

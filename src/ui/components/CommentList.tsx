@@ -17,7 +17,7 @@ import type { Thread } from "../../comments/model.js";
 import { usePlan } from "../../state/plan.js";
 import { useStore } from "../../state/store.js";
 import { Card } from "../atoms/Card.js";
-import { CommentIcon } from "../atoms/icons.js";
+import { CommentIcon, PenIcon } from "../atoms/icons.js";
 import { Pill, PillButton } from "../atoms/Pill.js";
 import { ThreadItem } from "../molecules/ThreadItem.js";
 import { useCanvas } from "../utils/canvas-context.js";
@@ -44,12 +44,22 @@ export function CommentList() {
   const [filter, setFilter] = useState<ListFilter>("open");
   const plan = usePlan();
   const isCommenting = mode === "comment";
+  const isEditing = mode === "edit";
   const openCount = threads.filter((thread) => !thread.resolved).length;
   const groups = groupByRoom(plan, filterThreads(threads, filter));
   return (
     <div className="absolute top-4 right-4 flex flex-col items-end gap-2">
       <Pill>
         <PillButton
+          aria-pressed={isEditing}
+          aria-label="Edit the gallery"
+          title="Edit the gallery (E)"
+          onClick={() => setMode(isEditing ? "browse" : "edit")}
+        >
+          <PenIcon />
+        </PillButton>
+        <PillButton
+          divided
           aria-pressed={isCommenting}
           aria-label="Add a comment"
           title="Add a comment (C)"
