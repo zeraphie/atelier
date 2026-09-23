@@ -11,7 +11,7 @@
  */
 
 import { Container, Graphics } from "pixi.js";
-import type { WorldRect } from "../camera/index.js";
+import type { WorldRect } from "../geometry.js";
 import type { HungRoom } from "../gallery/hang.js";
 import type { PackedColor } from "./css-color.js";
 

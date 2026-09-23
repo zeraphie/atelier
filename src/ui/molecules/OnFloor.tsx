@@ -12,7 +12,8 @@
  */
 
 import type { ComponentProps } from "react";
-import { worldToScreen, type CameraState, type Point } from "../../camera/index.js";
+import { worldToScreen, type CameraState } from "../../camera/index.js";
+import type { Point } from "../../geometry.js";
 import { Card } from "../atoms/Card.js";
 
 interface OnFloorProps extends ComponentProps<"section"> {

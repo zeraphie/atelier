@@ -14,6 +14,7 @@ import { useStore } from "../../state/store.js";
 import { colorFor } from "../../viewing/color.js";
 import { cursors } from "../../viewing/cursors.js";
 import { CursorIcon } from "../atoms/icons.js";
+import { OnScreen } from "../atoms/OnScreen.js";
 import { PERSON, personStyle } from "../atoms/styles.js";
 import { useCameraState } from "../utils/canvas-context.js";
 import { useValue } from "../utils/use-value.js";
@@ -33,17 +34,15 @@ export function CursorLayer() {
         }
         const screen = worldToScreen(camera, at);
         return (
-          <div
+          <OnScreen
             key={peerId}
-            className="absolute top-0 left-0"
-            style={{
-              transform: `translate(${screen.x}px, ${screen.y}px)`,
-              ...personStyle(colorFor(peer.name, peer.color)),
-            }}
+            at={screen}
+            anchor="corner"
+            style={personStyle(colorFor(peer.name, peer.color))}
           >
             <CursorIcon />
             {peer.name !== "" && <span className={NAME}>{peer.name}</span>}
-          </div>
+          </OnScreen>
         );
       })}
     </div>

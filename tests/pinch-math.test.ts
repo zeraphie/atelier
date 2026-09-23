@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { pinchStep, type Point } from "../src/camera/index.js";
+import { pinchStep } from "../src/camera/index.js";
+import type { Point } from "../src/geometry.js";
 
 const pair = (a: Point, b: Point): readonly [Point, Point] => [a, b];
 

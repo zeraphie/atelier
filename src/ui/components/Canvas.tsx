@@ -15,7 +15,8 @@
 
 import { ContextMenu } from "radix-ui";
 import { useEffect, useRef, useState, type MouseEvent } from "react";
-import type { Point, TapModifiers } from "../../camera/index.js";
+import { pointOn, type TapModifiers } from "../../camera/index.js";
+import type { Point } from "../../geometry.js";
 import { roomAt, workAt, type HungRoom, type HungWork } from "../../gallery/hang.js";
 import { mayHandle } from "../../gallery/works.js";
 import { useOwnStore } from "../../state/own-store.js";
@@ -119,8 +120,7 @@ export function Canvas() {
   }, [camera, canvasSize, tour, gridShown, pointer]);
 
   const rememberMenuPoint = (event: MouseEvent<HTMLDivElement>): void => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    menuAt.current = camera.toWorld({ x: event.clientX - rect.left, y: event.clientY - rect.top });
+    menuAt.current = camera.toWorld(pointOn(event.currentTarget, event));
     setMenuRoom(roomAt(plan, menuAt.current));
     setMenuWork(workAt(plan, menuAt.current));
   };

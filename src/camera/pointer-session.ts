@@ -11,6 +11,7 @@
  */
 
 import type { Point } from "../geometry.js";
+import { pointOn } from "./point-on.js";
 
 /** What a tool does with the pointer the session hands it. */
 export interface PointerSessionOwner {
@@ -139,8 +140,7 @@ export class PointerSession {
   // The canvas may sit anywhere on the page, so the point is read from its
   // own corner, then through the camera.
   private worldUnder(event: PointerEvent): Point {
-    const rect = this.canvas.getBoundingClientRect();
-    return this.toWorld({ x: event.clientX - rect.left, y: event.clientY - rect.top });
+    return this.toWorld(pointOn(this.canvas, event));
   }
 }
 

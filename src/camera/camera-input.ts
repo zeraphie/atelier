@@ -13,6 +13,7 @@
 import type { Point } from "../geometry.js";
 import type { Camera } from "./camera.js";
 import { pinchStep } from "./pinch-math.js";
+import { pointOn } from "./point-on.js";
 import { wheelIntent } from "./wheel-math.js";
 
 const LEFT_BUTTON = 0;
@@ -156,8 +157,7 @@ export class CameraInput {
       this.pointers.size === 0 &&
       Math.hypot(event.clientX - origin.x, event.clientY - origin.y) < TAP_THRESHOLD_PX;
     if (isTap) {
-      const rect = this.target.getBoundingClientRect();
-      const at = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+      const at = pointOn(this.target, event);
       const last = this.lastTap;
       const isDouble =
         last !== undefined &&
@@ -180,9 +180,12 @@ export class CameraInput {
     if (other === undefined) {
       return;
     }
-    const rect = this.target.getBoundingClientRect();
     const step = pinchStep([previous, other[1]], [current, other[1]]);
     this.camera.panBy(step.dx, step.dy);
-    this.camera.zoomAt({ x: step.anchor.x - rect.left, y: step.anchor.y - rect.top }, step.factor);
+    // The anchor is in the page, as the pointers were.
+    this.camera.zoomAt(
+      pointOn(this.target, { clientX: step.anchor.x, clientY: step.anchor.y }),
+      step.factor
+    );
   }
 }

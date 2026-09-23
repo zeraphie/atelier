@@ -11,14 +11,8 @@
  * Decision: DECISIONS.md, a route through the rooms.
  */
 
-import {
-  glide,
-  MOVE_MS,
-  type Camera,
-  type Frame,
-  type CanvasSize,
-  type WorldRect,
-} from "../camera/index.js";
+import { glide, MOVE_MS, type Camera, type Frame, type CanvasSize } from "../camera/index.js";
+import type { WorldRect } from "../geometry.js";
 import type { Route, Stop } from "../gallery/route.js";
 import { ValueStore } from "./value-store.js";
 

@@ -12,7 +12,7 @@
  */
 
 import { Container, Graphics, Sprite, Text, type Texture } from "pixi.js";
-import type { Point, WorldRect } from "../camera/index.js";
+import type { Point, WorldRect } from "../geometry.js";
 import type { HungWork } from "../gallery/hang.js";
 import { imageSizeFor, workTier, type ImageEntry, type WorkTier } from "../gallery/tiers.js";
 import { parseCssColor, type PackedColor } from "./css-color.js";

@@ -10,7 +10,8 @@
  */
 
 import { createContext, useContext, useState, useSyncExternalStore, type ReactNode } from "react";
-import { Camera, type CameraState, type Point, type CanvasSize } from "../../camera/index.js";
+import { Camera, type CameraState, type CanvasSize } from "../../camera/index.js";
+import type { Point } from "../../geometry.js";
 import type { TourHandle } from "../../canvas/tour.js";
 import { ValueStore } from "../../canvas/value-store.js";
 import { useValue } from "./use-value.js";

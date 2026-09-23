@@ -10,7 +10,8 @@
  */
 
 import { Popover, Tooltip } from "radix-ui";
-import { worldToScreen, type Point } from "../../camera/index.js";
+import { worldToScreen } from "../../camera/index.js";
+import type { Point } from "../../geometry.js";
 import type { Thread as ThreadModel } from "../../comments/model.js";
 import { useStore } from "../../state/store.js";
 import { colorFor } from "../../viewing/color.js";

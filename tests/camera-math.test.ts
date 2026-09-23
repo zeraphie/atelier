@@ -7,9 +7,9 @@ import {
   worldToScreen,
   zoomAbout,
   type CameraState,
-  type Point,
   type ZoomLimits,
 } from "../src/camera/index.js";
+import type { Point } from "../src/geometry.js";
 
 const limits: ZoomLimits = { min: 0.25, max: 4 };
 const camera: CameraState = { x: 100, y: 50, zoom: 2 };

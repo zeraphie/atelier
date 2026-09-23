@@ -190,7 +190,7 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 - `Input()`: Where a short answer is typed, such as a name or a code.
 
 **ui/atoms/OnScreen.tsx**
-- `OnScreen()`: A thing in the DOM overlay at a screen point, by its centre.
+- `OnScreen()`: A thing in the DOM overlay at a screen point: by its centre, or, anchored at the corner, by its top-left.
 
 **ui/atoms/Pill.tsx**
 - `Pill()`: A corner's worth of controls in one rounded surface.

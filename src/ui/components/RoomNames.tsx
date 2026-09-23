@@ -16,7 +16,8 @@
  */
 
 import { useEffect, useRef, type FocusEvent, type KeyboardEvent } from "react";
-import { worldToScreen, type Point } from "../../camera/index.js";
+import { worldToScreen } from "../../camera/index.js";
+import { OnScreen } from "../atoms/OnScreen.js";
 import type { HungRoom } from "../../gallery/hang.js";
 import { usePlan } from "../../state/utils/plan.js";
 import { useStore } from "../../state/store.js";
@@ -25,8 +26,7 @@ import { useCameraState } from "../utils/canvas-context.js";
 // The name's inset from the room's corner, in centimetres.
 const NAME_INSET_CM = 16;
 
-const NAME =
-  "absolute top-0 left-0 whitespace-nowrap font-display text-[13px] leading-none font-bold text-muted";
+const NAME = "whitespace-nowrap font-display text-[13px] leading-none font-bold text-muted";
 // A minimum box keeps the caret in view while the name is blank.
 const EDITABLE =
   `${NAME} pointer-events-auto -mx-0.5 min-h-[1em] min-w-[1ch] cursor-text rounded-sm px-0.5 ` +
@@ -71,9 +71,9 @@ function RoomName({ room, isEditable }: { readonly room: HungRoom; readonly isEd
   });
   if (!isEditable) {
     return (
-      <div className={NAME} style={placedAt(at)}>
-        {name}
-      </div>
+      <OnScreen at={at} anchor="corner">
+        <div className={NAME}>{name}</div>
+      </OnScreen>
     );
   }
   const keep = (event: FocusEvent<HTMLDivElement>): void => {
@@ -96,28 +96,25 @@ function RoomName({ room, isEditable }: { readonly room: HungRoom; readonly isEd
     }
   };
   return (
-    <div
-      key={name}
-      ref={field}
-      className={EDITABLE}
-      style={placedAt(at)}
-      // Textbox is the role for a contenteditable element; the rule only
-      // knows inputs, which cannot be the name itself.
-      // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role
-      role="textbox"
-      aria-label={`Name of the room ${name}`}
-      tabIndex={0}
-      contentEditable="plaintext-only"
-      suppressContentEditableWarning
-      spellCheck={false}
-      onBlur={keep}
-      onKeyDown={onKeyDown}
-    >
-      {name}
-    </div>
+    <OnScreen at={at} anchor="corner">
+      <div
+        key={name}
+        ref={field}
+        className={EDITABLE}
+        // Textbox is the role for a contenteditable element; the rule only
+        // knows inputs, which cannot be the name itself.
+        // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role
+        role="textbox"
+        aria-label={`Name of the room ${name}`}
+        tabIndex={0}
+        contentEditable="plaintext-only"
+        suppressContentEditableWarning
+        spellCheck={false}
+        onBlur={keep}
+        onKeyDown={onKeyDown}
+      >
+        {name}
+      </div>
+    </OnScreen>
   );
-}
-
-function placedAt(at: Point): { readonly transform: string } {
-  return { transform: `translate(${at.x}px, ${at.y}px)` };
 }

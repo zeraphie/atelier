@@ -15,7 +15,8 @@
  */
 
 import { Container, Graphics, Text } from "pixi.js";
-import type { CameraState, Point, WorldRect } from "../camera/index.js";
+import type { CameraState } from "../camera/index.js";
+import type { Point, WorldRect } from "../geometry.js";
 import type { Plan, Segment } from "../gallery/hang.js";
 import type { Target } from "../gallery/targets.js";
 import type { ImageEntry } from "../gallery/tiers.js";

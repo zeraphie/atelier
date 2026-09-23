@@ -11,7 +11,8 @@
  */
 
 import { useMemo, type PointerEvent } from "react";
-import { centredOn, moveTo, visibleRect, type Point, type WorldRect } from "../../camera/index.js";
+import { centredOn, moveTo, visibleRect } from "../../camera/index.js";
+import type { Point, WorldRect } from "../../geometry.js";
 import { SPACING } from "../../gallery/hang.js";
 import images from "../../gallery/images.json";
 import type { ImageEntry } from "../../gallery/tiers.js";

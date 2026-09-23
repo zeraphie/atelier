@@ -15,13 +15,13 @@ import {
   firstOf,
   isMotionReduced,
   moveTo,
+  pointOn,
   PointerSession,
   type Camera,
-  type Point,
   type TapModifiers,
   type CanvasSize,
-  type WorldRect,
 } from "../camera/index.js";
+import type { Point, WorldRect } from "../geometry.js";
 import { edgeSegment } from "../gallery/edges.js";
 import { rectOf, SPACING, type Plan } from "../gallery/hang.js";
 import { mayHandle, type Work } from "../gallery/works.js";
@@ -245,8 +245,7 @@ export async function mountCanvas(
     return target.kind;
   };
   const onHover = (event: PointerEvent): void => {
-    const rect = host.getBoundingClientRect();
-    const world = camera.toWorld({ x: event.clientX - rect.left, y: event.clientY - rect.top });
+    const world = camera.toWorld(pointOn(host, event));
     hooks.pointer.set(world);
     // A held pointer is a tool's or a pan's: nothing under it lights up.
     if (event.buttons !== 0) {
