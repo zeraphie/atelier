@@ -16,12 +16,12 @@
 
 import { Container, Graphics, Text } from "pixi.js";
 import type { CameraState, Point, WorldRect } from "../camera/index.js";
-import type { Plan } from "../gallery/hang.js";
+import type { Plan, Segment } from "../gallery/hang.js";
 import type { Target } from "../gallery/targets.js";
 import type { ImageEntry } from "../gallery/tiers.js";
 import type { PackedColor } from "./css-color.js";
 import { RoomView, type RoomColors } from "./room-view.js";
-import { drawWalls } from "./walls-view.js";
+import { drawPosts, drawWalls } from "./walls-view.js";
 import { WorkView, type WorkColors } from "./work-view.js";
 
 export interface GalleryColors {
@@ -41,6 +41,12 @@ export interface LayerPreview {
   readonly label: { readonly text: string; readonly at: Point };
 }
 
+/** What the Door tool shows under the pointer: the edge a click would take, and what it would do. */
+export interface EdgeHint {
+  readonly segment: Segment;
+  readonly label: { readonly text: string; readonly at: Point };
+}
+
 // Screen pixels the outline keeps clear of a work and its label.
 const OUTLINE_PAD_PX = 6;
 // The ghost's dashes and the gaps between them, in screen pixels.
@@ -52,6 +58,9 @@ const BADGE_PAD_X = 6;
 const BADGE_PAD_Y = 2;
 const BADGE_RADIUS = 4;
 const BADGE_OFFSET_PX = 14;
+// The hinted edge: how wide, as a multiple of the wall, and how strong.
+const EDGE_WIDTH = 1.5;
+const EDGE_ALPHA = 0.85;
 
 /** Rooms, walls and works, drawn into `world` and following the camera. */
 export class GalleryLayer {
@@ -65,6 +74,7 @@ export class GalleryLayer {
   private readonly byId = new Map<string, WorkView>();
   private readonly outline = new Graphics({ label: "outline" });
   private readonly ghost = new Graphics({ label: "ghost" });
+  private readonly edgeLight = new Graphics({ label: "edge" });
   private readonly badge = new Container({ label: "badge" });
   private readonly badgeBack = new Graphics();
   private readonly badgeText: Text;
@@ -72,6 +82,7 @@ export class GalleryLayer {
   private readonly requestFrame: () => void;
   private target: Target | undefined;
   private shown: LayerPreview | undefined;
+  private hinted: EdgeHint | undefined;
   private zoom = 1;
 
   constructor(
@@ -88,6 +99,7 @@ export class GalleryLayer {
     this.requestFrame = requestFrame;
     this.rooms = plan.rooms.map((hung) => new RoomView(hung, colors.room));
     drawWalls(this.walls, plan.walls, wallCm, colors.wall);
+    drawPosts(this.walls, plan.doorways, wallCm, colors.wall);
     this.works = plan.rooms.flatMap((hung) =>
       hung.works.map((work) => {
         const entry = images[work.work.id];
@@ -111,7 +123,7 @@ export class GalleryLayer {
     world.addChild(...this.rooms.map((room) => room.container));
     world.addChild(this.drawnFloor, this.walls);
     world.addChild(...this.works.map((work) => work.container));
-    world.addChild(this.outline, this.ghost, this.badge);
+    world.addChild(this.outline, this.ghost, this.edgeLight, this.badge);
   }
 
   /** Show a work at a centre for the length of a drag; the plan, and so the layer, still say where it is. */
@@ -140,6 +152,14 @@ export class GalleryLayer {
       }
     }
     drawWalls(this.walls, plan.walls, this.wallCm, this.colors.wall);
+    drawPosts(this.walls, plan.doorways, this.wallCm, this.colors.wall);
+    this.drawGhost();
+    this.requestFrame();
+  }
+
+  /** Show the edge the Door tool would take, with what a click would do, or nothing. */
+  hint(shown: EdgeHint | undefined): void {
+    this.hinted = shown;
     this.drawGhost();
     this.requestFrame();
   }
@@ -188,6 +208,7 @@ export class GalleryLayer {
     }
     this.outline.destroy();
     this.ghost.destroy();
+    this.edgeLight.destroy();
     this.badge.destroy({ children: true });
   }
 
@@ -212,27 +233,43 @@ export class GalleryLayer {
     this.outline.visible = true;
   }
 
-  // The ghost as a dashed hairline, and the badge at one size on screen beside the pointer.
+  // The ghost as a dashed hairline, the hinted edge as a bar along the wall,
+  // and the badge at one size on screen beside the pointer.
   private drawGhost(): void {
+    const { outline, badge } = this.colors;
     this.ghost.clear();
     if (this.shown === undefined) {
       this.ghost.visible = false;
+    } else {
+      const { ghost } = this.shown;
+      const corners: Point[] = [
+        { x: ghost.left, y: ghost.top },
+        { x: ghost.right, y: ghost.top },
+        { x: ghost.right, y: ghost.bottom },
+        { x: ghost.left, y: ghost.bottom },
+      ];
+      for (const [i, corner] of corners.entries()) {
+        dashed(this.ghost, corner, corners[(i + 1) % 4]!, DASH_PX / this.zoom, GAP_PX / this.zoom);
+      }
+      this.ghost.stroke({ color: outline.rgb, alpha: outline.alpha, width: 1, pixelLine: true });
+      this.ghost.visible = true;
+    }
+    this.edgeLight.clear();
+    if (this.hinted === undefined) {
+      this.edgeLight.visible = false;
+    } else {
+      const { a, b } = this.hinted.segment;
+      this.edgeLight
+        .moveTo(a.x, a.y)
+        .lineTo(b.x, b.y)
+        .stroke({ color: outline.rgb, alpha: EDGE_ALPHA, width: this.wallCm * EDGE_WIDTH });
+      this.edgeLight.visible = true;
+    }
+    const label = this.shown?.label ?? this.hinted?.label;
+    if (label === undefined) {
       this.badge.visible = false;
       return;
     }
-    const { ghost, label } = this.shown;
-    const { outline, badge } = this.colors;
-    const corners: Point[] = [
-      { x: ghost.left, y: ghost.top },
-      { x: ghost.right, y: ghost.top },
-      { x: ghost.right, y: ghost.bottom },
-      { x: ghost.left, y: ghost.bottom },
-    ];
-    for (const [i, corner] of corners.entries()) {
-      dashed(this.ghost, corner, corners[(i + 1) % 4]!, DASH_PX / this.zoom, GAP_PX / this.zoom);
-    }
-    this.ghost.stroke({ color: outline.rgb, alpha: outline.alpha, width: 1, pixelLine: true });
-    this.ghost.visible = true;
     this.badgeText.text = label.text;
     this.badgeBack
       .clear()

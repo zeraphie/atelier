@@ -22,16 +22,18 @@ import {
   type ViewSize,
   type WorldRect,
 } from "../camera/index.js";
+import { edgeSegment } from "../gallery/edges.js";
 import { rectOf, SPACING, type Plan } from "../gallery/hang.js";
 import images from "../gallery/images.json";
 import { wallNear } from "../gallery/resize.js";
 import { targetAt, type Target } from "../gallery/targets.js";
 import { currentPlan, currentRoute, onPlanChange, planWith } from "../state/utils/plan.js";
 import { useStore } from "../state/store.js";
+import { DoorTool } from "./door-tool.js";
 import { DotGrid } from "./dot-grid.js";
 import { DrawTool } from "./draw-tool.js";
 import { whenFacesReady } from "./faces.js";
-import { GalleryLayer, type GalleryColors } from "./gallery-layer.js";
+import { GalleryLayer, type EdgeHint, type GalleryColors } from "./gallery-layer.js";
 import { MoveTool } from "./move-tool.js";
 import { ResizeTool } from "./resize-tool.js";
 import { Stage } from "./stage.js";
@@ -152,11 +154,38 @@ export async function mountCanvas(
     return mode === "edit" && tool === "move";
   };
   const reachCm = (): number => Math.min(WALL_REACH_PX / camera.current.zoom, WALL_REACH_MOST_CM);
+  // The Door tool: a click on a metre edge of a wall two rooms share puts
+  // their doorway there, or takes it away when it is there already.
+  const isDooring = (): boolean => {
+    const { mode, tool } = useStore.getState();
+    return mode === "edit" && tool === "door";
+  };
+  const doorTool = new DoorTool({
+    plan: currentPlan,
+    unitCm: SPACING.unitCm,
+    reachCm,
+    put: (pair, edge) => useStore.getState().moveDoor(pair, edge),
+    take: (pair) => useStore.getState().removeDoor(pair),
+  });
+  // What the Door tool would do under the pointer, for the layer to show.
+  const hintAt = (world: Point): EdgeHint | undefined => {
+    const action = doorTool.actionAt(world);
+    if (action === undefined) {
+      return undefined;
+    }
+    return {
+      segment: edgeSegment(action.edge, SPACING.unitCm),
+      label: { text: action.isThere ? "Take the doorway away" : "Doorway here", at: world },
+    };
+  };
   // Under a pointer at rest, the same target is shown, so what lights up is
   // what a double tap would fill the view with. A held pointer is panning,
   // and the world under it is moving, so it shows nothing. The cursor is
   // told what a press would take: a work before a wall, as the tools go.
   const overAt = (target: Target, world: Point): string => {
+    if (isDooring()) {
+      return doorTool.actionAt(world) === undefined ? target.kind : "edge";
+    }
     if (target.kind !== "work" && isMoving()) {
       const hit = wallNear(currentPlan(), world, reachCm());
       if (hit !== undefined) {
@@ -173,10 +202,12 @@ export async function mountCanvas(
     const world = camera.toWorld({ x: event.clientX - rect.left, y: event.clientY - rect.top });
     const target = targetAt(currentPlan(), world);
     gallery.highlight(target);
+    gallery.hint(isDooring() ? hintAt(world) : undefined);
     host.dataset["over"] = overAt(target, world);
   };
   const onLeave = (): void => {
     gallery.highlight(undefined);
+    gallery.hint(undefined);
     delete host.dataset["over"];
   };
   // The session lives on the canvas element, under the host, so a press a
@@ -247,12 +278,18 @@ export async function mountCanvas(
       host,
     })
   );
+  const dooring = new PointerSession(stage.app.canvas, (at) => camera.toWorld(at), doorTool);
   const stopTools = useStore.subscribe(() => {
     moving.setActive(isMoving());
     drawing.setActive(isDrawing());
+    dooring.setActive(isDooring());
+    if (!isDooring()) {
+      gallery.hint(undefined);
+    }
   });
   moving.setActive(isMoving());
   drawing.setActive(isDrawing());
+  dooring.setActive(isDooring());
   host.addEventListener("pointermove", onHover);
   host.addEventListener("pointerleave", onLeave);
   const stopTap = input.onTap((at, modifiers) => hooks.onTap(camera.toWorld(at), modifiers));
@@ -276,6 +313,7 @@ export async function mountCanvas(
       stopTools();
       moving.dispose();
       drawing.dispose();
+      dooring.dispose();
       resizing.dispose();
       stopSelection();
       stopPlan();

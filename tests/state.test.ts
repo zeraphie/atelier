@@ -195,3 +195,15 @@ describe("selection", () => {
     expect(told.filter((call) => call.action === "removeRoom")).toHaveLength(2);
   });
 });
+
+describe("doorways", () => {
+  test("a doorway taken away is null, the later stamp winning, and the removal is told", () => {
+    const { state, told } = gallery();
+    state().moveDoor("a>b", { col: 1, row: 0, side: "east" }, { at: 100 });
+    state().removeDoor("a>b", { at: 50, remote: true });
+    expect(state().doorways["a>b"]?.value).toEqual({ col: 1, row: 0, side: "east" });
+    state().removeDoor("a>b", { at: 200 });
+    expect(state().doorways["a>b"]?.value).toBeNull();
+    expect(told.at(-1)).toEqual({ action: "removeDoor", args: ["a>b"], at: 200 });
+  });
+});

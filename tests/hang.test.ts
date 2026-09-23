@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import type { Edge } from "../src/gallery/edges.js";
 import { hangGallery, roomAt, workAt, type Segment, type Spacing } from "../src/gallery/hang.js";
 import type { Room, Work } from "../src/gallery/works.js";
 
@@ -245,5 +246,44 @@ describe("doorways of drawn rooms", () => {
   test("the tour does not chain through a drawn room: a shipped room after one still opens onto the shipped room before it", () => {
     const { doorways } = hangGallery([shipped[0]!, drawn("c", 0, 2, 5, 2), shipped[1]!], spacing);
     expect(doorways.map((d) => `${d.from}>${d.to}`)).toEqual(["outside>a", "a>b", "a>c", "c>b"]);
+  });
+});
+
+describe("doorways by hand", () => {
+  // a and b are the tour; c sits under a and shares a wall with it, but not with b.
+  const a = room("a", 0, 0, 3, 2);
+  const b = room("b", 3, 0, 2, 2);
+  const c = room("c", 0, 2, 3, 2);
+  const pairs = (rooms: Room[], chosen: Record<string, Edge | null>): string[] =>
+    hangGallery(rooms, spacing, { doorways: chosen }).doorways.map((d) => `${d.from}>${d.to}`);
+
+  test("a doorway taken away is not cut, for the tour's pair or a drawn room's", () => {
+    expect(pairs([a, b, c], { "a>b": null })).toEqual(["outside>a"]);
+    // d, drawn under b and beside c, meets both; its door to b is taken away.
+    const d: Room = { ...room("d", 3, 2, 2, 2), drawn: true };
+    expect(pairs([a, b, c, d], { "b>d": null })).toEqual(["outside>a", "a>b", "c>d"]);
+  });
+
+  test("a doorway put by hand holds when its edge lies on a wall the two rooms share, centred there", () => {
+    expect(pairs([a, b, c], { "a>c": { col: 1, row: 1, side: "south" } })).toEqual([
+      "outside>a",
+      "a>b",
+      "a>c",
+    ]);
+    const { doorways } = hangGallery([a, b, c], spacing, {
+      doorways: { "a>c": { col: 1, row: 1, side: "south" } },
+    });
+    expect(mid(doorways.find((d) => d.to === "c")!.gap)).toEqual({ x: 150, y: 200 });
+  });
+
+  test("an edge off the wall they share, or a pair with no wall in common, puts nothing", () => {
+    expect(pairs([a, b, c], { "a>c": { col: 4, row: 1, side: "south" } })).toEqual([
+      "outside>a",
+      "a>b",
+    ]);
+    expect(pairs([a, b, c], { "b>c": { col: 3, row: 1, side: "south" } })).toEqual([
+      "outside>a",
+      "a>b",
+    ]);
   });
 });

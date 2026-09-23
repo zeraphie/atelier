@@ -18,7 +18,7 @@ import type { Room } from "./works.js";
 /** What the slices hold that the plan depends on. */
 export interface Edits {
   readonly rooms: Readonly<Record<string, RoomEdit>>;
-  readonly doorways: Readonly<Record<string, Stamped<Edge>>>;
+  readonly doorways: Readonly<Record<string, Stamped<Edge | null>>>;
   readonly placed: Readonly<Record<string, Stamped<Point>>>;
 }
 
@@ -26,7 +26,7 @@ export interface Edits {
 export interface Edited {
   readonly rooms: readonly Room[];
   readonly placed: Readonly<Record<string, Point>>;
-  readonly doorways: Readonly<Record<string, Edge>>;
+  readonly doorways: Readonly<Record<string, Edge | null>>;
 }
 
 /** `base` with `edits` applied. */

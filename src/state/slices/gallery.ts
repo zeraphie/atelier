@@ -28,8 +28,8 @@ export interface RoomEdit {
 
 export interface GallerySlice {
   readonly rooms: Readonly<Record<string, RoomEdit>>;
-  /** The doorway between two rooms, by their pair key, on a chosen edge. */
-  readonly doorways: Readonly<Record<string, Stamped<Edge>>>;
+  /** The doorway between two rooms, by their pair key, on a chosen edge, or null once taken away. */
+  readonly doorways: Readonly<Record<string, Stamped<Edge | null>>>;
   /** Edits at or before this time do not count. */
   readonly resetAt: number;
   readonly mode: Mode;
@@ -43,7 +43,10 @@ export interface GallerySlice {
   drawRoom(id: string, name: string, cells: Cells, when?: When): void;
   /** A room drawn here, taken away again. */
   removeRoom(id: string, when?: When): void;
+  /** Put the doorway between two rooms on an edge of the wall they share, adding one if they had none. */
   moveDoor(pair: string, edge: Edge, when?: When): void;
+  /** Take the doorway between two rooms away. */
+  removeDoor(pair: string, when?: When): void;
   /** Every edit forgotten, pictures included: the gallery as it shipped. */
   reset(when?: When): void;
   setMode(mode: Mode): void;
@@ -132,6 +135,21 @@ export const createGallerySlice =
         }));
         if (!remote) {
           context.tell({ action: "moveDoor", args: [pair, edge], at });
+        }
+      },
+      removeDoor: (pair, when) => {
+        const { at, remote } = stamp(when);
+        if (at <= get().resetAt) {
+          return;
+        }
+        set((state) => ({
+          doorways: {
+            ...state.doorways,
+            [pair]: latest(state.doorways[pair], { value: null, at }),
+          },
+        }));
+        if (!remote) {
+          context.tell({ action: "removeDoor", args: [pair], at });
         }
       },
       reset: (when) => {

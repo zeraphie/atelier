@@ -9,7 +9,9 @@
  * the route winds and no door looks straight through to the next; a
  * pair that shares no wall gets none. A room drawn in the gallery is
  * outside the tour: it opens onto every room it meets, one doorway per
- * pair, centred on the wall they share. Works hang on the walls, the
+ * pair, centred on the wall they share. A doorway put by hand between
+ * two rooms that share a wall, or taken away, holds whatever the rules
+ * said. Works hang on the walls, the
  * wall facing the entry first, so the first thing seen through a threshold
  * is a work on the far wall, and the doorways' stretches stay clear; a
  * work that names its wall hangs there. The gallery's edits come in
@@ -82,8 +84,8 @@ export interface Plan {
 export interface HangEdits {
   /** By work id: the point the work's centre sits on, instead of a wall. */
   readonly placed?: Readonly<Record<string, Point>>;
-  /** By pair key: the metre edge the doorway between two rooms sits on. */
-  readonly doorways?: Readonly<Record<string, Edge>>;
+  /** By pair key: the metre edge the doorway between two rooms sits on, or null for none. */
+  readonly doorways?: Readonly<Record<string, Edge | null>>;
 }
 
 export const SPACING: Spacing = {
@@ -141,7 +143,7 @@ function cutDoorways(
   rooms: readonly Room[],
   rects: readonly WorldRect[],
   spacing: Spacing,
-  chosen: Readonly<Record<string, Edge>>
+  chosen: Readonly<Record<string, Edge | null>>
 ): Doorway[] {
   const placed = rooms.map((room, i) => ({ room, rect: rects[i]! }));
   // The tour is the shipped rooms: the first has the entrance, and each opens
@@ -170,6 +172,11 @@ function cutDoorways(
       continue;
     }
     const edge = chosen[pairKey(from.room.id, to.room.id)];
+    if (edge === null) {
+      // Taken away by hand: the route goes on from the room itself.
+      before = centre(to.rect);
+      continue;
+    }
     const gap =
       edge !== undefined && edgeOnWall(shared, edge, spacing.unitCm)
         ? doorOnEdge(edge, spacing)
@@ -195,11 +202,31 @@ function cutDoorways(
         continue;
       }
       const edge = chosen[pairKey(from, to)];
+      if (edge === null) {
+        continue;
+      }
       const gap =
         edge !== undefined && edgeOnWall(shared, edge, spacing.unitCm)
           ? doorOnEdge(edge, spacing)
           : doorCentred(shared, spacing);
       doorways.push({ from, to, gap });
+    }
+  }
+  // A doorway put by hand between two rooms the rules gave none, on the
+  // edge chosen, when that edge lies on a wall they share.
+  for (const [key, edge] of Object.entries(chosen)) {
+    if (edge === null || doorways.some((doorway) => pairKey(doorway.from, doorway.to) === key)) {
+      continue;
+    }
+    const [fromId, toId] = key.split(">");
+    const from = placed.find(({ room }) => room.id === fromId);
+    const to = placed.find(({ room }) => room.id === toId);
+    if (from === undefined || to === undefined) {
+      continue;
+    }
+    const shared = sharedWall(from.rect, to.rect);
+    if (shared !== undefined && edgeOnWall(shared, edge, spacing.unitCm)) {
+      doorways.push({ from: from.room.id, to: to.room.id, gap: doorOnEdge(edge, spacing) });
     }
   }
   return doorways;
