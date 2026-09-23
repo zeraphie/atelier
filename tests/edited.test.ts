@@ -140,3 +140,39 @@ describe("applyEdits, pictures of your own", () => {
     expect(edited.placed["h4"]).toBeUndefined();
   });
 });
+
+describe("applyEdits, a hanging moved and hung again", () => {
+  const record = {
+    id: "pic",
+    title: "Bridge",
+    artist: "",
+    year: "",
+    credit: "",
+    description: "",
+    widthCm: 60,
+    heightCm: 40,
+    color: "#cccccc",
+    size: { width: 1024, height: 683 },
+  };
+
+  test("a move after the hanging wins; a hanging after the move wins", () => {
+    const hanging = { id: "h1", pictureId: "pic", at: { x: 250, y: 100 }, widthCm: 60 };
+    const later = applyEdits(base, {
+      rooms: {},
+      doorways: {},
+      placed: { h1: { value: { x: 50, y: 50 }, at: 20 } },
+      hangings: { h1: { value: hanging, at: 10 } },
+      pictures: { pic: record },
+    });
+    expect(later.placed["h1"]).toEqual({ x: 50, y: 50 });
+    const earlier = applyEdits(base, {
+      rooms: {},
+      doorways: {},
+      placed: { h1: { value: { x: 50, y: 50 }, at: 5 } },
+      hangings: { h1: { value: { ...hanging, widthCm: 90 }, at: 10 } },
+      pictures: { pic: record },
+    });
+    expect(earlier.placed["h1"]).toEqual({ x: 250, y: 100 });
+    expect(earlier.rooms[1]!.works[0]?.widthCm).toBe(90);
+  });
+});

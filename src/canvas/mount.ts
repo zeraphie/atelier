@@ -26,6 +26,7 @@ import { edgeSegment } from "../gallery/edges.js";
 import { rectOf, SPACING, type Plan } from "../gallery/hang.js";
 import images from "../gallery/images.json";
 import { wallNear } from "../gallery/resize.js";
+import { cornerNear } from "../gallery/scale.js";
 import { targetAt, type Target } from "../gallery/targets.js";
 import { currentPlan, currentRoute, onPlanChange, planWith } from "../state/utils/plan.js";
 import { useOwnStore } from "../state/own-store.js";
@@ -37,6 +38,7 @@ import { whenFacesReady } from "./faces.js";
 import { GalleryLayer, type EdgeHint, type GalleryColors } from "./gallery-layer.js";
 import { MoveTool } from "./move-tool.js";
 import { ResizeTool } from "./resize-tool.js";
+import { ScaleTool } from "./scale-tool.js";
 import { Stage } from "./stage.js";
 import { tokenColor } from "./theme.js";
 import { Tour, type TourHandle } from "./tour.js";
@@ -156,8 +158,9 @@ export async function mountCanvas(
     }
     moveTo(camera, camera.fitted(stage.view, rectOfTarget(target), FIT_PADDING), stage.view);
   });
-  // In edit mode with Move held, a press on a picture drags it and a press
-  // near a wall drags the wall; any other press falls through to the camera.
+  // In edit mode with Move held, a press on a corner of a picture of your own
+  // scales it, a press on a picture drags it and a press near a wall drags the
+  // wall; any other press falls through to the camera.
   const isMoving = (): boolean => {
     const { mode, tool } = useStore.getState();
     return mode === "edit" && tool === "move";
@@ -194,6 +197,12 @@ export async function mountCanvas(
   const overAt = (target: Target, world: Point): string => {
     if (isDooring()) {
       return doorTool.actionAt(world) === undefined ? target.kind : "edge";
+    }
+    if (isMoving()) {
+      const hit = cornerNear(currentPlan(), world, reachCm());
+      if (hit !== undefined) {
+        return hit.corner === "nw" || hit.corner === "se" ? "corner-nwse" : "corner-nesw";
+      }
     }
     if (target.kind !== "work" && isMoving()) {
       const hit = wallNear(currentPlan(), world, reachCm());
@@ -246,6 +255,18 @@ export async function mountCanvas(
     stage.app.canvas,
     (at) => camera.toWorld(at),
     firstOf(
+      new ScaleTool({
+        plan: currentPlan,
+        reachCm,
+        stretch: (id, rect) => gallery.stretch(id, rect),
+        resize: (id, centre, widthCm) => {
+          const hanging = useStore.getState().hangings[id]?.value;
+          if (hanging !== undefined && hanging !== null) {
+            useStore.getState().hang({ ...hanging, at: centre, widthCm });
+          }
+        },
+        host,
+      }),
       new MoveTool({
         plan: currentPlan,
         nudge: (id, centre) => gallery.nudge(id, centre),

@@ -136,6 +136,11 @@ export class GalleryLayer {
     this.byId.get(workId)?.moveTo(centre);
   }
 
+  /** Show a work stretched over a rect for the length of a drag; none puts it back as hung. */
+  stretch(workId: string, rect: WorldRect | undefined): void {
+    this.byId.get(workId)?.stretch(rect);
+  }
+
   /** Show a drag, of a wall or of a room being drawn, or, with nothing, the plan as it is. */
   preview(shown: LayerPreview | undefined): void {
     this.shown = shown;

@@ -35,7 +35,10 @@ const ITEM =
 function onTap(world: Point, modifiers: TapModifiers): void {
   const ui = useStore.getState();
   if (ui.mode === "edit" && ui.tool === "picture") {
-    ui.askPicture(world);
+    // Not over a picture already there: one never hangs on another.
+    if (workAt(currentPlan(), world) === undefined) {
+      ui.askPicture(world);
+    }
   } else if (ui.mode === "edit" && ui.tool === "room") {
     const room = roomAt(currentPlan(), world);
     if (room === undefined) {
@@ -122,7 +125,7 @@ export function Canvas() {
           ref={hostRef}
           data-mode={mode}
           data-tool={tool}
-          className="absolute inset-0 cursor-grab touch-none select-none data-[mode=comment]:cursor-crosshair data-[mode=edit]:cursor-default data-[mode=edit]:data-[over=work]:cursor-grab data-[mode=edit]:data-[over=wall-x]:cursor-ew-resize data-[mode=edit]:data-[over=wall-y]:cursor-ns-resize data-[camera=panning]:cursor-grabbing data-[camera=moving]:cursor-grabbing data-[mode=edit]:data-[tool=room]:data-[over=plan]:cursor-crosshair data-[camera=drawing]:cursor-crosshair data-[mode=edit]:data-[tool=door]:data-[over=edge]:cursor-pointer"
+          className="absolute inset-0 cursor-grab touch-none select-none data-[mode=comment]:cursor-crosshair data-[mode=edit]:cursor-default data-[mode=edit]:data-[over=work]:cursor-grab data-[mode=edit]:data-[over=corner-nwse]:cursor-nwse-resize data-[mode=edit]:data-[over=corner-nesw]:cursor-nesw-resize data-[mode=edit]:data-[over=wall-x]:cursor-ew-resize data-[mode=edit]:data-[over=wall-y]:cursor-ns-resize data-[camera=panning]:cursor-grabbing data-[camera=moving]:cursor-grabbing data-[mode=edit]:data-[tool=room]:data-[over=plan]:cursor-crosshair data-[camera=drawing]:cursor-crosshair data-[mode=edit]:data-[tool=door]:data-[over=edge]:cursor-pointer"
           onContextMenu={rememberMenuPoint}
         />
       </ContextMenu.Trigger>
@@ -131,7 +134,7 @@ export function Canvas() {
           <ContextMenu.Item className={ITEM} onSelect={() => startDraft(menuAt.current)}>
             Add comment here
           </ContextMenu.Item>
-          {mode === "edit" && (
+          {mode === "edit" && menuWork === undefined && (
             <ContextMenu.Item className={ITEM} onSelect={() => askPicture(menuAt.current)}>
               Hang a picture here
             </ContextMenu.Item>

@@ -68,14 +68,15 @@ export function applyEdits(
   const placed: Record<string, Point> = values(edits.placed);
   // Each hanging still up, of a picture the collection knows, is a work of
   // your own in the room its point is in, placed at that point; a point it
-  // was moved to since wins over where it was hung.
+  // was moved to since, by a later stamp, wins over where it was hung.
   const hung = new Map<string, Work[]>();
-  for (const { value: hanging } of Object.values(edits.hangings ?? {})) {
+  for (const { value: hanging, at: hungAt } of Object.values(edits.hangings ?? {})) {
     const record = hanging === null ? undefined : edits.pictures?.[hanging.pictureId];
     if (hanging === null || record === undefined) {
       continue;
     }
-    const at = placed[hanging.id] ?? hanging.at;
+    const moved = edits.placed[hanging.id];
+    const at = moved !== undefined && moved.at > hungAt ? moved.value : hanging.at;
     const room = rooms.find((candidate) => contains(rectOf(candidate, unitCm), at));
     if (room === undefined) {
       continue;

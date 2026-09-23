@@ -98,6 +98,14 @@ export class WorkView {
     this.requestFrame();
   }
 
+  /** Show the work stretched over `rect`, its proportions assumed kept, or as hung with none. */
+  stretch(rect: WorldRect | undefined): void {
+    const shown = rect ?? this.hung.rect;
+    this.container.scale.set((shown.right - shown.left) / this.width);
+    this.container.position.set(shown.left, shown.top);
+    this.requestFrame();
+  }
+
   /** The work and its label together, in world units, for a view that fits both. */
   extent(): WorldRect {
     if (this.label === undefined) {
