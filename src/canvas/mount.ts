@@ -158,14 +158,17 @@ export async function mountCanvas(
     }
     moveTo(camera, camera.fitted(stage.view, rectOfTarget(target), FIT_PADDING), stage.view);
   });
-  // In edit mode with Move held, a press on a corner of a picture of your own
-  // scales it, a press on a picture drags it and a press near a wall drags the
-  // wall; any other press falls through to the camera.
+  // In edit mode with Move held, a press on a picture drags it and a press
+  // near a wall drags the wall; any other press falls through to the camera.
   const isMoving = (): boolean => {
     const { mode, tool } = useStore.getState();
     return mode === "edit" && tool === "move";
   };
   const reachCm = (): number => Math.min(WALL_REACH_PX / camera.current.zoom, WALL_REACH_MOST_CM);
+  const isPicturing = (): boolean => {
+    const { mode, tool } = useStore.getState();
+    return mode === "edit" && tool === "picture";
+  };
   // The Door tool: a click on a metre edge of a wall two rooms share puts
   // their doorway there, or takes it away when it is there already.
   const isDooring = (): boolean => {
@@ -198,7 +201,7 @@ export async function mountCanvas(
     if (isDooring()) {
       return doorTool.actionAt(world) === undefined ? target.kind : "edge";
     }
-    if (isMoving()) {
+    if (isPicturing()) {
       const hit = cornerNear(currentPlan(), world, reachCm());
       if (hit !== undefined) {
         return hit.corner === "nw" || hit.corner === "se" ? "corner-nwse" : "corner-nesw";
@@ -255,18 +258,6 @@ export async function mountCanvas(
     stage.app.canvas,
     (at) => camera.toWorld(at),
     firstOf(
-      new ScaleTool({
-        plan: currentPlan,
-        reachCm,
-        stretch: (id, rect) => gallery.stretch(id, rect),
-        resize: (id, centre, widthCm) => {
-          const hanging = useStore.getState().hangings[id]?.value;
-          if (hanging !== undefined && hanging !== null) {
-            useStore.getState().hang({ ...hanging, at: centre, widthCm });
-          }
-        },
-        host,
-      }),
       new MoveTool({
         plan: currentPlan,
         nudge: (id, centre) => gallery.nudge(id, centre),
@@ -309,10 +300,29 @@ export async function mountCanvas(
     })
   );
   const dooring = new PointerSession(stage.app.canvas, (at) => camera.toWorld(at), doorTool);
+  // The Picture tool: a press on a corner of a picture of your own scales it;
+  // a click on a room's floor asks for a picture, as a tap, below.
+  const picturing = new PointerSession(
+    stage.app.canvas,
+    (at) => camera.toWorld(at),
+    new ScaleTool({
+      plan: currentPlan,
+      reachCm,
+      stretch: (id, rect) => gallery.stretch(id, rect),
+      resize: (id, centre, widthCm) => {
+        const hanging = useStore.getState().hangings[id]?.value;
+        if (hanging !== undefined && hanging !== null) {
+          useStore.getState().hang({ ...hanging, at: centre, widthCm });
+        }
+      },
+      host,
+    })
+  );
   const stopTools = useStore.subscribe(() => {
     moving.setActive(isMoving());
     drawing.setActive(isDrawing());
     dooring.setActive(isDooring());
+    picturing.setActive(isPicturing());
     if (!isDooring()) {
       gallery.hint(undefined);
     }
@@ -320,6 +330,7 @@ export async function mountCanvas(
   moving.setActive(isMoving());
   drawing.setActive(isDrawing());
   dooring.setActive(isDooring());
+  picturing.setActive(isPicturing());
   host.addEventListener("pointermove", onHover);
   host.addEventListener("pointerleave", onLeave);
   const stopTap = input.onTap((at, modifiers) => hooks.onTap(camera.toWorld(at), modifiers));
@@ -344,6 +355,7 @@ export async function mountCanvas(
       moving.dispose();
       drawing.dispose();
       dooring.dispose();
+      picturing.dispose();
       resizing.dispose();
       stopSelection();
       stopPlan();

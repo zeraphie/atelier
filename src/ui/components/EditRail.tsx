@@ -31,7 +31,11 @@ const TOOLS: readonly { readonly tool: Tool; readonly label: string; readonly ic
     { tool: "move", label: "Move: drag a picture, a wall or a doorway", icon: <MoveIcon /> },
     { tool: "room", label: "Room: drag on the ground to draw one", icon: <RoomIcon /> },
     { tool: "door", label: "Door: click a wall to put the doorway there", icon: <DoorIcon /> },
-    { tool: "picture", label: "Picture: hang one of your own", icon: <PictureIcon /> },
+    {
+      tool: "picture",
+      label: "Picture: click a floor to hang one of your own; drag a corner to size it",
+      icon: <PictureIcon />,
+    },
   ];
 
 export function EditRail() {

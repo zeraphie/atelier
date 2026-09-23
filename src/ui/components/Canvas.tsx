@@ -35,8 +35,10 @@ const ITEM =
 function onTap(world: Point, modifiers: TapModifiers): void {
   const ui = useStore.getState();
   if (ui.mode === "edit" && ui.tool === "picture") {
-    // Not over a picture already there: one never hangs on another.
-    if (workAt(currentPlan(), world) === undefined) {
+    // On a room's floor, and not over a picture already there: one never hangs
+    // on another, and one outside every room is never drawn.
+    const plan = currentPlan();
+    if (roomAt(plan, world) !== undefined && workAt(plan, world) === undefined) {
       ui.askPicture(world);
     }
   } else if (ui.mode === "edit" && ui.tool === "room") {
@@ -125,7 +127,7 @@ export function Canvas() {
           ref={hostRef}
           data-mode={mode}
           data-tool={tool}
-          className="absolute inset-0 cursor-grab touch-none select-none data-[mode=comment]:cursor-crosshair data-[mode=edit]:cursor-default data-[mode=edit]:data-[over=work]:cursor-grab data-[mode=edit]:data-[over=corner-nwse]:cursor-nwse-resize data-[mode=edit]:data-[over=corner-nesw]:cursor-nesw-resize data-[mode=edit]:data-[over=wall-x]:cursor-ew-resize data-[mode=edit]:data-[over=wall-y]:cursor-ns-resize data-[camera=panning]:cursor-grabbing data-[camera=moving]:cursor-grabbing data-[mode=edit]:data-[tool=room]:data-[over=plan]:cursor-crosshair data-[camera=drawing]:cursor-crosshair data-[mode=edit]:data-[tool=door]:data-[over=edge]:cursor-pointer"
+          className="absolute inset-0 cursor-grab touch-none select-none data-[mode=comment]:cursor-crosshair data-[mode=edit]:cursor-default data-[mode=edit]:data-[over=work]:cursor-grab data-[mode=edit]:data-[over=corner-nwse]:cursor-nwse-resize data-[mode=edit]:data-[over=corner-nesw]:cursor-nesw-resize data-[mode=edit]:data-[over=wall-x]:cursor-ew-resize data-[mode=edit]:data-[over=wall-y]:cursor-ns-resize data-[camera=panning]:cursor-grabbing data-[camera=moving]:cursor-grabbing data-[mode=edit]:data-[tool=room]:data-[over=plan]:cursor-crosshair data-[mode=edit]:data-[tool=picture]:data-[over=room]:cursor-crosshair data-[camera=drawing]:cursor-crosshair data-[mode=edit]:data-[tool=door]:data-[over=edge]:cursor-pointer"
           onContextMenu={rememberMenuPoint}
         />
       </ContextMenu.Trigger>
