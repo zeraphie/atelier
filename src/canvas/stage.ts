@@ -6,8 +6,9 @@
  * The stage follows the camera by subscription: each change lands on
  * the world as position and scale and asks for a frame. It draws on
  * request: its ticker never runs, and a frame comes only when
- * something asks. Text is a texture the world magnifies, so once the
- * zoom settles every piece is drawn again at that scale.
+ * something asks. Text is a texture the world scales, so once the zoom
+ * settles every piece is drawn again with one texture pixel per device
+ * pixel, whatever its own size in the world.
  * Decision: DECISIONS.md, the canvas draws on request.
  */
 
@@ -20,19 +21,28 @@ import { FrameScheduler } from "./frame-scheduler.js";
 // which is about the point the eye starts to notice.
 const SETTLE_MS = 160;
 const SCALE_STEP = 0.125;
-// Four times the device's own pixels. A texture grows with the square of
-// this, and past here nobody is reading the canvas anyway.
-const MAX_TEXT_RESOLUTION = 4;
+// A text texture.s pixels per font pixel, kept between a quarter and four:
+// below, a glyph is a smudge in a canvas of a few pixels; above, textures
+// grow with the square of it and nobody is reading the canvas anyway.
+const LEAST_TEXT_RESOLUTION = 0.25;
+const MOST_TEXT_RESOLUTION = 4;
 
-/** Draw every piece of text under `root` again at `resolution`. */
-function sharpen(root: Container, resolution: number): void {
+// Every piece of text under `root` drawn again so its texture has one pixel
+// per device pixel: its own scale on screen, accumulated down the tree from
+// `scaleOnScreen`, which is the world.s zoom times the device pixel ratio.
+// One resolution for all would leave a small label with a texture many
+// times its size, which the GPU minifies without mipmaps and strokes go
+// missing; a texture at the size shown is what the canvas rasterises best.
+function sharpen(root: Container, scaleOnScreen: number): void {
   for (const child of root.children) {
+    const scale = scaleOnScreen * child.scale.x;
     if (child instanceof Text) {
+      const resolution = Math.min(MOST_TEXT_RESOLUTION, Math.max(LEAST_TEXT_RESOLUTION, scale));
       if (child.resolution !== resolution) {
         child.resolution = resolution;
       }
     } else if (child instanceof Container) {
-      sharpen(child, resolution);
+      sharpen(child, scale);
     }
   }
 }
@@ -150,21 +160,20 @@ export class Stage {
     clearTimeout(this.sharpenAt);
     this.sharpenAt = setTimeout(() => {
       this.sharpenedFor = this.world.scale.x;
-      const resolution = Math.min(
-        MAX_TEXT_RESOLUTION,
-        Math.max(1, this.sharpenedFor) * window.devicePixelRatio
-      );
-      sharpen(this.world, resolution);
+      sharpen(this.world, this.sharpenedFor * window.devicePixelRatio);
       this.requestFrame();
     }, SETTLE_MS);
   }
 
   private fit(): void {
-    this.app.renderer.resize(
-      this.host.clientWidth,
-      this.host.clientHeight,
-      window.devicePixelRatio
-    );
+    const { clientWidth, clientHeight } = this.host;
+    this.app.renderer.resize(clientWidth, clientHeight, window.devicePixelRatio);
+    // Pixi leaves the canvas element alone when its pixel size has not changed,
+    // which is exactly what browser zoom does: the same device pixels over more
+    // or fewer CSS pixels. The CSS size is set here as well, so the drawing and
+    // the DOM above it keep sharing CSS pixels through a zoom of the page.
+    this.app.canvas.style.width = `${clientWidth}px`;
+    this.app.canvas.style.height = `${clientHeight}px`;
     for (const listener of this.resizeListeners) {
       listener();
     }
