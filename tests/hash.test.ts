@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { hashForRoom, roomIdFromHash } from "../src/room/hash.js";
+import { hashForRoom, roomIdFromHash } from "../src/collaboration/hash.js";
 
 describe("the room in the hash", () => {
   test("an id is read out of the hash, with or without its sign, and spaces trimmed", () => {

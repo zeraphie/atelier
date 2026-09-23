@@ -9,8 +9,8 @@
  */
 
 import { useEffect } from "react";
-import { roomIdFromHash } from "../../room/hash.js";
-import { joinRoom, leaveRoom } from "../../room/room.js";
+import { roomIdFromHash } from "../../collaboration/hash.js";
+import { joinRoom, leaveRoom } from "../../collaboration/room.js";
 
 export function useRoom(): void {
   useEffect(() => {
