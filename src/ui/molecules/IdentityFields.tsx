@@ -11,11 +11,9 @@
 
 import type { KeyboardEvent } from "react";
 import { newViewingCode } from "../../viewing/code.js";
-import { Input } from "../atoms/Field.js";
+import { FIELD, FieldLabel, Input } from "../atoms/Field.js";
 import { TextButton } from "../atoms/TextButton.js";
 import { ColorPicker } from "./ColorPicker.js";
-
-const LABEL = "flex flex-col gap-1 font-sans text-xs text-muted";
 
 /** The viewing's code with a button for a new one, the name, and the colour, as one set of fields. */
 export function IdentityFields({
@@ -50,7 +48,7 @@ export function IdentityFields({
   };
   return (
     <>
-      <div className={LABEL}>
+      <div className={FIELD}>
         <label htmlFor={`${idPrefix}-code`}>Viewing code</label>
         <span className="flex items-center gap-2">
           {/* The input is as wide as its box, so the box says how wide a code is. */}
@@ -78,7 +76,7 @@ export function IdentityFields({
         </span>
         {codeNote !== undefined && <span>{codeNote}</span>}
       </div>
-      <label htmlFor={`${idPrefix}-name`} className={LABEL}>
+      <FieldLabel htmlFor={`${idPrefix}-name`}>
         Your name
         <Input
           id={`${idPrefix}-name`}
@@ -87,8 +85,8 @@ export function IdentityFields({
           onKeyDown={doneOnEnter}
           onBlur={onNameDone}
         />
-      </label>
-      <div className={LABEL}>
+      </FieldLabel>
+      <div className={FIELD}>
         <span>Your colour</span>
         <ColorPicker value={color} onChange={onColor} />
       </div>

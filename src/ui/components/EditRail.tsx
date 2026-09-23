@@ -14,7 +14,7 @@ import { AlertDialog, Toolbar, Tooltip } from "radix-ui";
 import type { ReactNode } from "react";
 import type { Tool } from "../../state/slices/gallery.js";
 import { useStore } from "../../state/store.js";
-import { Card, CARD } from "../atoms/Card.js";
+import { Card, DIALOG_CONTENT, DIALOG_OVERLAY, DIALOG_TITLE } from "../atoms/Card.js";
 import { DoorIcon, MoveIcon, PictureIcon, ResetIcon, RoomIcon } from "../atoms/icons.js";
 import { TextButton } from "../atoms/TextButton.js";
 import { Tip } from "../atoms/Tip.js";
@@ -89,13 +89,9 @@ function PutEverythingBack() {
         <Tip side="right">Put everything back</Tip>
       </Tooltip.Root>
       <AlertDialog.Portal>
-        <AlertDialog.Overlay className="fixed inset-0 z-30 bg-ink/35" />
-        <AlertDialog.Content
-          className={`${CARD} fixed top-1/2 left-1/2 z-40 flex w-96 max-w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2 flex-col gap-3 p-5`}
-        >
-          <AlertDialog.Title className="font-sans text-base font-bold text-ink">
-            Put everything back?
-          </AlertDialog.Title>
+        <AlertDialog.Overlay className={DIALOG_OVERLAY} />
+        <AlertDialog.Content className={DIALOG_CONTENT}>
+          <AlertDialog.Title className={DIALOG_TITLE}>Put everything back?</AlertDialog.Title>
           <AlertDialog.Description className="font-serif text-base leading-snug text-ink">
             Every picture returns to its wall, and every room to its size and name. This cannot be
             undone.

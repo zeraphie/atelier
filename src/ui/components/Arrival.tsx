@@ -15,7 +15,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useOwnStore } from "../../state/own-store.js";
 import { arrive, offeredCode } from "../../viewing/arrival.js";
 import { swatchIdFor } from "../../viewing/color.js";
-import { CARD } from "../atoms/Card.js";
+import { DIALOG_PANEL, DIALOG_TITLE } from "../atoms/Card.js";
 import { TextButton } from "../atoms/TextButton.js";
 import { IdentityFields } from "../molecules/IdentityFields.js";
 import { whenLoaderDone } from "../utils/curtain.js";
@@ -26,8 +26,7 @@ import { whenLoaderDone } from "../utils/curtain.js";
 // for it the fields scroll between the title and Come in, which stay put. Written out in
 // full, since Tailwind reads the classes off the source.
 const CONTENT =
-  `${CARD} fixed left-1/2 z-[1000] flex w-96 max-w-[calc(100vw-2rem)] -translate-x-1/2 flex-col gap-3 ` +
-  "p-5 top-[calc(50%_+_min(70vw,440px)_*_0.1175_+_1.5rem)] " +
+  `${DIALOG_PANEL} z-[1000] top-[calc(50%_+_min(70vw,440px)_*_0.1175_+_1.5rem)] ` +
   "max-h-[calc(50%_-_min(70vw,440px)_*_0.1175_-_2.5rem)]";
 
 export function Arrival() {
@@ -50,9 +49,7 @@ export function Arrival() {
           onPointerDownOutside={(event) => event.preventDefault()}
           onInteractOutside={(event) => event.preventDefault()}
         >
-          <Dialog.Title className="font-sans text-base font-bold text-ink">
-            Before you come in
-          </Dialog.Title>
+          <Dialog.Title className={DIALOG_TITLE}>Before you come in</Dialog.Title>
           <Dialog.Description className="sr-only">
             Which viewing to join, your name, and your colour.
           </Dialog.Description>

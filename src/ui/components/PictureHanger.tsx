@@ -16,15 +16,13 @@ import { derivativeKey, preparePicture, type PreparedPicture } from "../../pictu
 import { useOwnStore } from "../../state/own-store.js";
 import { useStore } from "../../state/store.js";
 import { putPicture } from "../../storage/index.js";
-import { CARD } from "../atoms/Card.js";
-import { Input, Textarea } from "../atoms/Field.js";
+import { DIALOG_CONTENT, DIALOG_OVERLAY, DIALOG_TITLE } from "../atoms/Card.js";
+import { FieldLabel, Input, Textarea } from "../atoms/Field.js";
 import { TextButton } from "../atoms/TextButton.js";
 import { toTenth } from "../../geometry.js";
 
 /** How wide a picture hangs unless the form says otherwise, in centimetres. */
 const DEFAULT_WIDTH_CM = 60;
-const LABEL = "flex flex-col gap-1 font-sans text-xs text-muted";
-
 interface Pending {
   readonly prepared: PreparedPicture;
   /** The file's name without its extension: the title until one is typed. */
@@ -144,13 +142,9 @@ export function PictureHanger() {
         }}
       >
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 z-30 bg-ink/35" />
-          <Dialog.Content
-            className={`${CARD} fixed top-1/2 left-1/2 z-40 flex w-96 max-w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2 flex-col gap-3 p-5`}
-          >
-            <Dialog.Title className="font-sans text-base font-bold text-ink">
-              Hang a picture
-            </Dialog.Title>
+          <Dialog.Overlay className={DIALOG_OVERLAY} />
+          <Dialog.Content className={DIALOG_CONTENT}>
+            <Dialog.Title className={DIALOG_TITLE}>Hang a picture</Dialog.Title>
             <Dialog.Description className="sr-only">
               The picture's details, and how wide it hangs.
             </Dialog.Description>
@@ -215,25 +209,25 @@ function HangForm({
         alt=""
         className="max-h-40 self-center rounded border border-line object-contain"
       />
-      <label htmlFor="picture-title" className={LABEL}>
+      <FieldLabel htmlFor="picture-title">
         Title
         <Input id="picture-title" value={title} onChange={(e) => setTitle(e.target.value)} />
-      </label>
+      </FieldLabel>
       <div className="grid grid-cols-[1fr_5rem] gap-3">
-        <label htmlFor="picture-artist" className={LABEL}>
+        <FieldLabel htmlFor="picture-artist">
           Artist
           <Input id="picture-artist" value={artist} onChange={(e) => setArtist(e.target.value)} />
-        </label>
-        <label htmlFor="picture-year" className={LABEL}>
+        </FieldLabel>
+        <FieldLabel htmlFor="picture-year">
           Year
           <Input id="picture-year" value={year} onChange={(e) => setYear(e.target.value)} />
-        </label>
+        </FieldLabel>
       </div>
-      <label htmlFor="picture-credit" className={LABEL}>
+      <FieldLabel htmlFor="picture-credit">
         Credit
         <Input id="picture-credit" value={credit} onChange={(e) => setCredit(e.target.value)} />
-      </label>
-      <label htmlFor="picture-description" className={LABEL}>
+      </FieldLabel>
+      <FieldLabel htmlFor="picture-description">
         Description
         <Textarea
           id="picture-description"
@@ -241,8 +235,8 @@ function HangForm({
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
-      </label>
-      <label htmlFor="picture-width" className={`${LABEL} w-32`}>
+      </FieldLabel>
+      <FieldLabel htmlFor="picture-width" className="w-32">
         Width
         <span className="flex items-center gap-2">
           <Input
@@ -256,7 +250,7 @@ function HangForm({
           />
           <span className="text-ink">cm</span>
         </span>
-      </label>
+      </FieldLabel>
       <p className="font-sans text-xs text-muted">
         {isValid
           ? `Hangs ${Math.round(widthCm)} × ${Math.round(heightFor(widthCm, size))} cm`

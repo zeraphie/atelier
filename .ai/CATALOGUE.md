@@ -176,10 +176,16 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 ## ui: atoms
 
 **ui/atoms/Card.tsx**
+- `DIALOG_OVERLAY`: What a dialog lays over everything behind it.
+- `DIALOG_PANEL`: A dialog's panel: a card of one width, fixed and centred across; where it sits down the window, and how high it stacks, are the dialog's own.
+- `DIALOG_CONTENT`: A dialog's panel in the middle of the window, above its overlay.
+- `DIALOG_TITLE`: A dialog's title line.
 - `Card()`: The raised surface every panel and popover sits on.
 - Also: `CARD`
 
 **ui/atoms/Field.tsx**
+- `FIELD`: A field's frame: its caption above its control, in the caption face; for a frame that is not a label.
+- `FieldLabel()`: A field's frame as a label with its control inside, so a press on the caption reaches the control.
 - `Textarea()`: Where a comment is typed, in the reading face.
 - `Input()`: Where a short answer is typed, such as a name or a code.
 
