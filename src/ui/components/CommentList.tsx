@@ -20,6 +20,7 @@ import { Card } from "../atoms/Card.js";
 import { CommentIcon, PenIcon } from "../atoms/icons.js";
 import { Pill, PillButton } from "../atoms/Pill.js";
 import { ThreadItem } from "../molecules/ThreadItem.js";
+import { ViewingChip } from "./ViewingChip.js";
 import { useCanvas } from "../utils/canvas-context.js";
 
 // A jump comes in at least this close, so the pin arrives on its work and wall, not on a plan.
@@ -50,7 +51,9 @@ export function CommentList() {
   return (
     <div className="absolute top-4 right-4 flex flex-col items-end gap-2">
       <Pill>
+        <ViewingChip />
         <PillButton
+          divided
           aria-pressed={isEditing}
           aria-label="Edit the gallery"
           title="Edit the gallery (E)"

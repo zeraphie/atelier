@@ -28,7 +28,11 @@ export const useOwnStore = create<OwnStore>()(
       name: "atelier.own",
       version: 1,
       storage: createJSONStorage(() => stateStorage),
-      partialize: (state) => ({ name: state.name, rooms: state.rooms, pictures: state.pictures }),
+      partialize: (state) => ({
+        name: state.name,
+        viewings: state.viewings,
+        pictures: state.pictures,
+      }),
       onRehydrateStorage: () => (_state, error) => {
         if (error !== undefined) {
           reportError(error);

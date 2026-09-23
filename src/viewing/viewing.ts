@@ -12,6 +12,7 @@
  * Decision: DECISIONS.md, a viewing is opt-in by link and siloed.
  */
 
+import { useOwnStore } from "../state/own-store.js";
 import { keyForViewing, switchGallery, useStore } from "../state/store.js";
 import { onAction } from "../state/utils/actions.js";
 import { isActionMessage, type ActionMessage } from "./message.js";
@@ -47,6 +48,7 @@ export async function joinViewing(code: string): Promise<void> {
     return;
   }
   useStore.getState().enteredViewing(code);
+  useOwnStore.getState().noteViewing(code);
   let transport: Transport;
   try {
     transport = await connect(code);
