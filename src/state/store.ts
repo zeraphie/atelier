@@ -19,6 +19,7 @@ import { createPicturesSlice, type PicturesSlice } from "./slices/pictures.js";
 import { createViewingSlice, type ViewingSlice } from "./slices/viewing.js";
 import { hydration, stateStorage } from "../storage/index.js";
 import { tell, type SliceContext } from "./utils/actions.js";
+import { mergeSnapshot, snapshotOf, type Snapshot } from "../viewing/snapshot.js";
 import { useOwnStore } from "./own-store.js";
 
 export type Store = CommentsSlice & PicturesSlice & GallerySlice & ViewingSlice;
@@ -94,4 +95,9 @@ export async function switchGallery(key: string): Promise<void> {
   } else {
     await useStore.persist.rehydrate();
   }
+}
+
+/** Merge a peer's snapshot into the gallery: the later of anything stamped wins, and nothing is told. */
+export function absorbSnapshot(snapshot: Snapshot): void {
+  useStore.setState(mergeSnapshot(snapshotOf(useStore.getState()), snapshot));
 }

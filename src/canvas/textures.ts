@@ -29,6 +29,8 @@ export function loadOwnPicture(pictureId: string, px: number): Promise<Texture> 
   if (pending === undefined) {
     pending = getPicture(key).then(async (blob) => {
       if (blob === undefined) {
+        // Not here yet, as when it is still on its way from a peer: asked again next time.
+        own.delete(key);
         throw new Error(`no picture kept under "${key}"`);
       }
       return Texture.from(await createImageBitmap(blob));

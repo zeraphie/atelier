@@ -27,13 +27,14 @@ const RELAYS = [
 export interface Transport {
   /** This screen's own peer id. */
   readonly selfId: string;
-  /** Send to every peer, or to one. */
-  send(data: unknown, to?: string): void;
-  onMessage(listener: (data: unknown, from: string) => void): void;
+  /** Send to every peer, or to one, with a small note beside the data if there is one. */
+  send(data: unknown, to?: string, metadata?: unknown): void;
+  onMessage(listener: (data: unknown, from: string, metadata: unknown) => void): void;
   onJoin(listener: (peerId: string) => void): void;
   onLeave(listener: (peerId: string) => void): void;
   peers(): readonly string[];
-  leave(): void;
+  /** Leave, resolving once the library has let the room go, so the same room can be joined again. */
+  leave(): Promise<void>;
 }
 
 /** Join the viewing `code` and return its transport; resolves once the library is loaded, not once a peer is found. */
@@ -42,16 +43,20 @@ export async function connect(code: string): Promise<Transport> {
   const room = joinRoom({ appId: APP_ID, relayConfig: { urls: RELAYS } }, code);
   const action = room.makeAction("msg");
   type Payload = Parameters<typeof action.send>[0];
+  type Note = NonNullable<Parameters<typeof action.send>[1]>["metadata"];
   return {
     selfId,
-    send: (data, to) => {
+    send: (data, to, metadata) => {
       action
-        .send(data as Payload, to === undefined ? undefined : { target: to })
+        .send(data as Payload, {
+          ...(to === undefined ? {} : { target: to }),
+          ...(metadata === undefined ? {} : { metadata: metadata as Note }),
+        })
         .catch(reportError);
     },
     onMessage: (listener) => {
       action.onMessage = (data, context) => {
-        listener(data, context.peerId);
+        listener(data, context.peerId, context.metadata);
       };
     },
     onJoin: (listener) => {
@@ -61,8 +66,6 @@ export async function connect(code: string): Promise<Transport> {
       room.onPeerLeave = listener;
     },
     peers: () => Object.keys(room.getPeers()),
-    leave: () => {
-      room.leave().catch(reportError);
-    },
+    leave: () => room.leave(),
   };
 }

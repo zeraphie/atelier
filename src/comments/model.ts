@@ -27,4 +27,6 @@ export interface Thread {
   /** The first comment opened the thread; the rest are replies, in order. */
   readonly comments: readonly Comment[];
   readonly resolved: boolean;
+  /** When it was last resolved or reopened, so two screens agree on which came later. */
+  readonly resolvedAt?: number;
 }

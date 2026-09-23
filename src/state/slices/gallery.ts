@@ -212,8 +212,8 @@ export const createGallerySlice =
     };
   };
 
-// Each room's edits from after `at`, and no room left with none.
-function roomsAfter(
+/** Each room's edits from after `at`, and no room left with none. */
+export function roomsAfter(
   rooms: Readonly<Record<string, RoomEdit>>,
   at: number
 ): Record<string, RoomEdit> {

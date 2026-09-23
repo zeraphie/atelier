@@ -94,7 +94,7 @@ export const createCommentsSlice =
         if (thread === undefined || thread.resolved === resolved) {
           return;
         }
-        change(threadId, (known) => ({ ...known, resolved }));
+        change(threadId, (known) => ({ ...known, resolved, resolvedAt: at }));
         if (!remote) {
           context.tell({ action: "setResolved", args: [threadId, resolved], at });
         }

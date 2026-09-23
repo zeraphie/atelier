@@ -19,6 +19,8 @@ import { useStore } from "../../state/store.js";
 import { Card } from "../atoms/Card.js";
 import { CommentIcon, PenIcon } from "../atoms/icons.js";
 import { Pill, PillButton } from "../atoms/Pill.js";
+import { bringComments } from "../../viewing/viewing.js";
+import { TextButton } from "../atoms/TextButton.js";
 import { ThreadItem } from "../molecules/ThreadItem.js";
 import { ViewingChip } from "./ViewingChip.js";
 import { useCanvas } from "../utils/canvas-context.js";
@@ -41,6 +43,7 @@ export function CommentList() {
   const threads = useStore((store) => store.threads);
   const mode = useStore((store) => store.mode);
   const setMode = useStore((store) => store.setMode);
+  const viewingCode = useStore((store) => store.viewingCode);
   const [isOpen, setOpen] = useState(false);
   const [filter, setFilter] = useState<ListFilter>("open");
   const plan = usePlan();
@@ -120,6 +123,17 @@ export function CommentList() {
                   </ul>
                 </section>
               ))}
+            </div>
+          )}
+          {viewingCode !== undefined && (
+            <div className="border-t border-line px-2 py-1.5">
+              <TextButton
+                onClick={() => {
+                  bringComments().catch(reportError);
+                }}
+              >
+                Bring my comments in
+              </TextButton>
             </div>
           )}
         </Card>
