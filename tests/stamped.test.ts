@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { keptAfter, latest, stamp } from "../src/state/utils/stamped.js";
+import { keptAfter, latest, latestIn, stamp } from "../src/state/utils/stamped.js";
 
 describe("latest", () => {
   test("takes the later value, whichever order they come in", () => {
@@ -27,5 +27,24 @@ describe("stamp", () => {
   test("keeps a time it is given, and makes one otherwise", () => {
     expect(stamp({ at: 7, remote: true })).toEqual({ at: 7, remote: true });
     expect(stamp().at).toBeGreaterThan(0);
+  });
+});
+
+describe("latestIn", () => {
+  test("sets a key at a time, unless what the map holds there is later", () => {
+    const map = { a: { value: 1, at: 20 } };
+    expect(latestIn(map, "a", 2, 30)).toEqual({ a: { value: 2, at: 30 } });
+    expect(latestIn(map, "a", 2, 10)).toEqual(map);
+    expect(latestIn(map, "b", 3, 10)).toEqual({ a: { value: 1, at: 20 }, b: { value: 3, at: 10 } });
+  });
+});
+
+describe("keptAfter, over a record of optional stamps", () => {
+  test("an entry never set is not kept either, so a room's edits can be cut the same way", () => {
+    const kept = keptAfter(
+      { old: { value: 1, at: 5 }, unset: undefined, late: { value: 2, at: 15 } },
+      10
+    );
+    expect(Object.keys(kept)).toEqual(["late"]);
   });
 });

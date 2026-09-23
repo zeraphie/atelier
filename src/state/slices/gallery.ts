@@ -11,8 +11,8 @@
  */
 
 import type { Point } from "../../geometry.js";
-import type { Get, Set, SliceContext } from "../utils/actions.js";
-import { keptAfter, latest, stamp, type Stamped, type When } from "../utils/stamped.js";
+import { acting, type Get, type Set, type SliceContext } from "../utils/actions.js";
+import { keptAfter, latest, latestIn, type Stamped, type When } from "../utils/stamped.js";
 import type { Store } from "../store.js";
 import type { Edge } from "../../gallery/edges.js";
 import type { Cells } from "../../gallery/works.js";
@@ -20,12 +20,13 @@ import type { Cells } from "../../gallery/works.js";
 export type Mode = "browse" | "comment" | "edit";
 export type Tool = "move" | "room" | "door" | "picture";
 
-export interface RoomEdit {
+/** A room's edits, each stamped; a type rather than an interface so it reads as the record of stamps it is. */
+export type RoomEdit = {
   readonly name?: Stamped<string>;
   readonly cells?: Stamped<Cells>;
   /** True once drawn here rather than shipped, false once removed again, the later winning; its time orders the drawn rooms. */
   readonly drawn?: Stamped<boolean>;
-}
+};
 
 export interface GallerySlice {
   readonly rooms: Readonly<Record<string, RoomEdit>>;
@@ -70,12 +71,10 @@ export interface GallerySlice {
 export const createGallerySlice =
   (context: SliceContext) =>
   (set: Set<Store>, get: Get<Store>): GallerySlice => {
-    const room = (id: string, at: number, change: (edit: RoomEdit) => RoomEdit): boolean => {
-      if (at <= get().resetAt) {
-        return false;
-      }
+    const act = acting(get, context);
+    // A room's edits changed, from what it holds or from nothing.
+    const room = (id: string, change: (edit: RoomEdit) => RoomEdit): void => {
       set((state) => ({ rooms: { ...state.rooms, [id]: change(state.rooms[id] ?? {}) } }));
-      return true;
     };
     return {
       rooms: {},
@@ -87,92 +86,43 @@ export const createGallerySlice =
       selected: [],
       hangingAt: undefined,
 
-      renameRoom: (id, name, when) => {
-        const { at, remote } = stamp(when);
-        const done = room(id, at, (edit) => ({
-          ...edit,
-          name: latest(edit.name, { value: name, at }),
-        }));
-        if (done && !remote) {
-          context.tell({ action: "renameRoom", args: [id, name], at });
-        }
-      },
-      resizeRoom: (id, cells, when) => {
-        const { at, remote } = stamp(when);
-        const done = room(id, at, (edit) => ({
-          ...edit,
-          cells: latest(edit.cells, { value: cells, at }),
-        }));
-        if (done && !remote) {
-          context.tell({ action: "resizeRoom", args: [id, cells], at });
-        }
-      },
-      drawRoom: (id, name, cells, when) => {
-        const { at, remote } = stamp(when);
-        const done = room(id, at, (edit) => ({
-          name: latest(edit.name, { value: name, at }),
-          cells: latest(edit.cells, { value: cells, at }),
-          drawn: latest(edit.drawn, { value: true, at }),
-        }));
-        if (done && !remote) {
-          context.tell({ action: "drawRoom", args: [id, name, cells], at });
-        }
-      },
-      removeRoom: (id, when) => {
-        const { at, remote } = stamp(when);
-        const done = room(id, at, (edit) => ({
-          ...edit,
-          drawn: latest(edit.drawn, { value: false, at }),
-        }));
-        if (done && !remote) {
-          context.tell({ action: "removeRoom", args: [id], at });
-        }
-      },
-      moveDoor: (pair, edge, when) => {
-        const { at, remote } = stamp(when);
-        if (at <= get().resetAt) {
-          return;
-        }
-        set((state) => ({
-          doorways: {
-            ...state.doorways,
-            [pair]: latest(state.doorways[pair], { value: edge, at }),
-          },
-        }));
-        if (!remote) {
-          context.tell({ action: "moveDoor", args: [pair, edge], at });
-        }
-      },
-      removeDoor: (pair, when) => {
-        const { at, remote } = stamp(when);
-        if (at <= get().resetAt) {
-          return;
-        }
-        set((state) => ({
-          doorways: {
-            ...state.doorways,
-            [pair]: latest(state.doorways[pair], { value: null, at }),
-          },
-        }));
-        if (!remote) {
-          context.tell({ action: "removeDoor", args: [pair], at });
-        }
-      },
-      reset: (when) => {
-        const { at, remote } = stamp(when);
-        if (at <= get().resetAt) {
-          return;
-        }
-        set((state) => ({
-          resetAt: at,
-          rooms: roomsAfter(state.rooms, at),
-          doorways: keptAfter(state.doorways, at),
-        }));
-        get().clearPictures(at);
-        if (!remote) {
-          context.tell({ action: "reset", args: [], at });
-        }
-      },
+      renameRoom: (id, name, when) =>
+        act(when, { action: "renameRoom", args: [id, name] }, (at) =>
+          room(id, (edit) => ({ ...edit, name: latest(edit.name, { value: name, at }) }))
+        ),
+      resizeRoom: (id, cells, when) =>
+        act(when, { action: "resizeRoom", args: [id, cells] }, (at) =>
+          room(id, (edit) => ({ ...edit, cells: latest(edit.cells, { value: cells, at }) }))
+        ),
+      drawRoom: (id, name, cells, when) =>
+        act(when, { action: "drawRoom", args: [id, name, cells] }, (at) =>
+          room(id, (edit) => ({
+            name: latest(edit.name, { value: name, at }),
+            cells: latest(edit.cells, { value: cells, at }),
+            drawn: latest(edit.drawn, { value: true, at }),
+          }))
+        ),
+      removeRoom: (id, when) =>
+        act(when, { action: "removeRoom", args: [id] }, (at) =>
+          room(id, (edit) => ({ ...edit, drawn: latest(edit.drawn, { value: false, at }) }))
+        ),
+      moveDoor: (pair, edge, when) =>
+        act(when, { action: "moveDoor", args: [pair, edge] }, (at) =>
+          set((state) => ({ doorways: latestIn(state.doorways, pair, edge, at) }))
+        ),
+      removeDoor: (pair, when) =>
+        act(when, { action: "removeDoor", args: [pair] }, (at) =>
+          set((state) => ({ doorways: latestIn(state.doorways, pair, null, at) }))
+        ),
+      reset: (when) =>
+        act(when, { action: "reset", args: [] }, (at) => {
+          set((state) => ({
+            resetAt: at,
+            rooms: roomsAfter(state.rooms, at),
+            doorways: keptAfter(state.doorways, at),
+          }));
+          get().clearPictures(at);
+        }),
       setMode: (mode) => {
         // A change of mode lets the selection go: it only means something in edit mode.
         set({ mode, selected: [] });
@@ -212,6 +162,9 @@ export const createGallerySlice =
     };
   };
 
+// What a room edit stamps, read as one record for the cut-off.
+type RoomStamp = string | Cells | boolean;
+
 /** Each room's edits from after `at`, and no room left with none. */
 export function roomsAfter(
   rooms: Readonly<Record<string, RoomEdit>>,
@@ -219,11 +172,7 @@ export function roomsAfter(
 ): Record<string, RoomEdit> {
   const kept: Record<string, RoomEdit> = {};
   for (const [id, edit] of Object.entries(rooms)) {
-    const after: RoomEdit = {
-      ...(edit.name !== undefined && edit.name.at > at ? { name: edit.name } : {}),
-      ...(edit.cells !== undefined && edit.cells.at > at ? { cells: edit.cells } : {}),
-      ...(edit.drawn !== undefined && edit.drawn.at > at ? { drawn: edit.drawn } : {}),
-    };
+    const after = keptAfter<RoomStamp>(edit, at) as RoomEdit;
     if (Object.keys(after).length > 0) {
       kept[id] = after;
     }

@@ -29,10 +29,24 @@ export function latest<T>(current: Stamped<T> | undefined, next: Stamped<T>): St
   return current !== undefined && current.at >= next.at ? current : next;
 }
 
-/** The entries of `map` set after `at`; the rest are gone. */
-export function keptAfter<T>(
+/** `map` with `key` set to `value` at `at`, unless what it holds there is later. */
+export function latestIn<T>(
   map: Readonly<Record<string, Stamped<T>>>,
+  key: string,
+  value: T,
   at: number
 ): Record<string, Stamped<T>> {
-  return Object.fromEntries(Object.entries(map).filter(([, stamped]) => stamped.at > at));
+  return { ...map, [key]: latest(map[key], { value, at }) };
+}
+
+/** The entries of `map` set after `at`; the rest, and any never set, are gone. */
+export function keptAfter<T>(
+  map: Readonly<Record<string, Stamped<T> | undefined>>,
+  at: number
+): Record<string, Stamped<T>> {
+  return Object.fromEntries(
+    Object.entries(map).filter(
+      (entry): entry is [string, Stamped<T>] => entry[1] !== undefined && entry[1].at > at
+    )
+  );
 }

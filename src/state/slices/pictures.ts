@@ -10,8 +10,8 @@
  */
 
 import type { Point } from "../../geometry.js";
-import type { Get, Set, SliceContext } from "../utils/actions.js";
-import { keptAfter, latest, stamp, type Stamped, type When } from "../utils/stamped.js";
+import { acting, type Get, type Set, type SliceContext } from "../utils/actions.js";
+import { keptAfter, latestIn, type Stamped, type When } from "../utils/stamped.js";
 import type { Store } from "../store.js";
 
 export interface Hanging {
@@ -39,53 +39,29 @@ export interface PicturesSlice {
 
 export const createPicturesSlice =
   (context: SliceContext) =>
-  (set: Set<Store>, get: Get<Store>): PicturesSlice => ({
-    placed: {},
-    hangings: {},
+  (set: Set<Store>, get: Get<Store>): PicturesSlice => {
+    const act = acting(get, context);
+    return {
+      placed: {},
+      hangings: {},
 
-    moveWork: (id, to, when) => {
-      const { at, remote } = stamp(when);
-      if (at <= get().resetAt) {
-        return;
-      }
-      set((state) => ({
-        placed: { ...state.placed, [id]: latest(state.placed[id], { value: to, at }) },
-      }));
-      if (!remote) {
-        context.tell({ action: "moveWork", args: [id, to], at });
-      }
-    },
-    hang: (hanging, when) => {
-      const { at, remote } = stamp(when);
-      if (at <= get().resetAt) {
-        return;
-      }
-      set((state) => ({
-        hangings: {
-          ...state.hangings,
-          [hanging.id]: latest(state.hangings[hanging.id], { value: hanging, at }),
-        },
-      }));
-      if (!remote) {
-        context.tell({ action: "hang", args: [hanging], at });
-      }
-    },
-    takeDown: (id, when) => {
-      const { at, remote } = stamp(when);
-      if (at <= get().resetAt) {
-        return;
-      }
-      set((state) => ({
-        hangings: { ...state.hangings, [id]: latest(state.hangings[id], { value: null, at }) },
-      }));
-      if (!remote) {
-        context.tell({ action: "takeDown", args: [id], at });
-      }
-    },
-    clearPictures: (at) => {
-      set((state) => ({
-        placed: keptAfter(state.placed, at),
-        hangings: keptAfter(state.hangings, at),
-      }));
-    },
-  });
+      moveWork: (id, to, when) =>
+        act(when, { action: "moveWork", args: [id, to] }, (at) =>
+          set((state) => ({ placed: latestIn(state.placed, id, to, at) }))
+        ),
+      hang: (hanging, when) =>
+        act(when, { action: "hang", args: [hanging] }, (at) =>
+          set((state) => ({ hangings: latestIn(state.hangings, hanging.id, hanging, at) }))
+        ),
+      takeDown: (id, when) =>
+        act(when, { action: "takeDown", args: [id] }, (at) =>
+          set((state) => ({ hangings: latestIn(state.hangings, id, null, at) }))
+        ),
+      clearPictures: (at) => {
+        set((state) => ({
+          placed: keptAfter(state.placed, at),
+          hangings: keptAfter(state.hangings, at),
+        }));
+      },
+    };
+  };

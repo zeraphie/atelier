@@ -131,8 +131,9 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 - Also: `PictureRecord`
 
 **state/slices/gallery.ts** (gallery, ui, viewing)
+- `RoomEdit`: A room's edits, each stamped; a type rather than an interface so it reads as the record of stamps it is.
 - `roomsAfter()`: Each room's edits from after `at`, and no room left with none.
-- Also: `Tool`, `RoomEdit`
+- Also: `Tool`
 
 **state/slices/pictures.ts** (gallery, viewing)
 - Also: `Hanging`
@@ -163,7 +164,7 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 
 **state/utils/stamped.ts** (gallery, viewing)
 - `latest()`: The later of two stamped values; the one held on a tie, so a repeat is a no-op.
-- `keptAfter()`: The entries of `map` set after `at`; the rest are gone.
+- `keptAfter()`: The entries of `map` set after `at`; the rest, and any never set, are gone.
 - Also: `Stamped`
 
 ## storage
