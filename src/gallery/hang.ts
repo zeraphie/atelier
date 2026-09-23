@@ -40,7 +40,7 @@ export interface Spacing {
   readonly headroomCm: number;
   /** How thick the walls are drawn. */
   readonly wallCm: number;
-  /** How wide a doorway is. */
+  /** How wide a doorway is: half a cell. */
   readonly doorCm: number;
 }
 
@@ -96,7 +96,7 @@ export const SPACING: Spacing = {
   endMarginCm: 25,
   headroomCm: 30,
   wallCm: 8,
-  doorCm: 70,
+  doorCm: 50,
 };
 
 /** The name of the world beyond the walls, as the far side of an entrance or a way outside. */
