@@ -8,6 +8,9 @@ import {
   isPictureMessage,
   isSnapshotMessage,
   isLookMessage,
+  isResetAnswerMessage,
+  isResetAskMessage,
+  isResetWithdrawMessage,
 } from "../../src/viewing/message.js";
 
 describe("isActionMessage", () => {
@@ -102,5 +105,21 @@ describe("isFollowMessage", () => {
     expect(isFollowMessage({ kind: "follow", is: false })).toBe(true);
     expect(isFollowMessage({ kind: "follow", is: "yes" })).toBe(false);
     expect(isFollowMessage({ kind: "follow" })).toBe(false);
+  });
+});
+
+describe("the reset messages", () => {
+  test("a proposal carries its id and a whole time; an answer, its id and whether; a withdrawal, its id", () => {
+    expect(isResetAskMessage({ kind: "reset-ask", id: "p1", at: 5 })).toBe(true);
+    expect(isResetAskMessage({ kind: "reset-ask", id: "p1", at: Number.NaN })).toBe(false);
+    expect(isResetAskMessage({ kind: "reset-ask", id: "p1" })).toBe(false);
+    expect(isResetAskMessage({ kind: "reset-answer", id: "p1", at: 5 })).toBe(false);
+    expect(isResetAnswerMessage({ kind: "reset-answer", id: "p1", is: false })).toBe(true);
+    expect(isResetAnswerMessage({ kind: "reset-answer", id: "p1", is: "no" })).toBe(false);
+    expect(isResetAnswerMessage({ kind: "reset-answer", is: true })).toBe(false);
+    expect(isResetWithdrawMessage({ kind: "reset-withdraw", id: "p1" })).toBe(true);
+    expect(isResetWithdrawMessage({ kind: "reset-withdraw" })).toBe(false);
+    expect(isResetWithdrawMessage({ kind: "reset-ask", id: "p1" })).toBe(false);
+    expect(isResetWithdrawMessage(null)).toBe(false);
   });
 });

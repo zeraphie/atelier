@@ -6,9 +6,10 @@
  * and its time, and only one of the actions a peer may replay; a
  * snapshot of a gallery for a peer who just arrived; a picture's record
  * sent ahead of its bytes, and what rides beside the bytes; where a
- * screen's pointer is and where it is looking, or that it has gone; and
- * that a screen is following the one it tells. Pure,
- * so a message from the network is judged before anything acts on it.
+ * screen's pointer is and where it is looking, or that it has gone;
+ * that a screen is following the one it tells; and a proposal to put
+ * everything back, an answer to it, and its withdrawal. Pure, so a
+ * message from the network is judged before anything acts on it.
  * Decision: DECISIONS.md, everyone is in a viewing.
  */
 
@@ -218,4 +219,53 @@ export function isFollowMessage(data: unknown): data is FollowMessage {
   }
   const { kind, is } = data as { kind?: unknown; is?: unknown };
   return kind === "follow" && typeof is === "boolean";
+}
+
+/** A screen proposing to put everything back: the proposal's id, and the time the reset would be made at. */
+export interface ResetAskMessage {
+  readonly kind: "reset-ask";
+  readonly id: string;
+  readonly at: number;
+}
+
+/** Whether `data` is a proposal to put everything back, with an id and a whole time. */
+export function isResetAskMessage(data: unknown): data is ResetAskMessage {
+  if (!isRecord(data)) {
+    return false;
+  }
+  const { kind, id, at } = data as { kind?: unknown; id?: unknown; at?: unknown };
+  return (
+    kind === "reset-ask" && typeof id === "string" && typeof at === "number" && Number.isFinite(at)
+  );
+}
+
+/** A screen's answer to a proposal: yes to put everything back, no to keep it as it is. */
+export interface ResetAnswerMessage {
+  readonly kind: "reset-answer";
+  readonly id: string;
+  readonly is: boolean;
+}
+
+/** Whether `data` is an answer to a proposal, naming it. */
+export function isResetAnswerMessage(data: unknown): data is ResetAnswerMessage {
+  if (!isRecord(data)) {
+    return false;
+  }
+  const { kind, id, is } = data as { kind?: unknown; id?: unknown; is?: unknown };
+  return kind === "reset-answer" && typeof id === "string" && typeof is === "boolean";
+}
+
+/** A screen taking back the proposal it made. */
+export interface ResetWithdrawMessage {
+  readonly kind: "reset-withdraw";
+  readonly id: string;
+}
+
+/** Whether `data` is a withdrawal of a proposal, naming it. */
+export function isResetWithdrawMessage(data: unknown): data is ResetWithdrawMessage {
+  if (!isRecord(data)) {
+    return false;
+  }
+  const { kind, id } = data as { kind?: unknown; id?: unknown };
+  return kind === "reset-withdraw" && typeof id === "string";
 }
