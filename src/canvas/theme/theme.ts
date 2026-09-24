@@ -5,7 +5,7 @@
  * token is read off the document root, put through the browser's own
  * colour parser so oklch and friends come back as hex, and packed.
  * One bridge, so the canvas and the DOM never disagree on a colour.
- * Decision: DECISIONS.md, Tailwind v4 tokens.
+ * Decision: DECISIONS.md, Tailwind v4 tokens and Radix primitives.
  */
 
 import { parseCssColor, type PackedColor } from "./css-color.js";

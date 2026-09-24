@@ -8,7 +8,7 @@
  * into public/works, and images.json says what sizes exist.
  * The rooms' order is the tour, so each must share a wall with the next,
  * and a room's walls must have space for its works.
- * Decision: DECISIONS.md, a gallery with real works.
+ * Decision: DECISIONS.md, a gallery, with real works.
  */
 
 export type Side = "top" | "right" | "bottom" | "left";

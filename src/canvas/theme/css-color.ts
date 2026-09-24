@@ -5,7 +5,7 @@
  * and alpha Pixi wants. Anything else is reported as unparseable
  * rather than guessed; the theme bridge asks the browser to put
  * other forms into one of these first.
- * Decision: DECISIONS.md, Tailwind v4 tokens.
+ * Decision: DECISIONS.md, Tailwind v4 tokens and Radix primitives.
  */
 
 export interface PackedColor {

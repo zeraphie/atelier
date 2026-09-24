@@ -4,7 +4,7 @@
  * The runs of classes more than one element shares, each exported
  * once and taken into the className that needs it: the focus ring, a
  * tool's button, and a person's colour with the initial that wears it.
- * Decision: DECISIONS.md, Tailwind v4 tokens.
+ * Decision: DECISIONS.md, Tailwind v4 tokens and Radix primitives.
  */
 
 import type { CSSProperties } from "react";
