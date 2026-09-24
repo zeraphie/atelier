@@ -245,7 +245,10 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 - `CommentForm()`: A place to write a comment: Enter sends, Shift+Enter breaks a line, Escape cancels.
 
 **ui/molecules/IdentityFields.tsx**
-- `IdentityFields()`: The viewing's code with a button for a new one, the name, and the colour, as one set of fields.
+- `CodeField()`: The viewing's code, with a button for a new one; `note` is a line under it.
+- `NameField()`: The name, as a label with its input.
+- `ColourField()`: The colour, as the eight circles under their caption.
+- `IdentityFields()`: The three fields stacked: the code, the name, the colour.
 
 **ui/molecules/OnFloor.tsx**
 - `OnFloor()`: A card at a world point, as wide as it says in centimetres, scaled by the camera.

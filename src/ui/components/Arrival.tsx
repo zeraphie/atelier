@@ -2,11 +2,13 @@
  * ─ Arrival ─
  *
  * The card under the mark, once the loader has said its piece and
- * before the curtain parts: which viewing, by code, the address's or
- * this browser's own or a new one; the name as it stands; and one of
- * the eight colours. Come in keeps them, joins the viewing and lets the
- * curtain rise. It cannot be dismissed any other way, and accepting
- * what it offers is one press.
+ * the stores are in, before the curtain parts: one line saying who
+ * you are coming in as, the colour as a dot, the name and the viewing's
+ * code, with a pen to change any of them and Come in. The pen grows
+ * the card in place to two rows of fields, the name and the code with
+ * New code, then the colours, with Come in there too. Everything is
+ * offered from the store, or made fresh; accepting is one press. The
+ * card cannot be dismissed any other way.
  * Decision: DECISIONS.md, everyone is in a viewing.
  */
 
@@ -15,21 +17,31 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useOwnStore } from "../../state/own-store.js";
 import { arrive, offeredCode } from "../../viewing/identity/arrival.js";
 import { newViewingCode } from "../../viewing/identity/code.js";
-import { swatchIdFor } from "../../viewing/identity/color.js";
-import { DIALOG_PANEL, DIALOG_TITLE } from "../atoms/Card.js";
+import { colorOf, swatchIdFor } from "../../viewing/identity/color.js";
+import { CARD } from "../atoms/Card.js";
+import { PenIcon } from "../atoms/icons.js";
+import { personStyle, PERSON, TOOL } from "../atoms/styles.js";
 import { TextButton } from "../atoms/TextButton.js";
-import { IdentityFields } from "../molecules/IdentityFields.js";
+import { CodeField, ColourField, NameField } from "../molecules/IdentityFields.js";
 import { whenHydrated } from "../../storage/index.js";
 import { whenLoaderDone } from "../utils/curtain.js";
 
 // Above the curtain, which sits at 999, and under its mark: the mark is centred in the
 // window and min(70vw, 440px) wide by 0.235 of that tall, so its foot is 0.1175 of its
-// width below the middle; the card starts a little under that, and on a window too short
-// for it the fields scroll between the title and Come in, which stay put. Written out in
-// full, since Tailwind reads the classes off the source.
+// width below the middle. The card is as wide as its line, and wider once it holds the
+// fields; the width eases between the two, and the rows fold and unfold below.
+// Written out in full, since Tailwind reads the classes off the source.
 const CONTENT =
-  `${DIALOG_PANEL} z-[1000] top-[calc(50%_+_min(70vw,440px)_*_0.1175_+_1.5rem)] ` +
-  "max-h-[calc(50%_-_min(70vw,440px)_*_0.1175_-_2.5rem)]";
+  `${CARD} fixed left-1/2 z-[1000] -translate-x-1/2 max-w-[calc(100vw-2rem)] p-3 ` +
+  "top-[calc(50%_+_min(70vw,440px)_*_0.1175_+_1.5rem)] " +
+  "transition-[width] duration-200 ease-out motion-reduce:transition-none " +
+  "data-[editing=false]:w-[23rem] data-[editing=true]:w-[33rem]";
+// A region of the card that folds to nothing or unfolds to its height.
+const FOLD =
+  "grid transition-[grid-template-rows] duration-200 ease-out motion-reduce:transition-none " +
+  "data-[shown=true]:grid-rows-[1fr] data-[shown=false]:grid-rows-[0fr]";
+const DOT = `${PERSON} size-3.5 flex-none rounded-full`;
+const PEN = `${TOOL} size-8 flex-none rounded-md`;
 
 export function Arrival() {
   const name = useOwnStore((store) => store.name);
@@ -46,26 +58,15 @@ export function Arrival() {
   return (
     <Dialog.Root open={isReady && !isIn}>
       <Dialog.Portal>
-        <Dialog.Content
-          className={CONTENT}
-          onEscapeKeyDown={(event) => event.preventDefault()}
-          onPointerDownOutside={(event) => event.preventDefault()}
-          onInteractOutside={(event) => event.preventDefault()}
-        >
-          <Dialog.Title className={DIALOG_TITLE}>Before you come in</Dialog.Title>
-          <Dialog.Description className="sr-only">
-            Which viewing to join, your name, and your colour.
-          </Dialog.Description>
-          {isReady && !isIn && (
-            <ArrivalForm name={name} color={swatchIdFor(name, color)} onComeIn={come} />
-          )}
-        </Dialog.Content>
+        {isReady && !isIn && (
+          <ArrivalCard name={name} color={swatchIdFor(name, color)} onComeIn={come} />
+        )}
       </Dialog.Portal>
     </Dialog.Root>
   );
 }
 
-function ArrivalForm({
+function ArrivalCard({
   name: givenName,
   color: givenColor,
   onComeIn,
@@ -78,6 +79,7 @@ function ArrivalForm({
   const [code, setCode] = useState(offered.code);
   const [name, setName] = useState(givenName);
   const [color, setColor] = useState(givenColor);
+  const [isEditing, setEditing] = useState(false);
   const [isGoing, setGoing] = useState(false);
   const trimmed = code.trim().toLowerCase();
   const isValid = trimmed !== "" && name.trim() !== "";
@@ -89,35 +91,69 @@ function ArrivalForm({
     setGoing(true);
     onComeIn({ code: trimmed, name: name.trim(), color });
   };
+  const comeIn = (
+    <TextButton tone="primary" type="submit" disabled={!isValid || isGoing}>
+      Come in
+    </TextButton>
+  );
   return (
-    <form className="flex min-h-0 flex-col gap-3" onSubmit={submit}>
-      {/* What scrolls on a short window; a little side room keeps the swatches' rings in view. */}
-      <div className="-mx-1 flex min-h-0 flex-col gap-3 overflow-x-hidden overflow-y-auto px-1">
-        <IdentityFields
-          idPrefix="arrive"
-          code={code}
-          name={name}
-          color={color}
-          codeNote={
-            offered.isNew
-              ? "A viewing of your own, made just now. Type a code to join someone else's."
-              : "Change it to join another viewing, or make a new one."
-          }
-          onCode={setCode}
-          onNewCode={() => setCode(newViewingCode())}
-          onName={setName}
-          onColor={setColor}
-        />
-        <p className="font-serif text-sm leading-snug text-muted">
-          The others here see your name and colour beside your comments and your cursor. Both are
-          yours to change at the desk later.
-        </p>
-      </div>
-      <div className="flex justify-end pt-1">
-        <TextButton tone="primary" type="submit" disabled={!isValid || isGoing}>
-          Come in
-        </TextButton>
-      </div>
-    </form>
+    <Dialog.Content
+      className={CONTENT}
+      data-editing={isEditing}
+      onEscapeKeyDown={(event) => event.preventDefault()}
+      onPointerDownOutside={(event) => event.preventDefault()}
+      onInteractOutside={(event) => event.preventDefault()}
+    >
+      <Dialog.Title className="sr-only">Before you come in</Dialog.Title>
+      <Dialog.Description className="sr-only">
+        Who you are coming in as, and which viewing; the pen changes them.
+      </Dialog.Description>
+      <form onSubmit={submit}>
+        <div className={FOLD} data-shown={!isEditing} inert={isEditing}>
+          <div className="flex min-h-0 items-center gap-3 overflow-hidden pl-2">
+            <span className={DOT} style={personStyle(colorOf(color))} aria-hidden="true" />
+            <span className="truncate font-serif text-lg text-ink">{name.trim() || "Visitor"}</span>
+            <span className="text-line" aria-hidden="true">
+              ·
+            </span>
+            <span className="font-mono text-xs tracking-wider text-muted">{trimmed}</span>
+            <span className="flex-1" />
+            <button
+              type="button"
+              className={PEN}
+              aria-label="Change your name, colour or viewing"
+              title="Change your name, colour or viewing"
+              onClick={() => setEditing(true)}
+            >
+              <PenIcon />
+            </button>
+            {comeIn}
+          </div>
+        </div>
+        <div className={FOLD} data-shown={isEditing} inert={!isEditing}>
+          <div className="flex min-h-0 flex-col gap-3 overflow-hidden px-1 pt-1">
+            <div className="flex flex-wrap items-end gap-3">
+              <NameField
+                idPrefix="arrive"
+                name={name}
+                className="min-w-40 flex-1"
+                onName={setName}
+              />
+              <CodeField
+                idPrefix="arrive"
+                code={code}
+                onCode={setCode}
+                onNewCode={() => setCode(newViewingCode())}
+              />
+            </div>
+            <div className="flex flex-wrap items-end gap-3 pb-1">
+              <ColourField color={color} onColor={setColor} />
+              <span className="flex-1" />
+              {comeIn}
+            </div>
+          </div>
+        </div>
+      </form>
+    </Dialog.Content>
   );
 }
