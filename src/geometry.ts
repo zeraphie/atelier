@@ -1,3 +1,13 @@
+/**
+ * ─ Geometry ─
+ *
+ * The vocabulary every folder speaks in: a point and a rect in
+ * whichever space the caller names, world centimetres or screen
+ * pixels, a segment between two points, and the small arithmetic on
+ * them that more than one folder needs. Nothing here knows a room or
+ * a camera.
+ */
+
 /** A position in whichever space the caller names: world units or screen pixels. */
 export interface Point {
   readonly x: number;

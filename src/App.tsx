@@ -1,4 +1,14 @@
+/**
+ * ─ App ─
+ *
+ * The screen: the canvas, and everything laid over it, a corner each,
+ * under the one camera and the tooltips' provider. The dev handle is
+ * imported for its side effect, and is nothing outside development.
+ * Decision: DECISIONS.md, the UI folder: atomic design.
+ */
+
 import { Tooltip } from "radix-ui";
+// The dev handle on window.atelier, imported for its side effect; a no-op outside development.
 import "./state/utils/dev.js";
 import { Canvas } from "./ui/components/Canvas.js";
 import { CanvasProvider } from "./ui/utils/canvas-context.js";

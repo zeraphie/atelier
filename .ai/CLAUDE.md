@@ -79,21 +79,31 @@ The shared names, generated; look here before writing anything new.
   catalogue` (never hand-edited)
 - `tools/` — the scripts behind `bun run`: the catalogue
 - `.plan/` — local-only plans (gitignored)
+- `src/main.ts`, `src/App.tsx` — the entry that waits for the mark, and
+  the screen: the canvas and everything laid over it
+- `src/geometry.ts` — the vocabulary every folder speaks in: the point,
+  the rect, the segment, and the arithmetic on them
+- `src/index.css`, `src/fonts/` — the tokens under `@theme`, the four
+  faces and their licences
 - `src/camera/` — one transform: the camera and its moves at the root,
   `math/` for the maths, `input/` for the pointer and the wheel
 - `src/canvas/` — the Pixi stage, the mount, the frame scheduler and the
   tour at the root; `tools/` the edit tools, `views/` what is drawn,
   `theme/` the bridge from the tokens and the fonts
-- `src/gallery/` — the works, the images and the tiers at the root;
-  `layout/` the floor plan from the data, `edit/` what the tools do to
-  it, `route/` the tour's way through
-- `src/pictures/` — a file made a picture of your own: its hash, its derivative, its colour
+- `src/gallery/` — the works, `images.json` (the shipped pictures' sizes
+  and colours) and the tiers at the root; `layout/` the floor plan from
+  the data, `edit/` what the tools do to it, `route/` the tour's way
+  through
+- `src/pictures/` — a file made a picture of your own: its hash, its
+  derivative, its colour, and the height it hangs at for a width
 - `src/comments/` — the model, the list and the times of comment threads
 - `src/viewing/` — the shared viewing: the join, the wire and the
   messages at the root (transport.ts is the one file that touches
   trystero); `presence/` what is said once a frame, `identity/` who you
   are and which viewing
-- `src/state/` — the two zustand stores, every slice under `slices/`, and under `utils/` the stamps, the actions told, the live plan
+- `src/state/` — the two zustand stores, every slice under `slices/`,
+  and under `utils/` the stamps, the actions told, the live plan, and
+  `dev.ts`, the handle on `window.atelier` in development only
 - `src/storage/` — the IndexedDB database every store persists in, and the roll call the curtain waits on
 - `src/ui/` — React, by atomic design: `atoms/` (one element, no state of
   its own), `molecules/` (a few atoms with one purpose, props in, events

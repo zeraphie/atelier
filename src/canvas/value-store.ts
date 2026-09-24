@@ -1,3 +1,13 @@
+/**
+ * ─ Value store ─
+ *
+ * One value and its listeners, the least a plain module needs for
+ * React to subscribe to it: the canvas size, the tour, the grid
+ * switch, the pointer, and what the peers say. A set that changes
+ * nothing tells no one.
+ * Decision: DECISIONS.md, one camera for canvas and DOM.
+ */
+
 /** One value and its listeners: what React needs from a plain module to subscribe to it. */
 export class ValueStore<T> {
   private value: T;

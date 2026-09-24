@@ -8,6 +8,7 @@
  * and the gallery layer drawn again whenever it changes, so an edit
  * here or from a peer is on the canvas at once. The edit tools are
  * wired in tools/edit-tools.ts and taken apart with the rest.
+ * Decision: DECISIONS.md, one camera for canvas and DOM.
  */
 
 import {

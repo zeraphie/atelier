@@ -7,6 +7,7 @@
  * told again. Nothing listens until a viewing does. A slice acts
  * through `acting`, which is the one place a write is stamped,
  * refused from before the reset, and told.
+ * Decision: DECISIONS.md, slices with actions, latest wins.
  */
 
 import { stamp, type When } from "./stamped.js";

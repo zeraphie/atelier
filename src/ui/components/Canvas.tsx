@@ -11,6 +11,7 @@
  * and, in edit mode, hangs a picture of your own there, takes one down,
  * or takes away the room drawn here under it or the drawn rooms picked
  * with the Room tool.
+ * Decision: DECISIONS.md, adding a comment: a button and a menu, not a bare tap.
  */
 
 import { ContextMenu } from "radix-ui";

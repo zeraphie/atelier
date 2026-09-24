@@ -5,6 +5,7 @@
  * how far their midpoint moved, then zoom about the new midpoint by
  * how much their separation changed. Applying the two in that order
  * keeps the world under the fingers still.
+ * Decision: DECISIONS.md, scroll pans, pinch zooms.
  */
 
 import type { Point } from "../../geometry.js";

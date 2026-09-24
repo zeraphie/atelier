@@ -8,6 +8,7 @@
  * reaches the canvas element, and the camera only ever moves from
  * empty canvas. The element must set `touch-action: none`, or the
  * browser takes touch gestures for itself.
+ * Decision: DECISIONS.md, scroll pans, pinch zooms.
  */
 
 import type { Point } from "../../geometry.js";
