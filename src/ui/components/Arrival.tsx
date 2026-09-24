@@ -33,7 +33,7 @@ import { whenLoaderDone } from "../utils/curtain.js";
 // fitted width, and jumps where it cannot; the rows fold and unfold below.
 // Written out in full, since Tailwind reads the classes off the source.
 const CONTENT =
-  `${CARD} fixed left-1/2 z-[1000] -translate-x-1/2 max-w-[calc(100vw-2rem)] p-3 ` +
+  `${CARD} fixed left-1/2 z-[1000] -translate-x-1/2 max-w-[calc(100vw-2rem)] p-3 outline-none ` +
   "top-[calc(50%_+_min(70vw,440px)_*_0.1175_+_1.5rem)] [interpolate-size:allow-keywords] " +
   "transition-[width] duration-200 ease-out motion-reduce:transition-none " +
   "data-[editing=false]:w-fit data-[editing=true]:w-[33rem]";
@@ -41,6 +41,8 @@ const CONTENT =
 const FOLD =
   "grid transition-[grid-template-rows] duration-200 ease-out motion-reduce:transition-none " +
   "data-[shown=true]:grid-rows-[1fr] data-[shown=false]:grid-rows-[0fr]";
+// What a fold clips: its content, with a margin for a focus ring to show whole.
+const FOLDED = "min-h-0 overflow-clip [overflow-clip-margin:4px]";
 const DOT = `${PERSON} size-3.5 flex-none rounded-full`;
 const PEN = `${TOOL} size-8 flex-none rounded-md`;
 
@@ -82,8 +84,10 @@ function ArrivalCard({
   const [color, setColor] = useState(givenColor);
   const [isEditing, setEditing] = useState(false);
   const [isGoing, setGoing] = useState(false);
-  // Focused as the card opens, so Enter comes in.
-  const comeInOnLine = useRef<HTMLButtonElement>(null);
+  // The card itself takes the focus as it opens, so nothing wears a ring until Tab, and
+  // Enter on the card comes in.
+  const content = useRef<HTMLDivElement>(null);
+  const form = useRef<HTMLFormElement>(null);
   const trimmed = code.trim().toLowerCase();
   const isValid = trimmed !== "" && name.trim() !== "";
   const submit = (event: FormEvent<HTMLFormElement>): void => {
@@ -99,9 +103,16 @@ function ArrivalCard({
     <Dialog.Content
       className={CONTENT}
       data-editing={isEditing}
+      ref={content}
       onOpenAutoFocus={(event) => {
         event.preventDefault();
-        comeInOnLine.current?.focus();
+        content.current?.focus({ preventScroll: true });
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" && event.target === event.currentTarget) {
+          event.preventDefault();
+          form.current?.requestSubmit();
+        }
       }}
       onEscapeKeyDown={(event) => event.preventDefault()}
       onPointerDownOutside={(event) => event.preventDefault()}
@@ -111,9 +122,9 @@ function ArrivalCard({
       <Dialog.Description className="sr-only">
         Who you are coming in as, and which viewing; the pen changes them.
       </Dialog.Description>
-      <form onSubmit={submit}>
+      <form ref={form} onSubmit={submit}>
         <div className={FOLD} data-shown={!isEditing} inert={isEditing}>
-          <div className="flex min-h-0 items-center gap-3 overflow-hidden pl-2">
+          <div className={`${FOLDED} flex items-center gap-3 pl-2`}>
             <span className={DOT} style={personStyle(colorOf(color))} aria-hidden="true" />
             {/* A name up to twenty characters shows whole; a longer one is cut with a mark. */}
             <span className="max-w-[20ch] truncate font-serif text-lg text-ink">
@@ -133,14 +144,14 @@ function ArrivalCard({
             >
               <PenIcon />
             </button>
-            <TextButton ref={comeInOnLine} tone="primary" type="submit" disabled={isDisabled}>
+            <TextButton tone="primary" type="submit" disabled={isDisabled}>
               Come in
             </TextButton>
           </div>
         </div>
         {/* Its inline size contained, so the folded rows never widen the card's fitted line. */}
         <div className={`${FOLD} contain-inline-size`} data-shown={isEditing} inert={!isEditing}>
-          <div className="flex min-h-0 flex-col gap-3 overflow-hidden px-1 pt-1">
+          <div className={`${FOLDED} flex flex-col gap-3 px-1 pt-1`}>
             <div className="flex flex-wrap items-start gap-3">
               <NameField
                 idPrefix="arrive"
