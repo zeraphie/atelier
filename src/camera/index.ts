@@ -11,6 +11,8 @@ export type { CameraState, CanvasSize, ZoomLimits } from "./math/camera-math.js"
 export { wheelDeltaToPixels, wheelIntent, wheelZoomFactor } from "./math/wheel-math.js";
 export type { WheelInput, WheelIntent } from "./math/wheel-math.js";
 export { pinchStep } from "./math/pinch-math.js";
+export { isDoubleTap, isTap, tapToHold } from "./math/tap-math.js";
+export type { Tap } from "./math/tap-math.js";
 export type { PinchStep } from "./math/pinch-math.js";
 export { Camera } from "./camera.js";
 export type { CameraListener } from "./camera.js";

@@ -48,10 +48,17 @@ export interface TourOptions {
   readonly frame?: Frame;
   /** Whether motion is reduced: jump to the work instead of gliding. */
   readonly isMotionReduced: () => boolean;
+  /** Runs `tick` every `ms` until the stop returned is called: setInterval, unless a test hands in its own. */
+  readonly every?: (tick: () => void, ms: number) => () => void;
 }
 
 // How long play stays at each work.
 const DWELL_MS = 4000;
+
+const everyByInterval = (tick: () => void, ms: number): (() => void) => {
+  const ticker = setInterval(tick, ms);
+  return () => clearInterval(ticker);
+};
 
 /** The works in route order, with next and previous. */
 export class Tour implements TourHandle {
@@ -59,7 +66,7 @@ export class Tour implements TourHandle {
   readonly playing = new ValueStore(false);
   private readonly options: TourOptions;
   private halt: (() => void) | undefined;
-  private ticker: ReturnType<typeof setInterval> | undefined;
+  private stopTicking: (() => void) | undefined;
 
   constructor(options: TourOptions) {
     this.options = options;
@@ -96,7 +103,7 @@ export class Tour implements TourHandle {
       this.start();
     }
     this.playing.set(true);
-    this.ticker = setInterval(() => {
+    this.stopTicking = (this.options.every ?? everyByInterval)(() => {
       if (this.stop.current >= this.count - 1) {
         this.pause();
         return;
@@ -106,8 +113,8 @@ export class Tour implements TourHandle {
   }
 
   pause(): void {
-    clearInterval(this.ticker);
-    this.ticker = undefined;
+    this.stopTicking?.();
+    this.stopTicking = undefined;
     this.playing.set(false);
   }
 

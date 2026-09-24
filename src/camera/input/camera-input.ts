@@ -13,16 +13,12 @@
 import type { Point } from "../../geometry.js";
 import type { Camera } from "../camera.js";
 import { pinchStep } from "../math/pinch-math.js";
+import { isDoubleTap, isTap, tapToHold, type Tap } from "../math/tap-math.js";
 import { pointOn } from "./point-on.js";
 import { wheelIntent } from "../math/wheel-math.js";
 
 const LEFT_BUTTON = 0;
 const MIDDLE_BUTTON = 1;
-// Pointer travel under this is a tap on the canvas rather than a pan.
-const TAP_THRESHOLD_PX = 4;
-// A second tap this soon and this close to the first is a double tap.
-const DOUBLE_TAP_MS = 300;
-const DOUBLE_TAP_PX = 24;
 
 /** The keys held as a tap was made, for a listener that reads them. */
 export interface TapModifiers {
@@ -45,7 +41,7 @@ export class CameraInput {
   private readonly pressOrigins = new Map<number, Point>();
   private readonly tapListeners = new Set<CanvasTapListener>();
   private readonly doubleTapListeners = new Set<CanvasTapListener>();
-  private lastTap: { readonly at: Point; readonly time: number } | undefined;
+  private lastTap: Tap | undefined;
 
   constructor(camera: Camera, target: HTMLElement) {
     this.camera = camera;
@@ -151,19 +147,16 @@ export class CameraInput {
       this.target.removeAttribute("data-camera");
     }
     // A single pointer that pressed and released in place is a tap on nothing.
-    const isTap =
+    const isTapOnNothing =
       event.type === "pointerup" &&
       origin !== undefined &&
       this.pointers.size === 0 &&
-      Math.hypot(event.clientX - origin.x, event.clientY - origin.y) < TAP_THRESHOLD_PX;
-    if (isTap) {
-      const at = pointOn(this.target, event);
-      const last = this.lastTap;
-      const isDouble =
-        last !== undefined &&
-        event.timeStamp - last.time < DOUBLE_TAP_MS &&
-        Math.hypot(at.x - last.at.x, at.y - last.at.y) < DOUBLE_TAP_PX;
-      this.lastTap = isDouble ? undefined : { at, time: event.timeStamp };
+      isTap(origin, { x: event.clientX, y: event.clientY });
+    if (isTapOnNothing) {
+      const tap: Tap = { at: pointOn(this.target, event), time: event.timeStamp };
+      const { at } = tap;
+      const isDouble = isDoubleTap(tap, this.lastTap);
+      this.lastTap = tapToHold(tap, isDouble);
       const modifiers = {
         ctrlKey: event.ctrlKey,
         metaKey: event.metaKey,
