@@ -121,8 +121,8 @@ they disagree, this file governs.
 
 - [TESTING.md](TESTING.md) says how: logic tests for pure logic, the
   browser for everything else.
-- Runner: `bun test`. Tests in top-level `tests/`, named
-  `<module>.test.ts`.
+- Runner: `bun test`. Tests in top-level `tests/`, mirroring `src`'s
+  folders, named `<module>.test.ts`.
 - DOM- or canvas-bound code is never DOM-emulated: extract the math
   into a pure module, test that, and let the browser show it.
 - Names describe the scenario: `"keeps the world point under the

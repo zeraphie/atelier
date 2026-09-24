@@ -17,7 +17,10 @@ How a change proves itself. Code style is in [STYLE.md](STYLE.md).
 
 ## How
 
-- Top-level `tests/`, one file per module: `<module>.test.ts`.
+- Top-level `tests/`, mirroring `src`'s folders, one file per module:
+  `tests/gallery/layout/hang.test.ts` for `src/gallery/layout/hang.ts`.
+  Fixtures two files share live in `tests/fixtures.ts`, fakes in
+  `tests/fakes.ts`.
 - DOM- or canvas-bound code is never DOM-emulated: extract the math
   into a pure module, test that, and let the browser show it
   rendering.
