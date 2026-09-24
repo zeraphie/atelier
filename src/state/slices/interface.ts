@@ -3,7 +3,8 @@
  *
  * What the interface is doing, never kept and never shared: the mode,
  * the tool held in edit mode, the room whose name is being asked for,
- * the rooms picked, and where a picture is being hung. Apart from the
+ * the rooms picked, where a picture is being hung, and whether the
+ * question to put everything back is up. Apart from the
  * gallery slice, which is the gallery as it was changed, so a reload
  * starts browsing whatever was going on.
  * Decision: DECISIONS.md, the edit rail holds the tools.
@@ -26,6 +27,8 @@ export interface InterfaceSlice {
   readonly selected: readonly string[];
   /** Where a picture of your own is being hung: a file, then its details, are being asked for; none otherwise. */
   readonly hangingAt: Point | undefined;
+  /** Whether the question to put everything back is up on this screen, before any proposal is made. */
+  readonly askingReset: boolean;
   setMode(mode: Mode): void;
   holdTool(tool: Tool): void;
   /** Ask for a room's name in place, as after drawing it; with none, ask no more. */
@@ -39,6 +42,8 @@ export interface InterfaceSlice {
   removeSelected(when?: When): void;
   /** Ask for a picture to hang at a point; with none, ask no more. */
   askPicture(at: Point | undefined): void;
+  /** Put the question to put everything back up, or take it down. */
+  askReset(is: boolean): void;
 }
 
 export function createInterfaceSlice(set: Set<Store>, get: Get<Store>): InterfaceSlice {
@@ -48,6 +53,7 @@ export function createInterfaceSlice(set: Set<Store>, get: Get<Store>): Interfac
     naming: undefined,
     selected: [],
     hangingAt: undefined,
+    askingReset: false,
     setMode: (mode) => {
       // A change of mode lets the selection go: it only means something in edit mode.
       set({ mode, selected: [] });
@@ -83,6 +89,10 @@ export function createInterfaceSlice(set: Set<Store>, get: Get<Store>): Interfac
     },
     askPicture: (at) => {
       set({ hangingAt: at });
+    },
+    askReset: (is) => {
+      // Not while a proposal is up: the dialog is open already, with the proposal in it.
+      set((state) => (is && state.proposal !== undefined ? state : { askingReset: is }));
     },
   };
 }

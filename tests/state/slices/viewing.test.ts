@@ -91,9 +91,14 @@ describe("a proposal to put everything back", () => {
   test("a peer's proposal opens it as theirs, with them agreed and the answers it carries; one from before the reset is nothing", () => {
     const { state } = galleryStore();
     state().reset({ at: 10 });
+    state().askReset(true);
     state().proposedBy("a", "p0", 10);
     expect(state().proposal).toBeUndefined();
+    expect(state().askingReset).toBe(true);
     state().proposedBy("a", "p1", 11);
+    expect(state().askingReset).toBe(false);
+    state().askReset(true);
+    expect(state().askingReset).toBe(false);
     expect(state().proposal).toEqual({
       id: "p1",
       by: "a",

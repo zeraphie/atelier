@@ -13,7 +13,7 @@
  * the watch that closes a proposal once its reset has happened. Alone,
  * there is no one to ask, and putting everything back is the reset it
  * was.
- * Decision: DECISIONS.md, everyone is in a viewing.
+ * Decision: DECISIONS.md, putting everything back is unanimous.
  */
 
 import { isUnanimous, tallyOf } from "../state/slices/viewing.js";

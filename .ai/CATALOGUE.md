@@ -148,8 +148,11 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 - Also: `Hanging`
 
 **state/slices/viewing.ts** (ui, viewing)
+- `Proposal`: A proposal to put everything back: open until everyone here has agreed, its proposer withdraws it, or this screen closes it.
+- `Tally`: A proposal's tally: how many count, being here now; how many of them agreed; how many declined, here or gone.
 - `tallyOf()`: The tally of the open proposal: this screen and the peers here count, and every decline given stands; noughts when none is open.
 - `isUnanimous()`: Whether everyone here has agreed and no one has declined: the reset may be made.
+- `isDeclined()`: Whether anyone has declined, here or gone: the reset cannot be made.
 - Also: `Peer`
 
 **state/store.ts** (canvas, ui, viewing)

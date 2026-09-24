@@ -3,21 +3,20 @@
  *
  * The tools of edit mode, in a column at the left while the mode is
  * on: Move, which is the rest; Room, Door and Picture, which are pens
- * to pick up; and, under a line, Put everything back, behind a dialog
- * that asks first. Picking a tool holds it; Move or Escape puts it
- * down. A floating column with the held tool in the accent and a tip
- * beside each, the idea borrowed from tablewright's rail.
+ * to pick up; and, under a line, Put everything back, which puts its
+ * question up: the dialog is PutEverythingBack.tsx, on every screen.
+ * Picking a tool holds it; Move or Escape puts it down. A floating
+ * column with the held tool in the accent and a tip beside each, the
+ * idea borrowed from tablewright's rail.
  * Decision: DECISIONS.md, the edit rail holds the tools.
  */
 
-import { AlertDialog, Toolbar, Tooltip } from "radix-ui";
+import { Toolbar, Tooltip } from "radix-ui";
 import type { ReactNode } from "react";
 import type { Tool } from "../../state/slices/interface.js";
 import { useStore } from "../../state/store.js";
-import { proposeReset } from "../../viewing/proposal.js";
-import { Card, DIALOG_CONTENT, DIALOG_OVERLAY, DIALOG_TITLE } from "../atoms/Card.js";
+import { Card } from "../atoms/Card.js";
 import { DoorIcon, MoveIcon, PictureIcon, ResetIcon, RoomIcon } from "../atoms/icons.js";
-import { TextButton } from "../atoms/TextButton.js";
 import { Tip } from "../atoms/Tip.js";
 import { TOOL } from "../atoms/styles.js";
 
@@ -41,6 +40,7 @@ export function EditRail() {
   const mode = useStore((store) => store.mode);
   const tool = useStore((store) => store.tool);
   const holdTool = useStore((store) => store.holdTool);
+  const askReset = useStore((store) => store.askReset);
   if (mode !== "edit") {
     return null;
   }
@@ -66,47 +66,19 @@ export function EditRail() {
           ))}
         </Toolbar.ToggleGroup>
         <Toolbar.Separator className="mx-1 h-px bg-line" />
-        <PutEverythingBack />
-      </Toolbar.Root>
-    </Card>
-  );
-}
-
-// The reset, behind a question: alone, it clears every edit here; with peers, it
-// proposes clearing everyone's, which takes every one of them.
-function PutEverythingBack() {
-  return (
-    <AlertDialog.Root>
-      <Tooltip.Root>
-        <Tooltip.Trigger asChild>
-          <AlertDialog.Trigger asChild>
-            <Toolbar.Button aria-label="Put everything back" className={`${RAIL_TOOL} text-muted`}>
+        <Tooltip.Root>
+          <Tooltip.Trigger asChild>
+            <Toolbar.Button
+              aria-label="Put everything back"
+              className={`${RAIL_TOOL} text-muted`}
+              onClick={() => askReset(true)}
+            >
               <ResetIcon />
             </Toolbar.Button>
-          </AlertDialog.Trigger>
-        </Tooltip.Trigger>
-        <Tip side="right">Put everything back</Tip>
-      </Tooltip.Root>
-      <AlertDialog.Portal>
-        <AlertDialog.Overlay className={DIALOG_OVERLAY} />
-        <AlertDialog.Content className={DIALOG_CONTENT}>
-          <AlertDialog.Title className={DIALOG_TITLE}>Put everything back?</AlertDialog.Title>
-          <AlertDialog.Description className="font-serif text-base leading-snug text-ink">
-            Every picture returns to its wall, and every room to its size and name. This cannot be
-            undone.
-          </AlertDialog.Description>
-          <div className="flex justify-end gap-2 pt-1">
-            <AlertDialog.Cancel asChild>
-              <TextButton>Cancel</TextButton>
-            </AlertDialog.Cancel>
-            <AlertDialog.Action asChild>
-              <TextButton tone="primary" onClick={() => proposeReset()}>
-                Put back
-              </TextButton>
-            </AlertDialog.Action>
-          </div>
-        </AlertDialog.Content>
-      </AlertDialog.Portal>
-    </AlertDialog.Root>
+          </Tooltip.Trigger>
+          <Tip side="right">Put everything back</Tip>
+        </Tooltip.Root>
+      </Toolbar.Root>
+    </Card>
   );
 }

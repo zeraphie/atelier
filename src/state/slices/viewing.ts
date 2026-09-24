@@ -154,7 +154,8 @@ export function createViewingSlice(set: Set<Store>, _get: Get<Store>): ViewingSl
           mine: undefined,
         };
         const next = earlier(live(state) ? state.proposal : undefined, theirs);
-        return next === state.proposal ? state : { proposal: next };
+        // A proposal taking over answers the question being asked here.
+        return next === state.proposal ? state : { proposal: next, askingReset: false };
       });
     },
     answerProposal: (is) => {

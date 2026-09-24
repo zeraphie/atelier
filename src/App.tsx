@@ -19,6 +19,7 @@ import { FoyerPlaque } from "./ui/components/FoyerPlaque.js";
 import { MiniMap } from "./ui/components/MiniMap.js";
 import { Arrival } from "./ui/components/Arrival.js";
 import { PictureHanger } from "./ui/components/PictureHanger.js";
+import { PutEverythingBack } from "./ui/components/PutEverythingBack.js";
 import { PinLayer } from "./ui/components/PinLayer.js";
 import { RoomNames } from "./ui/components/RoomNames.js";
 import { useFollowing, useLookSharing } from "./ui/utils/use-follow.js";
@@ -58,6 +59,7 @@ function Workspace() {
       <CommentList />
       <EditRail />
       <PictureHanger />
+      <PutEverythingBack />
       <Arrival />
       <TourControls />
       <div className="absolute right-4 bottom-4 flex flex-col items-end gap-2">
