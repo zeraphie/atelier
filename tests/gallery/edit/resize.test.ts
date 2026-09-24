@@ -84,11 +84,16 @@ describe("withSide and lineOf", () => {
     expect(rectOf(withSide(a, "right", 3.4), 100).right).toBeCloseTo(340);
   });
 
-  test("lineOf reads the side back, and clamped holds a line within limits", () => {
+  test("lineOf reads a side's line back", () => {
     expect(lineOf(b, "left")).toBe(3);
     expect(lineOf(b, "right")).toBe(5);
     expect(lineOf(c, "top")).toBe(2);
     expect(lineOf(c, "bottom")).toBe(4);
+  });
+});
+
+describe("clamped", () => {
+  test("a line is held within its limits, and an open limit holds nothing back", () => {
     expect(clamped(7, { min: 1, max: 3 })).toBe(3);
     expect(clamped(0, { min: 1, max: 3 })).toBe(1);
     expect(clamped(2.5, { min: 1, max: Infinity })).toBe(2.5);

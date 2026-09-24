@@ -19,12 +19,12 @@ function expectClose(actual: Point, expected: Point): void {
   expect(actual.y).toBeCloseTo(expected.y, 10);
 }
 
-describe("projection", () => {
-  test("worldToScreen scales by zoom then shifts by the offset", () => {
+describe("worldToScreen and screenToWorld", () => {
+  test("a world point lands on screen scaled by the zoom and shifted by the offset", () => {
     expect(worldToScreen(camera, { x: 10, y: -5 })).toEqual({ x: 120, y: 40 });
   });
 
-  test("screenToWorld inverts worldToScreen", () => {
+  test("a screen point goes back to the world point it came from", () => {
     const world = { x: -37.5, y: 812.25 };
     expectClose(screenToWorld(camera, worldToScreen(camera, world)), world);
   });

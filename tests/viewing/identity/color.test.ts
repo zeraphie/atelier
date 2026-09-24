@@ -39,7 +39,9 @@ describe("the eight colours", () => {
     expect(colorFor("Izzy")).toBe(colorOf(swatchFor("Izzy").id));
     expect(colorFor("Izzy", "pink")).toBe(colorOf("pink"));
   });
+});
 
+describe("initialOf", () => {
   test("an initial is the first letter, capitalised, and nothing for no name", () => {
     expect(initialOf("ren")).toBe("R");
     expect(initialOf("  Izzy")).toBe("I");

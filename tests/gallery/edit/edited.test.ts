@@ -121,22 +121,49 @@ describe("applyEdits, pictures of your own", () => {
     expect(edited.placed["h1"]).toEqual({ x: 250, y: 100 });
   });
 
-  test("a point it was moved to wins; one taken down, of an unknown picture, or outside every room is no work", () => {
+  test("a hanging moved by hand sits at the point it was moved to", () => {
     const edited = applyEdits(base, {
       rooms: {},
       doorways: {},
       placed: { h1: { value: { x: 50, y: 50 }, at: 20 } },
-      hangings: {
-        h1: hanging("h1", { x: 250, y: 100 }),
-        h2: { value: null, at: 10 },
-        h3: hanging("h3", { x: 100, y: 100 }, "nope"),
-        h4: hanging("h4", { x: 900, y: 900 }),
-      },
+      hangings: { h1: hanging("h1", { x: 250, y: 100 }) },
       pictures: { pic: record },
     });
     expect(edited.rooms[0]!.works.map((work) => work.id)).toEqual(["h1"]);
-    expect(edited.rooms[1]!.works).toEqual([]);
     expect(edited.placed["h1"]).toEqual({ x: 50, y: 50 });
+  });
+
+  test("a hanging taken down is no work", () => {
+    const edited = applyEdits(base, {
+      rooms: {},
+      doorways: {},
+      placed: {},
+      hangings: { h2: { value: null, at: 10 } },
+      pictures: { pic: record },
+    });
+    expect(edited.rooms.flatMap((room) => room.works)).toEqual([]);
+  });
+
+  test("a hanging of a picture not in the collection is no work", () => {
+    const edited = applyEdits(base, {
+      rooms: {},
+      doorways: {},
+      placed: {},
+      hangings: { h3: hanging("h3", { x: 100, y: 100 }, "nope") },
+      pictures: { pic: record },
+    });
+    expect(edited.rooms.flatMap((room) => room.works)).toEqual([]);
+  });
+
+  test("a hanging outside every room is no work, and is placed nowhere", () => {
+    const edited = applyEdits(base, {
+      rooms: {},
+      doorways: {},
+      placed: {},
+      hangings: { h4: hanging("h4", { x: 900, y: 900 }) },
+      pictures: { pic: record },
+    });
+    expect(edited.rooms.flatMap((room) => room.works)).toEqual([]);
     expect(edited.placed["h4"]).toBeUndefined();
   });
 });
