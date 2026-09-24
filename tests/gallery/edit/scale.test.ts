@@ -1,32 +1,8 @@
 import { describe, expect, test } from "bun:test";
-import { hangGallery, type Spacing } from "../../../src/gallery/layout/hang.js";
+import { hangGallery } from "../../../src/gallery/layout/hang.js";
 import { cornerNear, cornerPoint, scaled } from "../../../src/gallery/edit/scale.js";
-import type { Room, Work } from "../../../src/gallery/works.js";
-
-const spacing: Spacing = {
-  unitCm: 100,
-  gapCm: 10,
-  standoffCm: 5,
-  endMarginCm: 20,
-  headroomCm: 10,
-  wallCm: 4,
-  doorCm: 20,
-};
-
-function work(id: string, widthCm: number, heightCm: number, pictureId?: string): Work {
-  return {
-    id,
-    title: id,
-    artist: "",
-    year: "",
-    medium: "",
-    widthCm,
-    heightCm,
-    collection: "",
-    source: "",
-    ...(pictureId === undefined ? {} : { pictureId }),
-  };
-}
+import type { Room } from "../../../src/gallery/works.js";
+import { SPACING, work } from "../../fixtures.js";
 
 // A room with a gallery work and a picture of your own, both placed by hand.
 const room: Room = {
@@ -36,9 +12,9 @@ const room: Room = {
   row: 0,
   columns: 4,
   rows: 4,
-  works: [work("g", 80, 40), work("p", 80, 40, "pic")],
+  works: [work("g", 80, 40), work("p", 80, 40, { pictureId: "pic" })],
 };
-const plan = hangGallery([room], spacing, {
+const plan = hangGallery([room], SPACING, {
   placed: { g: { x: 100, y: 100 }, p: { x: 300, y: 300 } },
 });
 // p's rect: 260..340 by 280..320.

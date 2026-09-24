@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import type { Thread } from "../../src/comments/model.js";
 import { mergeSnapshot, snapshotOf, type Snapshot } from "../../src/viewing/snapshot.js";
+import { thread } from "../fixtures.js";
 
 const empty: Snapshot = {
   threads: [],
@@ -10,16 +10,6 @@ const empty: Snapshot = {
   doorways: {},
   resetAt: 0,
 };
-
-function thread(id: string, text: string, createdAt: number, extra: Partial<Thread> = {}): Thread {
-  return {
-    id,
-    at: { x: 0, y: 0 },
-    comments: [{ id: `${id}-1`, author: "a", text, createdAt }],
-    resolved: false,
-    ...extra,
-  };
-}
 
 describe("mergeSnapshot", () => {
   test("stamped records take the later stamp, a tie keeps mine, and the rest of both stay", () => {
@@ -71,7 +61,9 @@ describe("mergeSnapshot", () => {
     const mine: Snapshot = {
       ...empty,
       threads: [
-        thread("t1", "first", 1, {
+        thread("t1", {
+          text: "first",
+          createdAt: 1,
           comments: [
             { id: "t1-1", author: "a", text: "first", createdAt: 1 },
             { id: "t1-2", author: "a", text: "mine", createdAt: 3, editedAt: 3 },
@@ -79,13 +71,15 @@ describe("mergeSnapshot", () => {
           resolved: true,
           resolvedAt: 5,
         }),
-        thread("t2", "only mine", 2),
+        thread("t2", { text: "only mine", createdAt: 2 }),
       ],
     };
     const theirs: Snapshot = {
       ...empty,
       threads: [
-        thread("t1", "first", 1, {
+        thread("t1", {
+          text: "first",
+          createdAt: 1,
           comments: [
             { id: "t1-1", author: "a", text: "first", createdAt: 1 },
             { id: "t1-2", author: "a", text: "theirs, later", createdAt: 3, editedAt: 4 },
@@ -94,7 +88,7 @@ describe("mergeSnapshot", () => {
           resolved: false,
           resolvedAt: 6,
         }),
-        thread("t3", "only theirs", 4),
+        thread("t3", { text: "only theirs", createdAt: 4 }),
       ],
     };
     const merged = mergeSnapshot(mine, theirs);

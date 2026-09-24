@@ -15,6 +15,12 @@ they disagree, this file governs.
   sensible seam; ~400: finding one is a priority. A component that
   starts to do too much is split before it gets unwieldy. Judgment
   thresholds, not lint rules. Tests exempt.
+- **Fold folders early.** A folder past about ten files gets
+  subfolders named for what a reader looks for (the tools, the views,
+  the theme), and keeps its face at the root: the stage, the mount,
+  the join. The tests mirror the same folders. A folder is read by a
+  person before it is read by a tool, so the names are plain words,
+  never abbreviations.
 - Minimal dependencies. Runtime: `react`, `react-dom`, `pixi.js`,
   `zustand`, `radix-ui`, and `trystero` last. Any further dependency
   needs a strong written case; the default answer is no.

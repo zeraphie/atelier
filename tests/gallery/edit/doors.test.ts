@@ -2,22 +2,8 @@ import { describe, expect, test } from "bun:test";
 import { doorAt, doorwayOnEdge, pairAt } from "../../../src/gallery/edit/doors.js";
 import type { Edge } from "../../../src/gallery/layout/edges.js";
 import type { Segment } from "../../../src/geometry.js";
-import { hangGallery, type Spacing } from "../../../src/gallery/layout/hang.js";
-import type { Room } from "../../../src/gallery/works.js";
-
-const spacing: Spacing = {
-  unitCm: 100,
-  gapCm: 10,
-  standoffCm: 5,
-  endMarginCm: 20,
-  headroomCm: 10,
-  wallCm: 4,
-  doorCm: 20,
-};
-
-function room(id: string, column: number, row: number, columns: number, rows: number): Room {
-  return { id, name: id, column, row, columns, rows, works: [] };
-}
+import { hangGallery } from "../../../src/gallery/layout/hang.js";
+import { SPACING, room } from "../../fixtures.js";
 
 // The metre edge a doorway's gap sits on.
 function edgeUnder(gap: Segment): Edge {
@@ -30,7 +16,7 @@ function edgeUnder(gap: Segment): Edge {
 // a and b side by side, sharing x = 300 for y 0..200; c drawn under both.
 const plan = hangGallery(
   [room("a", 0, 0, 3, 2), room("b", 3, 0, 2, 2), { ...room("c", 0, 2, 5, 2), drawn: true }],
-  spacing
+  SPACING
 );
 
 describe("pairAt", () => {
@@ -94,7 +80,7 @@ describe("doorAt, on an outer wall", () => {
       pair: { key: "outside>a", from: "outside", to: "a" },
       isThere: true,
     });
-    const withWay = hangGallery([room("a", 0, 0, 3, 2), room("b", 3, 0, 2, 2)], spacing, {
+    const withWay = hangGallery([room("a", 0, 0, 3, 2), room("b", 3, 0, 2, 2)], SPACING, {
       doorways: { "b>outside:east:4:0": { col: 4, row: 0, side: "east" } },
     });
     expect(doorAt(withWay, { col: 4, row: 0, side: "east" }, 100)).toEqual({

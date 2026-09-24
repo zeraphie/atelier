@@ -1,27 +1,14 @@
 import { describe, expect, test } from "bun:test";
-import { hangGallery, rectOf, type Spacing } from "../../../src/gallery/layout/hang.js";
+import { hangGallery, rectOf } from "../../../src/gallery/layout/hang.js";
 import { clamped, lineOf, limitsOf, wallNear, withSide } from "../../../src/gallery/edit/resize.js";
-import type { Cells, Room } from "../../../src/gallery/works.js";
-
-const spacing: Spacing = {
-  unitCm: 100,
-  gapCm: 10,
-  standoffCm: 5,
-  endMarginCm: 20,
-  headroomCm: 10,
-  wallCm: 4,
-  doorCm: 20,
-};
-
-function room(id: string, cells: Cells): Room {
-  return { id, name: id, ...cells, works: [] };
-}
+import type { Cells } from "../../../src/gallery/works.js";
+import { SPACING, roomOf } from "../../fixtures.js";
 
 // Two rooms side by side sharing the line x = 3, and one below the first.
 const a: Cells = { column: 0, row: 0, columns: 3, rows: 2 };
 const b: Cells = { column: 3, row: 0, columns: 2, rows: 2 };
 const c: Cells = { column: 0, row: 2, columns: 2, rows: 2 };
-const plan = hangGallery([room("a", a), room("b", b), room("c", c)], spacing);
+const plan = hangGallery([roomOf("a", a), roomOf("b", b), roomOf("c", c)], SPACING);
 
 describe("wallNear", () => {
   test("the wall of the room the point is in, when it is within reach", () => {

@@ -1,29 +1,15 @@
 import { describe, expect, test } from "bun:test";
 import { Sayer } from "../../../src/viewing/presence/sayer.js";
+import { FakeFrames } from "../../fakes.js";
 
 interface Thing {
   readonly n: number;
 }
 
 // Stands in for requestAnimationFrame: what is asked waits for the next refresh.
-class FakeRefresh {
-  private queue: (() => void)[] = [];
-
-  readonly request = (tell: () => void): void => {
-    this.queue.push(tell);
-  };
-
-  refresh(): void {
-    const due = this.queue;
-    this.queue = [];
-    for (const tell of due) {
-      tell();
-    }
-  }
-}
 
 function setUp() {
-  const refresh = new FakeRefresh();
+  const refresh = new FakeFrames();
   const said: (Thing | null)[] = [];
   const sayer = new Sayer<Thing>(
     refresh.request,

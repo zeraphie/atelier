@@ -65,7 +65,10 @@ Sorted by layer, not by feature.
 
 `src/camera`, `src/canvas`, `src/gallery`, `src/comments`,
 `src/pictures`, `src/viewing`, `src/state` and `src/storage` sort by
-domain, and CLAUDE.md's key paths say what each holds. What a second
+domain, and CLAUDE.md's key paths say what each holds. A domain past
+about ten files sorts again into subfolders named for what a reader
+looks for, `tools/`, `views/`, `layout/`, `presence/`, with the
+domain's face left at its root; STYLE.md says when. What a second
 domain uses is shared where it sits, and the catalogue lists it. What
 has no domain is vocabulary and sits at the root of `src`:
 `geometry.ts` holds the point and the rect every folder speaks in.

@@ -1,31 +1,13 @@
 import { describe, expect, test } from "bun:test";
 import { between, centredOn, eased, glide } from "../../../src/camera/math/glide.js";
 import { Camera, screenToWorld, type CameraState } from "../../../src/camera/index.js";
+import { FakeFrames } from "../../fakes.js";
 
 const size = { width: 1000, height: 500 };
 const from: CameraState = { x: 0, y: 0, zoom: 1 };
 const to: CameraState = { x: -1500, y: -700, zoom: 4 };
 
 // Frames handed out on demand, each with the time asked for.
-class FakeFrames {
-  private queue: ((time: number) => void)[] = [];
-
-  readonly request = (callback: (time: number) => void): void => {
-    this.queue.push(callback);
-  };
-
-  run(time: number): void {
-    const due = this.queue;
-    this.queue = [];
-    for (const callback of due) {
-      callback(time);
-    }
-  }
-
-  get pending(): number {
-    return this.queue.length;
-  }
-}
 
 describe("eased", () => {
   test("starts at nothing, ends at everything, halfway at halfway", () => {
@@ -68,10 +50,10 @@ describe("glide", () => {
     const frames = new FakeFrames();
     const camera = new Camera({ min: 0.1, max: 8 });
     glide(camera, to, size, 100, frames.request);
-    frames.run(1000);
-    frames.run(1050);
+    frames.refresh(1000);
+    frames.refresh(1050);
     expect(camera.current.zoom).toBeCloseTo(2, 10);
-    frames.run(1100);
+    frames.refresh(1100);
     expect(camera.current.zoom).toBeCloseTo(4, 10);
     expect(frames.pending).toBe(0);
   });
@@ -80,11 +62,11 @@ describe("glide", () => {
     const frames = new FakeFrames();
     const camera = new Camera({ min: 0.1, max: 8 });
     glide(camera, to, size, 100, frames.request);
-    frames.run(1000);
-    frames.run(1025);
+    frames.refresh(1000);
+    frames.refresh(1025);
     camera.panBy(10, 0);
     const moved = camera.current;
-    frames.run(1050);
+    frames.refresh(1050);
     expect(camera.current).toBe(moved);
     expect(frames.pending).toBe(0);
   });

@@ -1,17 +1,8 @@
 import { describe, expect, test } from "bun:test";
-import { hangGallery, type Spacing } from "../../../src/gallery/layout/hang.js";
+import { hangGallery } from "../../../src/gallery/layout/hang.js";
 import { targetAt } from "../../../src/gallery/layout/targets.js";
 import type { Room, Work } from "../../../src/gallery/works.js";
-
-const spacing: Spacing = {
-  unitCm: 100,
-  gapCm: 10,
-  standoffCm: 5,
-  endMarginCm: 20,
-  headroomCm: 10,
-  wallCm: 4,
-  doorCm: 20,
-};
+import { SPACING } from "../../fixtures.js";
 
 const work: Work = {
   id: "w",
@@ -25,7 +16,7 @@ const work: Work = {
   source: "",
 };
 const room: Room = { id: "a", name: "a", column: 0, row: 0, columns: 2, rows: 2, works: [work] };
-const plan = hangGallery([room], spacing);
+const plan = hangGallery([room], SPACING);
 
 describe("targetAt", () => {
   test("a work first, then its room, then the plan", () => {

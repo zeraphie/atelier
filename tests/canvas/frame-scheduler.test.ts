@@ -1,30 +1,12 @@
 import { describe, expect, test } from "bun:test";
 import { FrameScheduler } from "../../src/canvas/frame-scheduler.js";
+import { FakeFrames } from "../fakes.js";
 
 // Stands in for requestAnimationFrame: callbacks wait for the next refresh,
 // and one queued during a refresh waits for the one after, as in a browser.
-class FakeRefresh {
-  private queue: (() => void)[] = [];
-
-  readonly request = (draw: () => void): void => {
-    this.queue.push(draw);
-  };
-
-  refresh(): void {
-    const due = this.queue;
-    this.queue = [];
-    for (const draw of due) {
-      draw();
-    }
-  }
-
-  get pending(): number {
-    return this.queue.length;
-  }
-}
 
 function setUp() {
-  const refresh = new FakeRefresh();
+  const refresh = new FakeFrames();
   let draws = 0;
   const scheduler = new FrameScheduler(refresh.request, () => {
     draws += 1;
@@ -63,7 +45,7 @@ describe("FrameScheduler", () => {
   });
 
   test("an ask during a draw is drawn at the next refresh, once", () => {
-    const refresh = new FakeRefresh();
+    const refresh = new FakeFrames();
     let draws = 0;
     const scheduler = new FrameScheduler(refresh.request, () => {
       draws += 1;

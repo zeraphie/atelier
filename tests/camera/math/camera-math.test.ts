@@ -10,14 +10,10 @@ import {
   type ZoomLimits,
 } from "../../../src/camera/index.js";
 import type { Point } from "../../../src/geometry.js";
+import { expectClose } from "../../fakes.js";
 
 const limits: ZoomLimits = { min: 0.25, max: 4 };
 const camera: CameraState = { x: 100, y: 50, zoom: 2 };
-
-function expectClose(actual: Point, expected: Point): void {
-  expect(actual.x).toBeCloseTo(expected.x, 10);
-  expect(actual.y).toBeCloseTo(expected.y, 10);
-}
 
 describe("worldToScreen and screenToWorld", () => {
   test("a world point lands on screen scaled by the zoom and shifted by the offset", () => {
