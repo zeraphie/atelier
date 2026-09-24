@@ -26,3 +26,12 @@
   --font-sans: "Libertinus Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Fira Code", ui-monospace, monospace;
 }
+
+/* A button is for pressing, so the pointer says so over every one; a disabled
+   button says nothing. Tailwind's own base sets buttons to the arrow. */
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+}
