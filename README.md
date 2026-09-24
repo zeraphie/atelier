@@ -35,9 +35,13 @@ bun run test     # the logic tests alone
 | Shift + `1`             | Fit the whole plan                                |
 | `←` `→`                 | Previous and next work on the tour; `→` starts it |
 | `C`                     | The next tap on the canvas places a comment       |
-| Right-click             | Add a comment here                                |
-| Enter, Shift + Enter    | Send a comment, break a line                      |
-| Escape                  | Back out: a draft, an open thread, comment mode, the tour |
+| `E`                     | Edit the gallery: the rail with Move, Room, Door and Picture |
+| Right-click             | Add a comment here; in edit mode, hang a picture here, take down your own, or remove a drawn room |
+| Drag, in edit mode      | Move: a picture, a wall or a doorway. Room: a room on empty ground. Picture: a corner of your own picture, to size it |
+| Click, in edit mode     | Door: a metre edge of a wall, for a doorway. Room: a room, to pick it, with Ctrl for more. A room's name, to rename it |
+| Delete, Backspace       | Remove the rooms picked with the Room tool        |
+| Enter, Shift + Enter    | Send a comment, break a line; on arrival, come in |
+| Escape                  | Back out: a drag, a draft, an open thread, a held tool, a mode, the tour |
 
 ## Credits
 
