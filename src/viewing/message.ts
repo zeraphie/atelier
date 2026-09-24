@@ -16,7 +16,7 @@ import type { Point } from "../geometry.js";
 import type { PictureRecord } from "../state/slices/collection.js";
 import type { ActionCall } from "../state/utils/actions.js";
 import type { Snapshot } from "./snapshot.js";
-import type { Look } from "./looks.js";
+import type { Look } from "./presence/looks.js";
 
 // The two checks every message shares: a plain object, and a whole point.
 function isRecord(value: unknown): value is Record<string, unknown> {

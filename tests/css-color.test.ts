@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { parseCssColor } from "../src/canvas/css-color.js";
+import { parseCssColor } from "../src/canvas/theme/css-color.js";
 
 describe("parseCssColor", () => {
   test("six-digit hex packs to rgb with full alpha", () => {

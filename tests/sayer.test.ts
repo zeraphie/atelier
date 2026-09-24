@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { Sayer } from "../src/viewing/sayer.js";
+import { Sayer } from "../src/viewing/presence/sayer.js";
 
 interface Thing {
   readonly n: number;

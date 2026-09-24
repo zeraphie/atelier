@@ -17,14 +17,14 @@ import { ContextMenu } from "radix-ui";
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { pointOn, type TapModifiers } from "../../camera/index.js";
 import type { Point } from "../../geometry.js";
-import type { HungRoom, HungWork } from "../../gallery/hang.js";
-import { roomAt, workAt } from "../../gallery/targets.js";
+import type { HungRoom, HungWork } from "../../gallery/layout/hang.js";
+import { roomAt, workAt } from "../../gallery/layout/targets.js";
 import { mayHandle } from "../../gallery/works.js";
 import { useOwnStore } from "../../state/own-store.js";
 import { currentPlan, usePlan } from "../../state/utils/plan.js";
 import { useStore } from "../../state/store.js";
 import { whenHydrated } from "../../storage/index.js";
-import { whenArrived } from "../../viewing/arrival.js";
+import { whenArrived } from "../../viewing/identity/arrival.js";
 import { useCanvas } from "../utils/canvas-context.js";
 import { failLoader, raiseCurtain } from "../utils/curtain.js";
 

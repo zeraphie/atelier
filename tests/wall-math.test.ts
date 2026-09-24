@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { cut, longestFree, shrink, sideOf, widen } from "../src/gallery/wall-math.js";
+import { cut, longestFree, shrink, sideOf, widen } from "../src/gallery/layout/wall-math.js";
 
 const wall = { a: { x: 0, y: 0 }, b: { x: 400, y: 0 } };
 

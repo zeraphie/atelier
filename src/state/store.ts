@@ -19,7 +19,7 @@ import { createPicturesSlice, type PicturesSlice } from "./slices/pictures.js";
 import { createViewingSlice, type ViewingSlice } from "./slices/viewing.js";
 import { hydration, stateStorage } from "../storage/index.js";
 import { tell, type SliceContext } from "./utils/actions.js";
-import { swatchIdFor } from "../viewing/color.js";
+import { swatchIdFor } from "../viewing/identity/color.js";
 import { mergeSnapshot, snapshotOf, type Snapshot } from "../viewing/snapshot.js";
 import { useOwnStore } from "./own-store.js";
 

@@ -19,7 +19,7 @@ import {
   type CameraState,
   type CanvasSize,
   type ZoomLimits,
-} from "./camera-math.js";
+} from "./math/camera-math.js";
 
 export type CameraListener = (state: CameraState) => void;
 

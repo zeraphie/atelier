@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { hangGallery, type Spacing } from "../src/gallery/hang.js";
-import { targetAt } from "../src/gallery/targets.js";
+import { hangGallery, type Spacing } from "../src/gallery/layout/hang.js";
+import { targetAt } from "../src/gallery/layout/targets.js";
 import type { Room, Work } from "../src/gallery/works.js";
 
 const spacing: Spacing = {

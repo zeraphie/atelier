@@ -7,7 +7,7 @@ import {
   edgeOnWall,
   edgeSegment,
   pairKey,
-} from "../src/gallery/edges.js";
+} from "../src/gallery/layout/edges.js";
 
 describe("edges", () => {
   test("an east edge runs down a cell's right side, a south edge along its bottom", () => {

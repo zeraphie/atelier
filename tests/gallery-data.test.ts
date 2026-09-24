@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { hangGallery } from "../src/gallery/hang.js";
+import { hangGallery } from "../src/gallery/layout/hang.js";
 import images from "../src/gallery/images.json";
 import { ROOMS } from "../src/gallery/works.js";
 

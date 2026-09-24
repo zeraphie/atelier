@@ -9,9 +9,9 @@
  * pair of numbers.
  */
 
-import type { CameraState, CanvasSize } from "./camera-math.js";
+import type { CameraState, CanvasSize } from "./math/camera-math.js";
 import type { Camera } from "./camera.js";
-import { glide } from "./glide.js";
+import { glide } from "./math/glide.js";
 
 /** How long a move takes: long enough to follow, short enough not to wait for. */
 export const MOVE_MS = 600;

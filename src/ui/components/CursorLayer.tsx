@@ -11,8 +11,8 @@
 
 import { worldToScreen } from "../../camera/index.js";
 import { useStore } from "../../state/store.js";
-import { colorFor } from "../../viewing/color.js";
-import { cursors } from "../../viewing/cursors.js";
+import { colorFor } from "../../viewing/identity/color.js";
+import { cursors } from "../../viewing/presence/cursors.js";
 import { CursorIcon } from "../atoms/icons.js";
 import { OnScreen } from "../atoms/OnScreen.js";
 import { PERSON, personStyle } from "../atoms/styles.js";

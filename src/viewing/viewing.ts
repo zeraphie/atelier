@@ -23,8 +23,8 @@ import { absorbSnapshot, keyForViewing, switchGallery, useStore } from "../state
 import { onAction } from "../state/utils/actions.js";
 import { without } from "../state/utils/records.js";
 import { getPicture, putPicture, stateStorage } from "../storage/index.js";
-import { swatchIdFor } from "./color.js";
-import { clearCursors, dropCursor, placeCursor } from "./cursors.js";
+import { swatchIdFor } from "./identity/color.js";
+import { clearCursors, dropCursor, placeCursor } from "./presence/cursors.js";
 import {
   isActionMessage,
   isBytesMetadata,
@@ -43,10 +43,10 @@ import {
   type SnapshotMessage,
   type LookMessage,
 } from "./message.js";
-import { Sayer } from "./sayer.js";
+import { Sayer } from "./presence/sayer.js";
 import { snapshotOf } from "./snapshot.js";
 import { connect, type Transport } from "./transport.js";
-import { clearLooks, dropLook, placeLook, sameLook, type Look } from "./looks.js";
+import { clearLooks, dropLook, placeLook, sameLook, type Look } from "./presence/looks.js";
 
 interface Joined {
   readonly code: string;

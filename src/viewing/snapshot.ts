@@ -12,7 +12,7 @@
 
 import type { Comment, Thread } from "../comments/model.js";
 import type { Point } from "../geometry.js";
-import type { Edge } from "../gallery/edges.js";
+import type { Edge } from "../gallery/layout/edges.js";
 import { roomsAfter, type RoomEdit } from "../state/slices/gallery.js";
 import type { Hanging } from "../state/slices/pictures.js";
 import { keptAfter, latest, type Stamped } from "../state/utils/stamped.js";

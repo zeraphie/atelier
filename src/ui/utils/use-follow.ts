@@ -15,7 +15,7 @@ import { useEffect } from "react";
 import { centredOn } from "../../camera/index.js";
 import { useStore } from "../../state/store.js";
 import { sayFollowing, sayLook } from "../../viewing/viewing.js";
-import { lookOf, looks, type Look } from "../../viewing/looks.js";
+import { lookOf, looks, type Look } from "../../viewing/presence/looks.js";
 import { useCanvas } from "./canvas-context.js";
 
 /** Where you look, said as the camera or the canvas changes. */

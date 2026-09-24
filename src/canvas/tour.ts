@@ -13,7 +13,7 @@
 
 import { glide, MOVE_MS, type Camera, type Frame, type CanvasSize } from "../camera/index.js";
 import type { WorldRect } from "../geometry.js";
-import type { Route, Stop } from "../gallery/route.js";
+import type { Route, Stop } from "../gallery/route/route.js";
 import { ValueStore } from "./value-store.js";
 
 /** What the tour controls need: where the tour stands, and the moves. */

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { perPeer } from "../src/viewing/per-peer.js";
+import { perPeer } from "../src/viewing/presence/per-peer.js";
 
 describe("perPeer", () => {
   test("a peer's thing is kept by its id, and null takes it away", () => {

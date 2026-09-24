@@ -13,9 +13,9 @@
 import { Dialog } from "radix-ui";
 import { useEffect, useState, type FormEvent } from "react";
 import { useOwnStore } from "../../state/own-store.js";
-import { arrive, offeredCode } from "../../viewing/arrival.js";
-import { newViewingCode } from "../../viewing/code.js";
-import { swatchIdFor } from "../../viewing/color.js";
+import { arrive, offeredCode } from "../../viewing/identity/arrival.js";
+import { newViewingCode } from "../../viewing/identity/code.js";
+import { swatchIdFor } from "../../viewing/identity/color.js";
 import { DIALOG_PANEL, DIALOG_TITLE } from "../atoms/Card.js";
 import { TextButton } from "../atoms/TextButton.js";
 import { IdentityFields } from "../molecules/IdentityFields.js";

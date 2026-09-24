@@ -18,8 +18,8 @@
 import { useEffect } from "react";
 import { useOwnStore } from "../../state/own-store.js";
 import { useStore } from "../../state/store.js";
-import { newViewingCode } from "../../viewing/code.js";
-import { hashForViewing, viewingCodeFromHash } from "../../viewing/hash.js";
+import { newViewingCode } from "../../viewing/identity/code.js";
+import { hashForViewing, viewingCodeFromHash } from "../../viewing/identity/hash.js";
 import { joinViewing, leaveViewing, sayCursor } from "../../viewing/viewing.js";
 import { useCanvas } from "./canvas-context.js";
 

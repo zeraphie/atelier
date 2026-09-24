@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { wheelDeltaToPixels, wheelIntent, wheelZoomFactor } from "../src/camera/index.js";
-import type { WheelInput } from "../src/camera/wheel-math.js";
+import type { WheelInput } from "../src/camera/math/wheel-math.js";
 
 const size = { width: 1200, height: 900 };
 

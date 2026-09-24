@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { filterThreads, groupByRoom } from "../src/comments/list.js";
 import type { Thread } from "../src/comments/model.js";
-import { hangGallery, type Spacing } from "../src/gallery/hang.js";
+import { hangGallery, type Spacing } from "../src/gallery/layout/hang.js";
 import type { Room } from "../src/gallery/works.js";
 
 const spacing: Spacing = {

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { between, centredOn, eased, glide } from "../src/camera/glide.js";
+import { between, centredOn, eased, glide } from "../src/camera/math/glide.js";
 import { Camera, screenToWorld, type CameraState } from "../src/camera/index.js";
 
 const size = { width: 1000, height: 500 };

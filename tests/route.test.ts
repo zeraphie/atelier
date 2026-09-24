@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { hangGallery, type Spacing } from "../src/gallery/hang.js";
-import { routeThrough } from "../src/gallery/route.js";
+import { hangGallery, type Spacing } from "../src/gallery/layout/hang.js";
+import { routeThrough } from "../src/gallery/route/route.js";
 import type { Room, Work } from "../src/gallery/works.js";
 
 const spacing: Spacing = {

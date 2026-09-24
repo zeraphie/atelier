@@ -79,12 +79,20 @@ The shared names, generated; look here before writing anything new.
   catalogue` (never hand-edited)
 - `tools/` — the scripts behind `bun run`: the catalogue
 - `.plan/` — local-only plans (gitignored)
-- `src/camera/` — pan and zoom math and input, one transform
-- `src/canvas/` — the Pixi stage, frame scheduler, rooms and works
-- `src/gallery/` — the works and rooms as data, the hang, the tiers
+- `src/camera/` — one transform: the camera and its moves at the root,
+  `math/` for the maths, `input/` for the pointer and the wheel
+- `src/canvas/` — the Pixi stage, the mount, the frame scheduler and the
+  tour at the root; `tools/` the edit tools, `views/` what is drawn,
+  `theme/` the bridge from the tokens and the fonts
+- `src/gallery/` — the works, the images and the tiers at the root;
+  `layout/` the floor plan from the data, `edit/` what the tools do to
+  it, `route/` the tour's way through
 - `src/pictures/` — a file made a picture of your own: its hash, its derivative, its colour
 - `src/comments/` — the model, the list and the times of comment threads
-- `src/viewing/` — the shared viewing: the address, the transport (the one file that touches trystero), the join and the replay
+- `src/viewing/` — the shared viewing: the join, the wire and the
+  messages at the root (transport.ts is the one file that touches
+  trystero); `presence/` what is said once a frame, `identity/` who you
+  are and which viewing
 - `src/state/` — the two zustand stores, every slice under `slices/`, and under `utils/` the stamps, the actions told, the live plan
 - `src/storage/` — the IndexedDB database every store persists in, and the roll call the curtain waits on
 - `src/ui/` — React, by atomic design: `atoms/` (one element, no state of

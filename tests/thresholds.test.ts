@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { hangGallery, type Spacing } from "../src/gallery/hang.js";
-import { STAND_BACK_CM, thresholdsOf } from "../src/gallery/thresholds.js";
+import { hangGallery, type Spacing } from "../src/gallery/layout/hang.js";
+import { STAND_BACK_CM, thresholdsOf } from "../src/gallery/route/thresholds.js";
 import type { Room } from "../src/gallery/works.js";
 
 const spacing: Spacing = {

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { firstOf, type PointerSessionOwner } from "../src/camera/pointer-session.js";
+import { firstOf, type PointerSessionOwner } from "../src/camera/input/pointer-session.js";
 
 const at = { x: 0, y: 0 };
 const event = {} as PointerEvent;

@@ -22,25 +22,25 @@ import {
   type CanvasSize,
 } from "../camera/index.js";
 import type { Point, WorldRect } from "../geometry.js";
-import { edgeSegment } from "../gallery/edges.js";
-import { rectOf, SPACING, type Plan } from "../gallery/hang.js";
+import { edgeSegment } from "../gallery/layout/edges.js";
+import { rectOf, SPACING, type Plan } from "../gallery/layout/hang.js";
 import { mayHandle, type Work } from "../gallery/works.js";
 import images from "../gallery/images.json";
-import { wallNear } from "../gallery/resize.js";
-import { targetAt, type Target } from "../gallery/targets.js";
+import { wallNear } from "../gallery/edit/resize.js";
+import { targetAt, type Target } from "../gallery/layout/targets.js";
 import { currentPlan, currentRoute, onPlanChange, planWith } from "../state/utils/plan.js";
 import { useOwnStore } from "../state/own-store.js";
 import { useStore } from "../state/store.js";
-import { DoorTool } from "./door-tool.js";
-import { DotGrid } from "./dot-grid.js";
-import { DrawTool } from "./draw-tool.js";
-import { whenFacesReady } from "./faces.js";
-import { GalleryLayer, type EdgeHint, type GalleryColors } from "./gallery-layer.js";
-import { MoveTool } from "./move-tool.js";
-import { ResizeTool } from "./resize-tool.js";
-import { ScaleTool } from "./scale-tool.js";
+import { DoorTool } from "./tools/door-tool.js";
+import { DotGrid } from "./views/dot-grid.js";
+import { DrawTool } from "./tools/draw-tool.js";
+import { whenFacesReady } from "./theme/faces.js";
+import { GalleryLayer, type EdgeHint, type GalleryColors } from "./views/gallery-layer.js";
+import { MoveTool } from "./tools/move-tool.js";
+import { ResizeTool } from "./tools/resize-tool.js";
+import { ScaleTool } from "./tools/scale-tool.js";
 import { Stage } from "./stage.js";
-import { tokenColor } from "./theme.js";
+import { tokenColor } from "./theme/theme.js";
 import { Tour, type TourHandle } from "./tour.js";
 import type { ValueStore } from "./value-store.js";
 

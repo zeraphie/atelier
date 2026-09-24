@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { hashForViewing, viewingCodeFromHash } from "../src/viewing/hash.js";
+import { hashForViewing, viewingCodeFromHash } from "../src/viewing/identity/hash.js";
 
 describe("the viewing in the hash", () => {
   test("a code is read out of the hash, with or without its sign, and spaces trimmed", () => {

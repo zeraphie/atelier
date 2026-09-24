@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { applyEdits } from "../src/gallery/edited.js";
+import { applyEdits } from "../src/gallery/edit/edited.js";
 import type { Room } from "../src/gallery/works.js";
 
 const base: Room[] = [

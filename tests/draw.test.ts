@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { cellAt, isSameCell, overlaps, spanOf } from "../src/gallery/draw.js";
+import { cellAt, isSameCell, overlaps, spanOf } from "../src/gallery/edit/draw.js";
 import type { Cells } from "../src/gallery/works.js";
 
 describe("cellAt", () => {

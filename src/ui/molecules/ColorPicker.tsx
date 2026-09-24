@@ -9,7 +9,7 @@
 
 import { RadioGroup } from "radix-ui";
 import type { CSSProperties } from "react";
-import { colorOf, PALETTE } from "../../viewing/color.js";
+import { colorOf, PALETTE } from "../../viewing/identity/color.js";
 import { FOCUS_RING } from "../atoms/styles.js";
 
 const SWATCH =

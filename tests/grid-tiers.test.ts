@@ -1,5 +1,10 @@
 import { describe, expect, test } from "bun:test";
-import { GRID_CELLS_CM, gridCellCm, gridTier, smallDotAlpha } from "../src/canvas/grid-tiers.js";
+import {
+  GRID_CELLS_CM,
+  gridCellCm,
+  gridTier,
+  smallDotAlpha,
+} from "../src/canvas/views/grid-tiers.js";
 
 describe("gridTier", () => {
   test("with no tier yet, picks the finest cell at least 48 px wide", () => {

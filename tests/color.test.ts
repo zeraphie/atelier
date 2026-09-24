@@ -1,5 +1,12 @@
 import { describe, expect, test } from "bun:test";
-import { colorFor, colorOf, hueOf, initialOf, PALETTE, swatchFor } from "../src/viewing/color.js";
+import {
+  colorFor,
+  colorOf,
+  hueOf,
+  initialOf,
+  PALETTE,
+  swatchFor,
+} from "../src/viewing/identity/color.js";
 
 describe("the eight colours", () => {
   test("turn from the blue in equal steps, in the rainbow's order, all at one lightness and chroma", () => {

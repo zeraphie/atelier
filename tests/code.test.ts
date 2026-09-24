@@ -1,5 +1,10 @@
 import { describe, expect, test } from "bun:test";
-import { CODE_LENGTH, isViewingCode, newViewingCode, suggestedCode } from "../src/viewing/code.js";
+import {
+  CODE_LENGTH,
+  isViewingCode,
+  newViewingCode,
+  suggestedCode,
+} from "../src/viewing/identity/code.js";
 
 describe("a viewing's code", () => {
   test("is eight characters from the alphabet, and two are not the same", () => {

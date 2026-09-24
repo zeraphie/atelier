@@ -14,7 +14,7 @@ import type { Point } from "../../geometry.js";
 import { acting, type Get, type Set, type SliceContext } from "../utils/actions.js";
 import { keptAfter, latest, latestIn, type Stamped, type When } from "../utils/stamped.js";
 import type { Store } from "../store.js";
-import type { Edge } from "../../gallery/edges.js";
+import type { Edge } from "../../gallery/layout/edges.js";
 import type { Cells } from "../../gallery/works.js";
 
 export type Mode = "browse" | "comment" | "edit";

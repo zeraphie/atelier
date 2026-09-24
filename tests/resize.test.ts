@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { hangGallery, rectOf, type Spacing } from "../src/gallery/hang.js";
-import { clamped, lineOf, limitsOf, wallNear, withSide } from "../src/gallery/resize.js";
+import { hangGallery, rectOf, type Spacing } from "../src/gallery/layout/hang.js";
+import { clamped, lineOf, limitsOf, wallNear, withSide } from "../src/gallery/edit/resize.js";
 import type { Cells, Room } from "../src/gallery/works.js";
 
 const spacing: Spacing = {

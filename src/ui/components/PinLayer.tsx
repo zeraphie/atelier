@@ -14,7 +14,7 @@ import { worldToScreen } from "../../camera/index.js";
 import type { Point } from "../../geometry.js";
 import type { Thread as ThreadModel } from "../../comments/model.js";
 import { useStore } from "../../state/store.js";
-import { colorFor } from "../../viewing/color.js";
+import { colorFor } from "../../viewing/identity/color.js";
 import { whenWas } from "../../comments/when.js";
 import { CARD } from "../atoms/Card.js";
 import { OnScreen } from "../atoms/OnScreen.js";

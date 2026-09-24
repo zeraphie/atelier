@@ -9,8 +9,8 @@
  * Decision: DECISIONS.md, finding a comment: the list, the map and the jump.
  */
 
-import type { Plan } from "../gallery/hang.js";
-import { roomAt } from "../gallery/targets.js";
+import type { Plan } from "../gallery/layout/hang.js";
+import { roomAt } from "../gallery/layout/targets.js";
 import type { Thread } from "./model.js";
 
 export type ListFilter = "open" | "resolved" | "all";

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { lookOf, sameLook } from "../src/viewing/looks.js";
+import { lookOf, sameLook } from "../src/viewing/presence/looks.js";
 
 describe("lookOf", () => {
   test("a look is the world point at the middle of the canvas, and the zoom", () => {

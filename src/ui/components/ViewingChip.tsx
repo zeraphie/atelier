@@ -14,7 +14,7 @@ import { useEffect, useState } from "react";
 import { useOwnStore } from "../../state/own-store.js";
 import type { Peer } from "../../state/slices/viewing.js";
 import { useStore } from "../../state/store.js";
-import { colorFor, initialOf } from "../../viewing/color.js";
+import { colorFor, initialOf } from "../../viewing/identity/color.js";
 import { PillButton, PillLabel } from "../atoms/Pill.js";
 import { FOCUS_RING, INITIAL, personStyle } from "../atoms/styles.js";
 import { goHome } from "../utils/use-viewing.js";

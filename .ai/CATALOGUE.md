@@ -24,12 +24,12 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 
 ## camera
 
-**camera/glide.ts** (canvas)
+**camera/input/pointer-session.ts** (canvas)
+- `PointerSessionOwner`: What a tool does with the pointer the session hands it.
+
+**camera/math/glide.ts** (canvas)
 - `Frame`: Runs its callback at the next frame with the time: requestAnimationFrame.
 - `eased()`: Ease in and out, as a cubic: slow to start, slow to arrive.
-
-**camera/pointer-session.ts** (canvas)
-- `PointerSessionOwner`: What a tool does with the pointer the session hands it.
 
 ## canvas
 
@@ -44,31 +44,20 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 
 ## gallery
 
-**gallery/doors.ts** (canvas)
+**gallery/edit/doors.ts** (canvas)
 - `DoorAction`: What a click on an edge would do: put a doorway there, or take away the one that is there.
 - `doorAt()`: What a click on `edge` would do, or nothing when the edge is on no wall.
 
-**gallery/draw.ts** (canvas)
+**gallery/edit/draw.ts** (canvas)
 - `cellAt()`: The grid cell `point` is in, `unitCm` to a cell.
 - `spanOf()`: The cells from `from` to `to`, both included, whichever way the drag went.
 - `overlaps()`: Whether `cells` lie over any of `others`, even by one cell.
 - Also: `Cell`
 
-**gallery/edges.ts** (canvas, state, viewing)
-- `edgeKey()`: The key an edge is stored under.
-- `edgeSegment()`: The edge as a segment in world units, `unitCm` to a cell.
-- `edgesNear()`: The edges within `reachCm` of `point`, nearest first: one for every vertical and every horizontal grid line within reach, in the cell the point is in, so a caller can take the first that is on a wall even when a nearer line is on none.
-- Also: `Edge`
-
-**gallery/edited.ts** (state)
+**gallery/edit/edited.ts** (state)
 - `applyEdits()`: `base` with `edits` applied, `unitCm` to a cell of the grid.
 
-**gallery/hang.ts** (canvas, comments, state, ui)
-- `hangGallery()`: Lay the rooms out as a plan, cut the doorways of the tour, and hang the works on the walls.
-- `rectOf()`: The rect of a room's cells on the grid, `unitCm` to a cell.
-- Also: `HungWork`, `HungRoom`, `Doorway`, `Plan`, `SPACING`
-
-**gallery/resize.ts** (canvas)
+**gallery/edit/resize.ts** (canvas)
 - `Limits`: The grid lines a wall may sit on, both ends included.
 - `wallNear()`: The wall nearest `point` within `reachCm`; on a shared wall, the room the point is in.
 - `cellsOf()`: A room's place on the grid, as cells.
@@ -77,22 +66,33 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 - `clamped()`: `line` held within `limits`.
 - `withSide()`: `cells` with `side` on grid line `line`; a line with a fraction is a wall between lines, for a preview.
 
-**gallery/route.ts** (canvas, state)
-- `routeThrough()`: The works of `plan` in the order the tour visits them.
-- Also: `Stop`, `Route`
-
-**gallery/scale.ts** (canvas)
+**gallery/edit/scale.ts** (canvas)
 - `cornerNear()`: The corner of a picture of your own nearest `point`, within `reachCm` and the corner's own share of the picture.
 - `scaled()`: `rect` with `corner` drawn towards `to`, the opposite corner held still and the proportions kept: the picture grows to whichever of its width and height the pointer asks more of, and never under `minWidthCm` wide.
 - Also: `Corner`, `CornerHit`
 
-**gallery/targets.ts** (canvas, comments, ui)
+**gallery/layout/edges.ts** (canvas, state, viewing)
+- `edgeKey()`: The key an edge is stored under.
+- `edgeSegment()`: The edge as a segment in world units, `unitCm` to a cell.
+- `edgesNear()`: The edges within `reachCm` of `point`, nearest first: one for every vertical and every horizontal grid line within reach, in the cell the point is in, so a caller can take the first that is on a wall even when a nearer line is on none.
+- Also: `Edge`
+
+**gallery/layout/hang.ts** (canvas, comments, state, ui)
+- `hangGallery()`: Lay the rooms out as a plan, cut the doorways of the tour, and hang the works on the walls.
+- `rectOf()`: The rect of a room's cells on the grid, `unitCm` to a cell.
+- Also: `HungWork`, `HungRoom`, `Doorway`, `Plan`, `SPACING`
+
+**gallery/layout/targets.ts** (canvas, comments, ui)
 - `workAt()`: The work under a world point, if any.
 - `roomAt()`: The room under a world point, if any.
 - `targetAt()`: What a double tap at `point` fills the view with: a work, else its room, else the whole plan.
 - Also: `Target`
 
-**gallery/thresholds.ts** (ui)
+**gallery/route/route.ts** (canvas, state)
+- `routeThrough()`: The works of `plan` in the order the tour visits them.
+- Also: `Stop`, `Route`
+
+**gallery/route/thresholds.ts** (ui)
 - `thresholdsOf()`: An arrow for every doorway between two rooms of `plan`, in the tour's order.
 - Also: `Threshold`
 
@@ -291,29 +291,29 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 
 ## viewing
 
-**viewing/arrival.ts** (ui)
+**viewing/identity/arrival.ts** (ui)
 - `whenArrived()`: Resolves once the person has come in and their viewing's saved state is switched to.
 - `offeredCode()`: The code the card offers, and whether it was made just now.
 - `arrive()`: Come in: keep the name and colour, make this the home viewing if there is none yet, put the code in the address and join it.
 
-**viewing/code.ts** (ui)
+**viewing/identity/code.ts** (ui)
 - `newViewingCode()`: A new code, from the browser's randomness.
 
-**viewing/color.ts** (state, ui)
+**viewing/identity/color.ts** (state, ui)
 - `PALETTE`: The eight colours, in the rainbow's order.
 - `colorOf()`: The CSS colour of a swatch, by id; an unknown id is the blue.
 - `colorFor()`: The colour a name is shown in, chosen or not: its swatch's, or the one its name lands on.
 - `initialOf()`: The initial a name is shown by.
 - `swatchIdFor()`: The swatch a person acts in: the one chosen, or the one their name lands on.
 
-**viewing/cursors.ts** (ui)
-- `cursors`: The peers' pointers in the world, by peer id; only those over their canvas.
-
-**viewing/hash.ts** (ui)
+**viewing/identity/hash.ts** (ui)
 - `viewingCodeFromHash()`: The viewing's code a location hash names, or none.
 - `hashForViewing()`: The location hash that names a viewing.
 
-**viewing/looks.ts** (ui)
+**viewing/presence/cursors.ts** (ui)
+- `cursors`: The peers' pointers in the world, by peer id; only those over their canvas.
+
+**viewing/presence/looks.ts** (ui)
 - `looks`: The peers' looks, by peer id.
 - `lookOf()`: Your look: the world point at the middle of a window of `size`, to the centimetre, and the zoom to a thousandth.
 - Also: `Look`
