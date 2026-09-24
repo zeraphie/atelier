@@ -30,19 +30,22 @@ import { whenLoaderDone } from "../utils/curtain.js";
 // window and min(70vw, 440px) wide by 0.235 of that tall, so its foot is 0.1175 of its
 // width below the middle. The card is as wide as its line, and wider once it holds the
 // fields; the width eases between the two where the browser can interpolate from a
-// fitted width, and jumps where it cannot; the rows fold and unfold below.
+// fitted width, and jumps where it cannot; the rows fold and unfold below the same way.
 // Written out in full, since Tailwind reads the classes off the source.
 const CONTENT =
-  `${CARD} fixed left-1/2 z-[1000] -translate-x-1/2 max-w-[calc(100vw-2rem)] p-3 outline-none ` +
+  `${CARD} fixed left-1/2 z-[1000] -translate-x-1/2 max-w-[calc(100vw-2rem)] p-2 outline-none ` +
   "top-[calc(50%_+_min(70vw,440px)_*_0.1175_+_1.5rem)] [interpolate-size:allow-keywords] " +
   "transition-[width] duration-200 ease-out motion-reduce:transition-none " +
   "data-[editing=false]:w-fit data-[editing=true]:w-[33rem]";
-// A region of the card that folds to nothing or unfolds to its height.
+// A region of the card that folds to nothing or unfolds to its height: the accordion way,
+// a max-height eased from nothing to the content's own, its overflow hidden meanwhile. A grid
+// row eased to nothing was the first way, but Chrome paints a clipped item whole once its
+// row has collapsed.
 const FOLD =
-  "grid transition-[grid-template-rows] duration-200 ease-out motion-reduce:transition-none " +
-  "data-[shown=true]:grid-rows-[1fr] data-[shown=false]:grid-rows-[0fr]";
-// What a fold clips: its content, with a margin for a focus ring to show whole.
-const FOLDED = "min-h-0 overflow-clip [overflow-clip-margin:4px]";
+  "overflow-hidden transition-[max-height] duration-200 ease-out motion-reduce:transition-none " +
+  "data-[shown=true]:max-h-max data-[shown=false]:max-h-0";
+// What a fold holds, padded inside the clip so a focus ring shows whole; the card pads the rest.
+const FOLDED = "p-1";
 const DOT = `${PERSON} size-3.5 flex-none rounded-full`;
 const PEN = `${TOOL} size-8 flex-none rounded-md`;
 
@@ -124,7 +127,7 @@ function ArrivalCard({
       </Dialog.Description>
       <form ref={form} onSubmit={submit}>
         <div className={FOLD} data-shown={!isEditing} inert={isEditing}>
-          <div className={`${FOLDED} flex items-center gap-3 pl-2`}>
+          <div className={`${FOLDED} flex items-center gap-3 pl-3`}>
             <span className={DOT} style={personStyle(colorOf(color))} aria-hidden="true" />
             {/* A name up to twenty characters shows whole; a longer one is cut with a mark. */}
             <span className="max-w-[20ch] truncate font-serif text-lg text-ink">
@@ -151,7 +154,7 @@ function ArrivalCard({
         </div>
         {/* Its inline size contained, so the folded rows never widen the card's fitted line. */}
         <div className={`${FOLD} contain-inline-size`} data-shown={isEditing} inert={!isEditing}>
-          <div className={`${FOLDED} flex flex-col gap-3 px-1 pt-1`}>
+          <div className={`${FOLDED} flex flex-col gap-3 px-2 pt-2`}>
             <div className="flex flex-wrap items-start gap-3">
               <NameField
                 idPrefix="arrive"
