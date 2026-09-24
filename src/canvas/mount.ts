@@ -6,41 +6,33 @@
  * canvas host loads it on demand, so Pixi and the stage arrive after
  * the app and evaluate on their own. The plan is read from the store
  * and the gallery layer drawn again whenever it changes, so an edit
- * here or from a peer is on the canvas at once.
+ * here or from a peer is on the canvas at once. The edit tools are
+ * wired in tools/edit-tools.ts and taken apart with the rest.
  */
 
 import {
   CameraInput,
   FIT_PADDING,
-  firstOf,
   isMotionReduced,
   moveTo,
   pointOn,
-  PointerSession,
   type Camera,
   type TapModifiers,
   type CanvasSize,
 } from "../camera/index.js";
 import type { Point, WorldRect } from "../geometry.js";
-import { edgeSegment } from "../gallery/layout/edges.js";
-import { rectOf, SPACING, type Plan } from "../gallery/layout/hang.js";
-import { mayHandle, type Work } from "../gallery/works.js";
+import { SPACING, type Plan } from "../gallery/layout/hang.js";
 import images from "../gallery/images.json";
-import { wallNear } from "../gallery/edit/resize.js";
 import { targetAt, type Target } from "../gallery/layout/targets.js";
-import { currentPlan, currentRoute, onPlanChange, planWith } from "../state/utils/plan.js";
+import { currentPlan, currentRoute, onPlanChange } from "../state/utils/plan.js";
 import { useOwnStore } from "../state/own-store.js";
 import { useStore } from "../state/store.js";
-import { DoorTool } from "./tools/door-tool.js";
 import { DotGrid } from "./views/dot-grid.js";
-import { DrawTool } from "./tools/draw-tool.js";
 import { whenFacesReady } from "./theme/faces.js";
-import { GalleryLayer, type EdgeHint, type GalleryColors } from "./views/gallery-layer.js";
-import { MoveTool } from "./tools/move-tool.js";
-import { ResizeTool } from "./tools/resize-tool.js";
-import { ScaleTool } from "./tools/scale-tool.js";
+import { GalleryLayer, type GalleryColors } from "./views/gallery-layer.js";
 import { Stage } from "./stage.js";
 import { tokenColor } from "./theme/theme.js";
+import { mountEditTools } from "./tools/edit-tools.js";
 import { Tour, type TourHandle } from "./tour.js";
 import type { ValueStore } from "./value-store.js";
 
@@ -60,13 +52,6 @@ export interface MountedCanvas {
   readonly tour: TourHandle;
   dispose(): void;
 }
-
-// How near a wall a press in edit mode must be: screen pixels, but never more than a metre of floor.
-const WALL_REACH_PX = 20;
-const WALL_REACH_MOST_CM = 100;
-// A room being drawn, in the preview plan; and the name a drawn room has until it is given one.
-const DRAWING_ID = "drawing";
-const DRAWN_NAME = "Room";
 
 /** Put a stage on `host` that follows `camera`, bind the input to it, and hang the gallery over the grid. */
 export async function mountCanvas(
@@ -168,93 +153,25 @@ export async function mountCanvas(
       stage.canvasSize
     );
   });
-  // In edit mode with Move held, a press on a picture drags it and a press
-  // near a wall drags the wall; any other press falls through to the camera.
-  const isMoving = (): boolean => {
-    const { mode, tool } = useStore.getState();
-    return mode === "edit" && tool === "move";
-  };
-  const reachCm = (): number => Math.min(WALL_REACH_PX / camera.current.zoom, WALL_REACH_MOST_CM);
-  // Whether this person may move or size a work: any gallery work, and a picture they hung.
-  const mayHandleWork = (work: Work): boolean => mayHandle(work, useOwnStore.getState().userId);
-  const scaleTool = new ScaleTool({
-    plan: currentPlan,
-    mayHandle: mayHandleWork,
-    reachCm,
-    stretch: (id, rect) => gallery.stretch(id, rect),
-    resize: (id, centre, widthCm) => {
-      const hanging = useStore.getState().hangings[id]?.value;
-      if (hanging !== undefined && hanging !== null) {
-        useStore.getState().hang({ ...hanging, at: centre, widthCm });
-      }
-    },
+  const tools = mountEditTools({
     host,
+    canvas: stage.app.canvas,
+    camera,
+    gallery: () => gallery,
   });
-  const isPicturing = (): boolean => {
-    const { mode, tool } = useStore.getState();
-    return mode === "edit" && tool === "picture";
-  };
-  // The Door tool: a click on a metre edge of a wall two rooms share puts
-  // their doorway there, or takes it away when it is there already.
-  const isDooring = (): boolean => {
-    const { mode, tool } = useStore.getState();
-    return mode === "edit" && tool === "door";
-  };
-  const doorTool = new DoorTool({
-    plan: currentPlan,
-    unitCm: SPACING.unitCm,
-    reachCm,
-    put: (pair, edge) => useStore.getState().moveDoor(pair, edge),
-    take: (pair) => useStore.getState().removeDoor(pair),
-  });
-  // What the Door tool would do under the pointer, for the layer to show.
-  const hintAt = (world: Point): EdgeHint | undefined => {
-    const action = doorTool.actionAt(world);
-    if (action === undefined) {
-      return undefined;
-    }
-    return {
-      segment: edgeSegment(action.edge, SPACING.unitCm),
-      label: { text: action.isThere ? "Take the doorway away" : "Doorway here", at: world },
-    };
-  };
   // Under a pointer at rest, the same target is shown, so what lights up is
-  // what a double tap would fill the view with. A held pointer is panning,
-  // and the world under it is moving, so it shows nothing. The cursor is
-  // told what a press would take: a work before a wall, as the tools go.
-  const overAt = (target: Target, world: Point): string => {
-    if (isDooring()) {
-      return doorTool.actionAt(world) === undefined ? target.kind : "edge";
-    }
-    if (isPicturing()) {
-      const hit = scaleTool.cornerAt(world);
-      if (hit !== undefined) {
-        return hit.corner === "nw" || hit.corner === "se" ? "corner-nwse" : "corner-nesw";
-      }
-    }
-    if (target.kind === "work" && !mayHandleWork(target.work.work)) {
-      // Another person's picture: nothing to take hold of, so no grab.
-      return "other";
-    }
-    if (target.kind !== "work" && isMoving()) {
-      const hit = wallNear(currentPlan(), world, reachCm());
-      if (hit !== undefined) {
-        return hit.side === "left" || hit.side === "right" ? "wall-x" : "wall-y";
-      }
-    }
-    return target.kind;
-  };
+  // what a double tap would fill the view with. A held pointer is a tool's
+  // or a pan's, and the world under it is moving, so it shows nothing.
   const onHover = (event: PointerEvent): void => {
     const world = camera.toWorld(pointOn(host, event));
     hooks.pointer.set(world);
-    // A held pointer is a tool's or a pan's: nothing under it lights up.
     if (event.buttons !== 0) {
       return;
     }
     const target = targetAt(currentPlan(), world);
     gallery.highlight(target);
-    gallery.hint(isDooring() ? hintAt(world) : undefined);
-    host.dataset["over"] = overAt(target, world);
+    gallery.hint(tools.hintAt(world));
+    host.dataset["over"] = tools.overAt(target, world);
   };
   const onLeave = (): void => {
     hooks.pointer.set(undefined);
@@ -262,92 +179,6 @@ export async function mountCanvas(
     gallery.hint(undefined);
     delete host.dataset["over"];
   };
-  // The session lives on the canvas element, under the host, so a press a
-  // tool takes never starts a pan. The wall's preview is the plan the drag
-  // would make, hung afresh, so the doorways move with the wall.
-  const resizing = new ResizeTool({
-    plan: currentPlan,
-    unitCm: SPACING.unitCm,
-    reachCm,
-    preview: (shown) =>
-      gallery.preview(
-        shown === undefined
-          ? undefined
-          : {
-              plan: planWith(shown.roomId, shown.dragged),
-              ghost: rectOf(shown.ghost, SPACING.unitCm),
-              label: shown.label,
-            }
-      ),
-    resize: (id, cells) => useStore.getState().resizeRoom(id, cells),
-    host,
-    isMotionReduced,
-    // Called through the tool, so the browser must not be handed the tool as its receiver.
-    frame: (callback) => requestAnimationFrame(callback),
-  });
-  const moving = new PointerSession(
-    stage.app.canvas,
-    (at) => camera.toWorld(at),
-    firstOf(
-      new MoveTool({
-        plan: currentPlan,
-        mayHandle: mayHandleWork,
-        nudge: (id, centre) => gallery.nudge(id, centre),
-        move: (id, centre) => useStore.getState().moveWork(id, centre),
-        host,
-      }),
-      resizing
-    )
-  );
-  // The Room tool: a drag on empty ground draws a room, previewed as the plan
-  // with it in, then drawn with a name to be given in place; a click on the
-  // ground lets the picked rooms go, and a click on a room is a tap, below.
-  const isDrawing = (): boolean => {
-    const { mode, tool } = useStore.getState();
-    return mode === "edit" && tool === "room";
-  };
-  const drawing = new PointerSession(
-    stage.app.canvas,
-    (at) => camera.toWorld(at),
-    new DrawTool({
-      plan: currentPlan,
-      unitCm: SPACING.unitCm,
-      preview: (shown) =>
-        gallery.preview(
-          shown === undefined
-            ? undefined
-            : {
-                plan: planWith(DRAWING_ID, shown.cells),
-                ghost: rectOf(shown.cells, SPACING.unitCm),
-                label: shown.label,
-              }
-        ),
-      draw: (cells) => {
-        const id = crypto.randomUUID();
-        useStore.getState().drawRoom(id, DRAWN_NAME, cells);
-        useStore.getState().askName(id);
-      },
-      tapped: () => useStore.getState().clearSelection(),
-      host,
-    })
-  );
-  const dooring = new PointerSession(stage.app.canvas, (at) => camera.toWorld(at), doorTool);
-  // The Picture tool: a press on a corner of a picture of your own scales it;
-  // a click on a room's floor asks for a picture, as a tap, below.
-  const picturing = new PointerSession(stage.app.canvas, (at) => camera.toWorld(at), scaleTool);
-  const stopTools = useStore.subscribe(() => {
-    moving.setActive(isMoving());
-    drawing.setActive(isDrawing());
-    dooring.setActive(isDooring());
-    picturing.setActive(isPicturing());
-    if (!isDooring()) {
-      gallery.hint(undefined);
-    }
-  });
-  moving.setActive(isMoving());
-  drawing.setActive(isDrawing());
-  dooring.setActive(isDooring());
-  picturing.setActive(isPicturing());
   host.addEventListener("pointermove", onHover);
   host.addEventListener("pointerleave", onLeave);
   const stopTap = input.onTap((at, modifiers) => hooks.onTap(camera.toWorld(at), modifiers));
@@ -369,12 +200,7 @@ export async function mountCanvas(
       host.removeEventListener("pointermove", onHover);
       host.removeEventListener("pointerleave", onLeave);
       hooks.pointer.set(undefined);
-      stopTools();
-      moving.dispose();
-      drawing.dispose();
-      dooring.dispose();
-      picturing.dispose();
-      resizing.dispose();
+      tools.dispose();
       stopSelection();
       stopPlan();
       stopResize();

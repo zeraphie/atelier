@@ -21,7 +21,7 @@ import { Card } from "../atoms/Card.js";
 import { CommentIcon, PenIcon } from "../atoms/icons.js";
 import { Pill, PillButton } from "../atoms/Pill.js";
 import { FOCUS_RING } from "../atoms/styles.js";
-import { bringCommentsFrom } from "../../viewing/viewing.js";
+import { bringCommentsFrom } from "../../viewing/bring-comments.js";
 import { useOwnStore } from "../../state/own-store.js";
 import { TextButton } from "../atoms/TextButton.js";
 import { ThreadItem } from "../molecules/ThreadItem.js";

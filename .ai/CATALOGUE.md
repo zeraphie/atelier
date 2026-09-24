@@ -136,7 +136,7 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 **state/slices/collection.ts** (canvas, gallery, viewing)
 - Also: `PictureRecord`
 
-**state/slices/gallery.ts** (gallery, ui, viewing)
+**state/slices/gallery.ts** (canvas, gallery, ui, viewing)
 - `RoomEdit`: A room's edits, each stamped; a type rather than an interface so it reads as the record of stamps it is.
 - `roomsAfter()`: Each room's edits from after `at`, and no room left with none.
 - Also: `Tool`
@@ -291,6 +291,9 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 
 ## viewing
 
+**viewing/bring-comments.ts** (ui)
+- `bringCommentsFrom()`: Replay another viewing's saved threads here, telling each; how many came.
+
 **viewing/identity/arrival.ts** (ui)
 - `whenArrived()`: Resolves once the person has come in and their viewing's saved state is switched to.
 - `offeredCode()`: The code the card offers, and whether it was made just now.
@@ -318,16 +321,17 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 - `lookOf()`: Your look: the world point at the middle of a window of `size`, to the centimetre, and the zoom to a thousandth.
 - Also: `Look`
 
+**viewing/presence/presence.ts** (ui)
+- `sayCursor()`: Say where your pointer is in the world, to the centimetre, or that it is off the canvas; once a frame at most.
+- `sayLook()`: Say where you are looking; once a frame at most, and only when it changed.
+- `sayFollowing()`: Tell a peer you are following them, or no longer; nothing to one who has gone.
+
 **viewing/snapshot.ts** (state)
 - `Snapshot`: The persisted part of a gallery.
 - `snapshotOf()`: The snapshot of a gallery's state: its persisted fields and nothing else.
 - `mergeSnapshot()`: `mine` with `theirs` merged in, the later of anything stamped winning and a tie kept as mine.
 
 **viewing/viewing.ts** (state, ui)
-- `sayCursor()`: Say where your pointer is in the world, to the centimetre, or that it is off the canvas; once a frame at most.
-- `sayLook()`: Say where you are looking; once a frame at most, and only when it changed.
-- `sayFollowing()`: Tell a peer you are following them, or no longer; nothing to one who has gone.
 - `joinViewing()`: Join the viewing `code`, leaving any other first; joining the one being joined shares its wait.
-- `bringCommentsFrom()`: Replay another viewing's saved threads here, telling each, so this viewing has them too.
 - `leaveViewing()`: Leave the viewing, if in one, and go back to the solo gallery.
 - `currentPeers()`: The peers the transport itself knows of, for a look under the hood.
