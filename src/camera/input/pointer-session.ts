@@ -11,6 +11,7 @@
  */
 
 import type { Point } from "../../geometry.js";
+import { HeldPress } from "./held-press.js";
 import { pointOn } from "./point-on.js";
 
 /** What a tool does with the pointer the session hands it. */
@@ -33,6 +34,7 @@ export class PointerSession {
   private readonly toWorld: (screen: Point) => Point;
   private readonly owner: PointerSessionOwner;
   private isActive = false;
+  private readonly press = new HeldPress();
   private pointerId: number | undefined;
 
   /** `toWorld` maps a point on the canvas to the world: the camera's inverse. */
@@ -69,7 +71,7 @@ export class PointerSession {
 
   /** Whether a press is held. */
   get isHeld(): boolean {
-    return this.pointerId !== undefined;
+    return this.press.isHeld;
   }
 
   dispose(): void {
@@ -78,8 +80,9 @@ export class PointerSession {
 
   // Let the held pointer go: its capture released and nothing more heard from it.
   private release(): void {
-    if (this.pointerId !== undefined && this.canvas.hasPointerCapture(this.pointerId)) {
-      this.canvas.releasePointerCapture(this.pointerId);
+    const { pointerId } = this;
+    if (this.press.let() && pointerId !== undefined && this.canvas.hasPointerCapture(pointerId)) {
+      this.canvas.releasePointerCapture(pointerId);
     }
     this.pointerId = undefined;
   }
@@ -93,31 +96,33 @@ export class PointerSession {
   }
 
   private readonly onPointerDown = (event: PointerEvent): void => {
-    if (event.button !== 0 || this.isHeld) {
-      return;
-    }
     const at = this.worldUnder(event);
-    if (!this.owner.takes(at, event)) {
+    const outcome = this.press.down(
+      event.pointerId,
+      event.button,
+      () => this.owner.takes(at, event),
+      () => this.owner.onDown(at, event)
+    );
+    if (outcome === "ignored" || outcome === "refused") {
       return;
     }
     // The press is the tool's; the host must not start a pan.
     event.stopPropagation();
     event.preventDefault();
-    if (!this.owner.onDown(at, event)) {
-      return;
+    if (outcome === "held") {
+      this.pointerId = event.pointerId;
+      this.canvas.setPointerCapture(event.pointerId);
     }
-    this.pointerId = event.pointerId;
-    this.canvas.setPointerCapture(event.pointerId);
   };
 
   private readonly onPointerMove = (event: PointerEvent): void => {
-    if (event.pointerId === this.pointerId) {
+    if (this.press.is(event.pointerId)) {
       this.owner.onMove(this.worldUnder(event), event);
     }
   };
 
   private readonly onPointerUp = (event: PointerEvent): void => {
-    if (event.pointerId !== this.pointerId) {
+    if (!this.press.is(event.pointerId)) {
       return;
     }
     this.owner.onUp(this.worldUnder(event), event);
@@ -125,7 +130,7 @@ export class PointerSession {
   };
 
   private readonly onPointerCancel = (event: PointerEvent): void => {
-    if (event.pointerId === this.pointerId) {
+    if (this.press.is(event.pointerId)) {
       this.cancel();
     }
   };

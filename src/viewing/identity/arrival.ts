@@ -12,7 +12,7 @@
  */
 
 import { useOwnStore } from "../../state/own-store.js";
-import { GALLERY_KEY, keyForViewing } from "../../state/store.js";
+import { GALLERY_KEY, keyForViewing } from "../../state/utils/gallery-key.js";
 import { stateStorage } from "../../storage/index.js";
 import { suggestedCode } from "./code.js";
 import { hashForViewing, viewingCodeFromHash } from "./hash.js";

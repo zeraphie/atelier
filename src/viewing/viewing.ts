@@ -15,7 +15,8 @@
  */
 
 import { useOwnStore } from "../state/own-store.js";
-import { absorbSnapshot, keyForViewing, switchGallery, useStore } from "../state/store.js";
+import { absorbSnapshot, switchGallery, useStore } from "../state/store.js";
+import { keyForViewing } from "../state/utils/gallery-key.js";
 import { onAction } from "../state/utils/actions.js";
 import { swatchIdFor } from "./identity/color.js";
 import {

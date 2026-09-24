@@ -20,14 +20,12 @@ import { createPicturesSlice, type PicturesSlice } from "./slices/pictures.js";
 import { createViewingSlice, type ViewingSlice } from "./slices/viewing.js";
 import { hydration, stateStorage } from "../storage/index.js";
 import { tell, type SliceContext } from "./utils/actions.js";
+import { GALLERY_KEY } from "./utils/gallery-key.js";
 import { swatchIdFor } from "../viewing/identity/color.js";
 import { mergeSnapshot, snapshotOf, type Snapshot } from "../viewing/snapshot.js";
 import { useOwnStore } from "./own-store.js";
 
 export type Store = CommentsSlice & PicturesSlice & GallerySlice & InterfaceSlice & ViewingSlice;
-
-/** The solo gallery's key; a viewing's is this with the viewing's code after a dot. */
-export const GALLERY_KEY = "atelier.gallery";
 
 const context: SliceContext = {
   who: () => useOwnStore.getState().name,
@@ -71,11 +69,6 @@ export const useStore = create<Store>()(
     }
   )
 );
-
-/** The key a viewing's gallery persists under. */
-export function keyForViewing(code: string | undefined): string {
-  return code === undefined ? GALLERY_KEY : `${GALLERY_KEY}.${code}`;
-}
 
 // What a gallery holds when nothing has happened in it yet: the persisted
 // fields at their start, and nothing open.

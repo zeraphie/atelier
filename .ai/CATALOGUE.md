@@ -151,8 +151,6 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 - Also: `Peer`
 
 **state/store.ts** (canvas, ui, viewing)
-- `GALLERY_KEY`: The solo gallery's key; a viewing's is this with the viewing's code after a dot.
-- `keyForViewing()`: The key a viewing's gallery persists under.
 - `switchGallery()`: Persist the gallery under `key` from now on.
 - `absorbSnapshot()`: Merge a peer's snapshot into the gallery: the later of anything stamped wins, and nothing is told.
 - Also: `useStore`
@@ -161,12 +159,16 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 - `onAction()`: Hear every action this screen takes; returns the unsubscribe function.
 - Also: `ActionCall`
 
+**state/utils/gallery-key.ts** (viewing)
+- `GALLERY_KEY`: The key the gallery before viewings persisted under; a viewing's key is this with its code after a dot.
+- `keyForViewing()`: The key a viewing's gallery persists under; the plain key for none.
+
 **state/utils/plan.ts** (canvas, ui)
 - `usePlan()`: The plan, re-rendering only when the edits or the collection change it.
 - `currentPlan()`: The plan as it stands now, for code outside React.
 - `currentRoute()`: The route as it stands now, for code outside React.
 - `onPlanChange()`: Hear of every new plan, from either store; returns the unsubscribe function.
-- `planWith()`: The current plan with a room's cells put in: swapped if the room is there, added at the end if not.
+- `planWith()`: The current plan with a room's cells put in, swapped or added: a preview of a resize or a draw.
 
 **state/utils/records.ts** (viewing)
 - `without()`: A record without one of its keys, as a new object; the record itself is left as it was.

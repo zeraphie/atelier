@@ -39,14 +39,17 @@ export interface CollectionSlice {
   removePicture(id: string): void;
 }
 
-export function createCollectionSlice(set: Set<OwnStore>, _get: Get<OwnStore>): CollectionSlice {
+export function createCollectionSlice(set: Set<OwnStore>, get: Get<OwnStore>): CollectionSlice {
   return {
     pictures: {},
     addPicture: (record) => {
       set((state) => ({ pictures: { ...state.pictures, [record.id]: record } }));
     },
     removePicture: (id) => {
-      set((state) => ({ pictures: without(state.pictures, id) }));
+      // A picture not here stays not here, and nothing re-renders for it.
+      if (id in get().pictures) {
+        set((state) => ({ pictures: without(state.pictures, id) }));
+      }
     },
   };
 }

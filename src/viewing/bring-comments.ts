@@ -9,7 +9,8 @@
  */
 
 import type { Thread } from "../comments/model.js";
-import { keyForViewing, useStore } from "../state/store.js";
+import { useStore } from "../state/store.js";
+import { keyForViewing } from "../state/utils/gallery-key.js";
 import { stateStorage } from "../storage/index.js";
 
 /** Replay another viewing's saved threads here, telling each; how many came. */

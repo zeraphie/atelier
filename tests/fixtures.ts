@@ -8,13 +8,16 @@
  */
 
 import { createStore } from "zustand/vanilla";
+import { createCollectionSlice } from "../src/state/slices/collection.js";
 import { createCommentsSlice } from "../src/state/slices/comments.js";
 import { createGallerySlice } from "../src/state/slices/gallery.js";
 import { createInterfaceSlice } from "../src/state/slices/interface.js";
 import { createPicturesSlice } from "../src/state/slices/pictures.js";
+import { createUserSlice } from "../src/state/slices/user.js";
 import { createViewingSlice } from "../src/state/slices/viewing.js";
 import type { ActionCall } from "../src/state/utils/actions.js";
 import type { Store } from "../src/state/store.js";
+import type { OwnStore } from "../src/state/own-store.js";
 import type { Thread } from "../src/comments/model.js";
 import type { Spacing } from "../src/gallery/layout/hang.js";
 import type { Cells, Room, Work } from "../src/gallery/works.js";
@@ -101,4 +104,13 @@ export function thread(
     comments: [{ id: `${id}-1`, author: "a", text, createdAt }],
     ...rest,
   };
+}
+
+/** The own store as the tests stand it up: the user and the collection on a plain store, nothing persisted. */
+export function ownStore() {
+  const store = createStore<OwnStore>()((set, get) => ({
+    ...createUserSlice(set, get),
+    ...createCollectionSlice(set, get),
+  }));
+  return { store, state: () => store.getState() };
 }
