@@ -4,31 +4,28 @@
  * The plan, drawn: every room's floor, the walls over them, and every
  * work above the walls, all in world space under the camera. Each
  * camera change is passed on as the zoom, which is the one thing the
- * views react to: a work picks its tier and picture, and what is held
- * at a screen size is scaled again. The layer also shows what a double
- * tap would fill the view with, under the pointer: a room lit, or a
- * work outlined with its label. While a wall is dragged it shows the
- * preview: floors and walls drawn from the plan the drag would make,
- * a dashed ghost on the metre line the wall will settle on, and a
- * badge by the pointer with the room's new measure. The works stay
- * where they are until the edit lands.
+ * views react to: a work picks its tier and picture, and the marks
+ * keep their size on screen. The layer lights what a double tap would
+ * fill the view with, and while a wall is dragged or a room drawn it
+ * shows the preview: floors and walls from the plan the drag would
+ * make, with the marks view's ghost and badge over them. The works
+ * stay where they are until the edit lands.
+ * Decision: DECISIONS.md, levels of detail by zoom.
  */
 
-import { Container, Graphics, Text } from "pixi.js";
+import { Container, Graphics } from "pixi.js";
 import type { CameraState } from "../../camera/index.js";
-import type { Point, WorldRect } from "../../geometry.js";
-import type { Segment } from "../../geometry.js";
+import type { Point, Segment, WorldRect } from "../../geometry.js";
 import type { Plan } from "../../gallery/layout/hang.js";
 import type { Target } from "../../gallery/layout/targets.js";
 import type { ImageEntry } from "../../gallery/tiers.js";
-import type { Work } from "../../gallery/works.js";
-import { DERIVATIVE_PX } from "../../pictures/prepare.js";
 import type { PictureRecord } from "../../state/slices/collection.js";
 import type { PackedColor } from "../theme/css-color.js";
+import { MarksView } from "./marks-view.js";
+import { entryFor, sourceFor } from "./picture-source.js";
 import { RoomView, type RoomColors } from "./room-view.js";
-import { loadOwnPicture, loadPicture } from "../theme/textures.js";
 import { drawPosts, drawWalls } from "./walls-view.js";
-import { WorkView, type PictureSource, type WorkColors } from "./work-view.js";
+import { WorkView, type WorkColors } from "./work-view.js";
 
 export interface GalleryColors {
   readonly room: RoomColors;
@@ -53,21 +50,6 @@ export interface EdgeHint {
   readonly label: { readonly text: string; readonly at: Point };
 }
 
-// Screen pixels the outline keeps clear of a work and its label.
-const OUTLINE_PAD_PX = 6;
-// The ghost's dashes and the gaps between them, in screen pixels.
-const DASH_PX = 6;
-const GAP_PX = 4;
-// The badge: its text size on screen, its padding, its corner, and how far it sits from the pointer.
-const BADGE_PX = 12;
-const BADGE_PAD_X = 6;
-const BADGE_PAD_Y = 2;
-const BADGE_RADIUS = 4;
-const BADGE_OFFSET_PX = 14;
-// The hinted edge: how wide, as a multiple of the wall, and how strong.
-const EDGE_WIDTH = 1.5;
-const EDGE_ALPHA = 0.85;
-
 /** Rooms, walls and works, drawn into `world` and following the camera. */
 export class GalleryLayer {
   private readonly plan: Plan;
@@ -78,18 +60,12 @@ export class GalleryLayer {
   private readonly drawnFloor = new Graphics({ label: "drawn" });
   private readonly works: WorkView[];
   private readonly byId = new Map<string, WorkView>();
-  private readonly outline = new Graphics({ label: "outline" });
-  private readonly ghost = new Graphics({ label: "ghost" });
-  private readonly edgeLight = new Graphics({ label: "edge" });
-  private readonly badge = new Container({ label: "badge" });
-  private readonly badgeBack = new Graphics();
-  private readonly badgeText: Text;
+  private readonly marks: MarksView;
   private readonly colors: GalleryColors;
   private readonly requestFrame: () => void;
   private target: Target | undefined;
   private shown: LayerPreview | undefined;
   private hinted: EdgeHint | undefined;
-  private zoom = 1;
 
   constructor(
     world: Container,
@@ -128,18 +104,11 @@ export class GalleryLayer {
     for (const [i, hung] of plan.rooms.flatMap((room) => room.works).entries()) {
       this.byId.set(hung.work.id, this.works[i]!);
     }
-    this.badgeText = new Text({
-      text: "",
-      style: { fontFamily: "Libertinus Sans", fontSize: BADGE_PX, fill: colors.badge.ink.rgb },
-    });
-    this.badgeText.position.set(BADGE_PAD_X, BADGE_PAD_Y);
-    this.badge.addChild(this.badgeBack, this.badgeText);
-    this.badge.visible = false;
-    this.ghost.visible = false;
+    this.marks = new MarksView({ outline: colors.outline, badge: colors.badge }, wallCm);
     world.addChild(...this.rooms.map((room) => room.container));
     world.addChild(this.drawnFloor, this.walls);
     world.addChild(...this.works.map((work) => work.container));
-    world.addChild(this.outline, this.ghost, this.edgeLight, this.badge);
+    world.addChild(this.marks.container);
   }
 
   /** Show a work at a centre for the length of a drag; the plan, and so the layer, still say where it is. */
@@ -174,14 +143,16 @@ export class GalleryLayer {
     }
     drawWalls(this.walls, plan.walls, this.wallCm, this.colors.wall);
     drawPosts(this.walls, plan.doorways, this.wallCm, this.colors.wall);
-    this.drawGhost();
+    this.marks.ghostOf(shown?.ghost);
+    this.marks.badgeOf(this.shown?.label ?? this.hinted?.label);
     this.requestFrame();
   }
 
   /** Show the edge the Door tool would take, with what a click would do, or nothing. */
   hint(shown: EdgeHint | undefined): void {
     this.hinted = shown;
-    this.drawGhost();
+    this.marks.edgeOf(shown?.segment);
+    this.marks.badgeOf(this.shown?.label ?? this.hinted?.label);
     this.requestFrame();
   }
 
@@ -191,13 +162,12 @@ export class GalleryLayer {
   }
 
   follow(state: CameraState): void {
-    this.zoom = state.zoom;
     for (const work of this.works) {
       work.follow(state.zoom);
     }
-    // The outline and the ghost keep their measures in screen pixels, so both are drawn again at the new zoom.
-    this.drawOutline();
-    this.drawGhost();
+    // The outlined work's extent may have grown a label at the new tier.
+    this.marks.outlineOf(this.outlined());
+    this.marks.follow(state.zoom);
   }
 
   /** Show which rooms are picked for removal, by id. */
@@ -214,7 +184,7 @@ export class GalleryLayer {
     for (const room of this.rooms) {
       room.light(target?.kind === "room" && target.room.room.id === room.id);
     }
-    this.drawOutline();
+    this.marks.outlineOf(this.outlined());
     this.requestFrame();
   }
 
@@ -227,123 +197,11 @@ export class GalleryLayer {
     for (const work of this.works) {
       work.destroy();
     }
-    this.outline.destroy();
-    this.ghost.destroy();
-    this.edgeLight.destroy();
-    this.badge.destroy({ children: true });
+    this.marks.destroy();
   }
 
-  // A hairline around the work and its label, the fit's own extent, a few screen pixels clear of both.
-  private drawOutline(): void {
-    this.outline.clear();
-    if (this.target?.kind !== "work") {
-      this.outline.visible = false;
-      return;
-    }
-    const { outline } = this.colors;
-    const rect = this.extentOf(this.target.work);
-    const pad = OUTLINE_PAD_PX / this.zoom;
-    this.outline
-      .rect(
-        rect.left - pad,
-        rect.top - pad,
-        rect.right - rect.left + 2 * pad,
-        rect.bottom - rect.top + 2 * pad
-      )
-      .stroke({ color: outline.rgb, alpha: outline.alpha, width: 1, pixelLine: true });
-    this.outline.visible = true;
+  // The extent of the work under the pointer, the outline's rect; none over anything else.
+  private outlined(): WorldRect | undefined {
+    return this.target?.kind === "work" ? this.extentOf(this.target.work) : undefined;
   }
-
-  // The ghost as a dashed hairline, the hinted edge as a bar along the wall,
-  // and the badge at one size on screen beside the pointer.
-  private drawGhost(): void {
-    const { outline, badge } = this.colors;
-    this.ghost.clear();
-    if (this.shown === undefined) {
-      this.ghost.visible = false;
-    } else {
-      const { ghost } = this.shown;
-      const corners: Point[] = [
-        { x: ghost.left, y: ghost.top },
-        { x: ghost.right, y: ghost.top },
-        { x: ghost.right, y: ghost.bottom },
-        { x: ghost.left, y: ghost.bottom },
-      ];
-      for (const [i, corner] of corners.entries()) {
-        dashed(this.ghost, corner, corners[(i + 1) % 4]!, DASH_PX / this.zoom, GAP_PX / this.zoom);
-      }
-      this.ghost.stroke({ color: outline.rgb, alpha: outline.alpha, width: 1, pixelLine: true });
-      this.ghost.visible = true;
-    }
-    this.edgeLight.clear();
-    if (this.hinted === undefined) {
-      this.edgeLight.visible = false;
-    } else {
-      const { a, b } = this.hinted.segment;
-      this.edgeLight
-        .moveTo(a.x, a.y)
-        .lineTo(b.x, b.y)
-        .stroke({ color: outline.rgb, alpha: EDGE_ALPHA, width: this.wallCm * EDGE_WIDTH });
-      this.edgeLight.visible = true;
-    }
-    const label = this.shown?.label ?? this.hinted?.label;
-    if (label === undefined) {
-      this.badge.visible = false;
-      return;
-    }
-    this.badgeText.text = label.text;
-    this.badgeBack
-      .clear()
-      .roundRect(
-        0,
-        0,
-        this.badgeText.width + 2 * BADGE_PAD_X,
-        this.badgeText.height + 2 * BADGE_PAD_Y,
-        BADGE_RADIUS
-      )
-      .fill({ color: badge.back.rgb, alpha: badge.back.alpha });
-    this.badge.scale.set(1 / this.zoom);
-    const offset = BADGE_OFFSET_PX / this.zoom;
-    this.badge.position.set(label.at.x + offset, label.at.y + offset);
-    this.badge.visible = true;
-  }
-}
-
-// The line from `a` to `b` as dashes, drawn into `shapes` for one stroke after.
-function dashed(shapes: Graphics, a: Point, b: Point, dash: number, gap: number): void {
-  const length = Math.hypot(b.x - a.x, b.y - a.y);
-  if (length === 0) {
-    return;
-  }
-  const ux = (b.x - a.x) / length;
-  const uy = (b.y - a.y) / length;
-  for (let at = 0; at < length; at += dash + gap) {
-    const end = Math.min(at + dash, length);
-    shapes.moveTo(a.x + ux * at, a.y + uy * at).lineTo(a.x + ux * end, a.y + uy * end);
-  }
-}
-
-// What images.json says of a gallery work, or what the collection says of a picture of your own.
-function entryFor(
-  work: Work,
-  images: Readonly<Record<string, ImageEntry>>,
-  pictures: Readonly<Record<string, PictureRecord>>
-): ImageEntry | undefined {
-  if (work.pictureId === undefined) {
-    return images[work.id];
-  }
-  const record = pictures[work.pictureId];
-  if (record === undefined) {
-    return undefined;
-  }
-  const { width, height } = record.size;
-  return { color: record.color, width, height, sizes: [{ px: DERIVATIVE_PX, width, height }] };
-}
-
-// The site's image set for a gallery work; the database for a picture of your own.
-function sourceFor(work: Work): PictureSource {
-  const { pictureId } = work;
-  return pictureId === undefined
-    ? (px) => loadPicture(work.id, px)
-    : (px) => loadOwnPicture(pictureId, px);
 }

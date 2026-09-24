@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { createStore } from "zustand/vanilla";
 import { createCommentsSlice } from "../../../src/state/slices/comments.js";
 import { createGallerySlice } from "../../../src/state/slices/gallery.js";
+import { createInterfaceSlice } from "../../../src/state/slices/interface.js";
 import { createPicturesSlice } from "../../../src/state/slices/pictures.js";
 import { createViewingSlice } from "../../../src/state/slices/viewing.js";
 import type { ActionCall } from "../../../src/state/utils/actions.js";
@@ -22,6 +23,7 @@ function gallery() {
     ...createCommentsSlice(context)(set, get),
     ...createPicturesSlice(context)(set, get),
     ...createGallerySlice(context)(set, get),
+    ...createInterfaceSlice(set, get),
     ...createViewingSlice(set, get),
   }));
   return { store, told, state: () => store.getState() };

@@ -18,7 +18,7 @@ import { rectOf, SPACING } from "../../gallery/layout/hang.js";
 import type { Target } from "../../gallery/layout/targets.js";
 import { mayHandle, type Work } from "../../gallery/works.js";
 import { useOwnStore } from "../../state/own-store.js";
-import type { Tool } from "../../state/slices/gallery.js";
+import type { Tool } from "../../state/slices/interface.js";
 import { useStore } from "../../state/store.js";
 import { currentPlan, planWith } from "../../state/utils/plan.js";
 import type { EdgeHint, GalleryLayer } from "../views/gallery-layer.js";

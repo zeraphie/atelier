@@ -11,6 +11,7 @@
  * Decision: DECISIONS.md, a picture's id is the hash of its bytes.
  */
 
+import { toTenth } from "../geometry.js";
 export interface PreparedPicture {
   readonly id: string;
   readonly original: Blob;
@@ -101,4 +102,12 @@ function canvasOf(width: number, height: number): CanvasRenderingContext2D {
     throw new Error("no 2d context to prepare the picture with");
   }
   return context;
+}
+
+/** The height a picture hangs at for a width, from its proportions, to a millimetre. */
+export function heightFor(
+  widthCm: number,
+  size: { readonly width: number; readonly height: number }
+): number {
+  return toTenth((widthCm * size.height) / size.width);
 }

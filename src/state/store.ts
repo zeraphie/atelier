@@ -15,6 +15,7 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { createCommentsSlice, type CommentsSlice } from "./slices/comments.js";
 import { createGallerySlice, type GallerySlice } from "./slices/gallery.js";
+import { createInterfaceSlice, type InterfaceSlice } from "./slices/interface.js";
 import { createPicturesSlice, type PicturesSlice } from "./slices/pictures.js";
 import { createViewingSlice, type ViewingSlice } from "./slices/viewing.js";
 import { hydration, stateStorage } from "../storage/index.js";
@@ -23,7 +24,7 @@ import { swatchIdFor } from "../viewing/identity/color.js";
 import { mergeSnapshot, snapshotOf, type Snapshot } from "../viewing/snapshot.js";
 import { useOwnStore } from "./own-store.js";
 
-export type Store = CommentsSlice & PicturesSlice & GallerySlice & ViewingSlice;
+export type Store = CommentsSlice & PicturesSlice & GallerySlice & InterfaceSlice & ViewingSlice;
 
 /** The solo gallery's key; a viewing's is this with the viewing's code after a dot. */
 export const GALLERY_KEY = "atelier.gallery";
@@ -45,6 +46,7 @@ export const useStore = create<Store>()(
       ...createCommentsSlice(context)(set, get),
       ...createPicturesSlice(context)(set, get),
       ...createGallerySlice(context)(set, get),
+      ...createInterfaceSlice(set, get),
       ...createViewingSlice(set, get),
     }),
     {

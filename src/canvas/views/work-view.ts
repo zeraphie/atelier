@@ -11,14 +11,13 @@
  * Decision: DECISIONS.md, levels of detail by zoom.
  */
 
-import { Container, Graphics, Sprite, Text, type Texture } from "pixi.js";
+import { Container, Graphics, Sprite } from "pixi.js";
 import type { Point, WorldRect } from "../../geometry.js";
 import type { HungWork } from "../../gallery/layout/hang.js";
 import { imageSizeFor, workTier, type ImageEntry, type WorkTier } from "../../gallery/tiers.js";
 import { parseCssColor, type PackedColor } from "../theme/css-color.js";
-
-/** Where a view gets its picture at a size: the site's image set, or a picture of your own. */
-export type PictureSource = (px: number) => Promise<Texture>;
+import type { PictureSource } from "./picture-source.js";
+import { makeWorkLabel, type WorkLabel } from "./work-label.js";
 
 export interface WorkColors {
   readonly edge: PackedColor;
@@ -29,15 +28,6 @@ export interface WorkColors {
   readonly loading: PackedColor;
 }
 
-// Text is drawn at this size and scaled down to its size in the world,
-// so the stage can sharpen it as the zoom rises.
-const TEXT_PX = 24;
-// The title under a work, and the label's smaller lines, in centimetres.
-const TITLE_CM = 2.4;
-const DETAIL_CM = 1.6;
-const LABEL_GAP_CM = 3;
-const CARD_PAD_CM = 1.5;
-const LINE_GAP_CM = 1;
 // The sweeping bar of a picture on its way: its share of the block's width and height, and one sweep's time.
 const SWEEP_SHARE = 0.25;
 const SWEEP_HEIGHT_SHARE = 0.04;
@@ -55,7 +45,7 @@ export class WorkView {
   private sweep: Graphics | undefined;
   private readonly requestFrame: () => void;
   private readonly picture = new Sprite();
-  private label: { card: Graphics; title: Text; details: Text } | undefined;
+  private label: WorkLabel | undefined;
   private tier: WorkTier = "far";
   private shownPx = 0;
   private isDestroyed = false;
@@ -154,7 +144,13 @@ export class WorkView {
   /** The work and its label together, in world units, for a view that fits both. */
   extent(): WorldRect {
     if (this.label === undefined) {
-      this.label = this.makeLabel();
+      this.label = makeWorkLabel(
+        this.container,
+        this.hung.work,
+        this.width,
+        this.height,
+        this.colors
+      );
       this.apply();
     }
     const card = this.label.card.getLocalBounds();
@@ -183,7 +179,13 @@ export class WorkView {
       this.stopSweep();
     }
     if (this.tier !== "far") {
-      this.label ??= this.makeLabel();
+      this.label ??= makeWorkLabel(
+        this.container,
+        this.hung.work,
+        this.width,
+        this.height,
+        this.colors
+      );
     }
     if (this.label !== undefined) {
       this.label.title.visible = this.tier !== "far";
@@ -217,54 +219,5 @@ export class WorkView {
       .catch(() => {
         // A picture that is not here stays a block in its colour; the next tier change asks again.
       });
-  }
-
-  // The museum label under the work: the title alone at mid, and at near
-  // the artist, year, medium, size and collection on a card behind them.
-  private makeLabel(): { card: Graphics; title: Text; details: Text } {
-    const { work } = this.hung;
-    const { ink, muted, card: cardColor, edge } = this.colors;
-    const titleScale = TITLE_CM / TEXT_PX;
-    const detailScale = DETAIL_CM / TEXT_PX;
-    const title = new Text({
-      text: work.title,
-      style: {
-        fontFamily: "EB Garamond",
-        fontStyle: "italic",
-        fontSize: TEXT_PX,
-        fill: ink.rgb,
-        wordWrap: true,
-        wordWrapWidth: Math.max(this.width, 30) / titleScale,
-      },
-    });
-    title.scale.set(titleScale);
-    const details = new Text({
-      text: [
-        `${work.artist}, ${work.year}`,
-        work.medium,
-        `${work.widthCm} × ${work.heightCm} cm`,
-        work.collection,
-      ].join("\n"),
-      style: {
-        fontFamily: "Libertinus Sans",
-        fontSize: TEXT_PX,
-        fill: muted.rgb,
-        lineHeight: TEXT_PX * 1.35,
-        wordWrap: true,
-        wordWrapWidth: Math.max(this.width, 30) / detailScale,
-      },
-    });
-    details.scale.set(detailScale);
-    const top = this.height + LABEL_GAP_CM;
-    title.position.set(0, top);
-    details.position.set(0, top + title.height + LINE_GAP_CM);
-    const cardWidth = Math.max(title.width, details.width) + 2 * CARD_PAD_CM;
-    const cardHeight = title.height + LINE_GAP_CM + details.height + 2 * CARD_PAD_CM;
-    const card = new Graphics()
-      .rect(-CARD_PAD_CM, top - CARD_PAD_CM, cardWidth, cardHeight)
-      .fill({ color: cardColor.rgb, alpha: cardColor.alpha })
-      .stroke({ color: edge.rgb, alpha: edge.alpha, width: 1, pixelLine: true });
-    this.container.addChild(card, title, details);
-    return { card, title, details };
   }
 }

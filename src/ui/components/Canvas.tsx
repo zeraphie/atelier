@@ -19,19 +19,13 @@ import { pointOn, type TapModifiers } from "../../camera/index.js";
 import type { Point } from "../../geometry.js";
 import type { HungRoom, HungWork } from "../../gallery/layout/hang.js";
 import { roomAt, workAt } from "../../gallery/layout/targets.js";
-import { mayHandle } from "../../gallery/works.js";
-import { useOwnStore } from "../../state/own-store.js";
 import { currentPlan, usePlan } from "../../state/utils/plan.js";
 import { useStore } from "../../state/store.js";
 import { whenHydrated } from "../../storage/index.js";
 import { whenArrived } from "../../viewing/identity/arrival.js";
 import { useCanvas } from "../utils/canvas-context.js";
 import { failLoader, raiseCurtain } from "../utils/curtain.js";
-
-const MENU = "z-20 min-w-40 rounded-md border border-line bg-surface p-1 shadow-lg";
-const ITEM =
-  "cursor-default rounded px-2 py-1.5 font-sans text-sm text-ink outline-none " +
-  "data-[highlighted]:bg-accent data-[highlighted]:text-accent-ink";
+import { CanvasMenu } from "./CanvasMenu.js";
 
 // What a tap on the canvas does: with the Picture tool, ask for a picture to
 // hang there; with the Room tool, pick the room under it, alone or, with Ctrl
@@ -67,18 +61,7 @@ export function Canvas() {
   const { camera, canvasSize, tour, gridShown, pointer } = useCanvas();
   const mode = useStore((store) => store.mode);
   const tool = useStore((store) => store.tool);
-  const startDraft = useStore((store) => store.startDraft);
-  const removeRoom = useStore((store) => store.removeRoom);
-  const selected = useStore((store) => store.selected);
-  const removeSelected = useStore((store) => store.removeSelected);
-  const askPicture = useStore((store) => store.askPicture);
-  const takeDown = useStore((store) => store.takeDown);
-  const userId = useOwnStore((store) => store.userId);
   const plan = usePlan();
-  // Of the rooms picked, the drawn ones, which are the ones a removal takes.
-  const picked = plan.rooms.filter(
-    (room) => room.room.drawn === true && selected.includes(room.room.id)
-  ).length;
   const hostRef = useRef<HTMLDivElement>(null);
   // Where the last right click landed, in world units, for the menu's item.
   const menuAt = useRef<Point>({ x: 0, y: 0 });
@@ -137,35 +120,7 @@ export function Canvas() {
           onContextMenu={rememberMenuPoint}
         />
       </ContextMenu.Trigger>
-      <ContextMenu.Portal>
-        <ContextMenu.Content className={MENU}>
-          <ContextMenu.Item className={ITEM} onSelect={() => startDraft(menuAt.current)}>
-            Add comment here
-          </ContextMenu.Item>
-          {mode === "edit" && menuWork === undefined && (
-            <ContextMenu.Item className={ITEM} onSelect={() => askPicture(menuAt.current)}>
-              Hang a picture here
-            </ContextMenu.Item>
-          )}
-          {mode === "edit" &&
-            menuWork?.work.pictureId !== undefined &&
-            mayHandle(menuWork.work, userId) && (
-              <ContextMenu.Item className={ITEM} onSelect={() => takeDown(menuWork.work.id)}>
-                Take down
-              </ContextMenu.Item>
-            )}
-          {mode === "edit" && picked > 0 && (
-            <ContextMenu.Item className={ITEM} onSelect={() => removeSelected()}>
-              {picked === 1 ? "Remove the selected room" : `Remove the ${picked} selected rooms`}
-            </ContextMenu.Item>
-          )}
-          {mode === "edit" && picked === 0 && menuRoom?.room.drawn === true && (
-            <ContextMenu.Item className={ITEM} onSelect={() => removeRoom(menuRoom.room.id)}>
-              Remove this room
-            </ContextMenu.Item>
-          )}
-        </ContextMenu.Content>
-      </ContextMenu.Portal>
+      <CanvasMenu at={() => menuAt.current} room={menuRoom} work={menuWork} />
     </ContextMenu.Root>
   );
 }

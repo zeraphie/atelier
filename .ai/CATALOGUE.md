@@ -9,7 +9,7 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 
 ## src
 
-**geometry.ts** (camera, canvas, comments, gallery, state, ui, viewing)
+**geometry.ts** (camera, canvas, comments, gallery, pictures, state, ui, viewing)
 - `Point`: A position in whichever space the caller names: world units or screen pixels.
 - `WorldRect`: An axis-aligned rectangle, left and top inclusive, in whichever space the caller names.
 - `roundedPoint()`: A point to the whole unit: the centimetre in the world, the pixel on screen.
@@ -126,6 +126,7 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 - `DERIVATIVE_PX`: The derivative's long edge, in pixels, and the suffix it is kept under.
 - `derivativeKey()`: The key a picture's derivative is kept under in the picture store.
 - `preparePicture()`: Hash, shrink and sample `file`; throws when it is not a picture the browser can decode.
+- `heightFor()`: The height a picture hangs at for a width, from its proportions, to a millimetre.
 - Also: `PreparedPicture`
 
 ## state
@@ -136,9 +137,11 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 **state/slices/collection.ts** (canvas, gallery, viewing)
 - Also: `PictureRecord`
 
-**state/slices/gallery.ts** (canvas, gallery, ui, viewing)
+**state/slices/gallery.ts** (gallery, viewing)
 - `RoomEdit`: A room's edits, each stamped; a type rather than an interface so it reads as the record of stamps it is.
 - `roomsAfter()`: Each room's edits from after `at`, and no room left with none.
+
+**state/slices/interface.ts** (canvas, ui)
 - Also: `Tool`
 
 **state/slices/pictures.ts** (gallery, viewing)
@@ -244,6 +247,10 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 
 **ui/molecules/OnFloor.tsx**
 - `OnFloor()`: A card at a world point, as wide as it says in centimetres, scaled by the camera.
+
+**ui/molecules/PictureDetailsForm.tsx**
+- `PictureDetails`: What the form asks for, trimmed.
+- `PictureDetailsForm()`: The details of a picture to hang, with the file's name as the title to start.
 
 **ui/molecules/ThreadItem.tsx**
 - `ThreadItem()`: One thread as a row of the list: who opened it and when, its opening words, its replies and state.
