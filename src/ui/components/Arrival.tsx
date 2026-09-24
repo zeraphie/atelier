@@ -19,6 +19,7 @@ import { swatchIdFor } from "../../viewing/identity/color.js";
 import { DIALOG_PANEL, DIALOG_TITLE } from "../atoms/Card.js";
 import { TextButton } from "../atoms/TextButton.js";
 import { IdentityFields } from "../molecules/IdentityFields.js";
+import { whenHydrated } from "../../storage/index.js";
 import { whenLoaderDone } from "../utils/curtain.js";
 
 // Above the curtain, which sits at 999, and under its mark: the mark is centred in the
@@ -36,7 +37,8 @@ export function Arrival() {
   const [isReady, setReady] = useState(false);
   const [isIn, setIn] = useState(false);
   useEffect(() => {
-    whenLoaderDone().then(() => setReady(true), reportError);
+    // The stores as well as the loader: the name, the home and the viewings offered are theirs.
+    Promise.all([whenLoaderDone(), whenHydrated()]).then(() => setReady(true), reportError);
   }, []);
   const come = (details: { code: string; name: string; color: string }): void => {
     arrive(details.code, details.name, details.color).then(() => setIn(true), reportError);
