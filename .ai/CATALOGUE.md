@@ -147,13 +147,15 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 **state/slices/pictures.ts** (gallery, viewing)
 - Also: `Hanging`
 
-**state/slices/viewing.ts** (ui)
+**state/slices/viewing.ts** (ui, viewing)
+- `tallyOf()`: The tally of the open proposal: this screen and the peers here count, and every decline given stands; noughts when none is open.
+- `isUnanimous()`: Whether everyone here has agreed and no one has declined: the reset may be made.
 - Also: `Peer`
 
 **state/store.ts** (canvas, ui, viewing)
 - `switchGallery()`: Persist the gallery under `key` from now on.
 - `absorbSnapshot()`: Merge a peer's snapshot into the gallery: the later of anything stamped wins, and nothing is told.
-- Also: `useStore`
+- Also: `Store`, `useStore`
 
 **state/utils/actions.ts** (viewing)
 - `onAction()`: Hear every action this screen takes; returns the unsubscribe function.
@@ -337,6 +339,12 @@ search src, then write. [REUSE.md](REUSE.md) says why.
 - `sayCursor()`: Say where your pointer is in the world, to the centimetre, or that it is off the canvas; once a frame at most.
 - `sayLook()`: Say where you are looking; once a frame at most, and only when it changed.
 - `sayFollowing()`: Tell a peer you are following them, or no longer; nothing to one who has gone.
+
+**viewing/proposal.ts** (state, ui)
+- `proposeReset()`: Put everything back as the viewing does it: alone, the reset itself; with peers, a proposal to them all, agreed to by you.
+- `answerReset()`: Answer the open proposal, yes to put back and no to keep as it is, and say so to everyone.
+- `confirmReset()`: Put everything back, everyone here having agreed to the proposal this screen made: the reset itself, told to all like any action, which closes the proposal on every screen as it lands.
+- `withdrawReset()`: Take back the proposal this screen made, for everyone.
 
 **viewing/snapshot.ts** (state)
 - `Snapshot`: The persisted part of a gallery.

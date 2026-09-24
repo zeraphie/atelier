@@ -64,10 +64,15 @@ export interface ViewingSlice {
   unfollow(): void;
   /** A peer said it is following this screen, or no longer. */
   followedBy(peerId: string, is: boolean): void;
-  /** Propose putting everything back at `at`, as `id`, agreeing to it; nothing while one is open. */
+  /** Propose putting everything back at `at`, as `id`, agreeing to it; nothing while a live one is open, since a declined one is over. */
   propose(id: string, at: number): void;
-  /** A peer proposed putting everything back; the earlier of two proposals stays, and one from before the reset is nothing. */
-  proposedBy(peerId: string, id: string, at: number): void;
+  /** A peer proposed putting everything back, with the answers so far when said again to an arrival; the earlier of two live proposals stays, a declined one gives way, and one from before the reset is nothing. */
+  proposedBy(
+    peerId: string,
+    id: string,
+    at: number,
+    answers?: Readonly<Record<string, boolean>>
+  ): void;
   /** Answer the open proposal: true to put back, false to keep as it is. */
   answerProposal(is: boolean): void;
   /** A peer answered the proposal `id`; nothing unless it is the one open. */
@@ -133,24 +138,22 @@ export function createViewingSlice(set: Set<Store>, _get: Get<Store>): ViewingSl
     },
     propose: (id, at) => {
       set((state) =>
-        state.proposal === undefined
-          ? { proposal: { id, by: undefined, at, answers: {}, mine: true } }
-          : state
+        live(state) ? state : { proposal: { id, by: undefined, at, answers: {}, mine: true } }
       );
     },
-    proposedBy: (peerId, id, at) => {
+    proposedBy: (peerId, id, at, answers = {}) => {
       set((state) => {
-        if (at <= state.resetAt) {
+        if (at <= state.resetAt || state.proposal?.id === id) {
           return state;
         }
         const theirs: Proposal = {
           id,
           by: peerId,
           at,
-          answers: { [peerId]: true },
+          answers: { ...answers, [peerId]: true },
           mine: undefined,
         };
-        const next = earlier(state.proposal, theirs);
+        const next = earlier(live(state) ? state.proposal : undefined, theirs);
         return next === state.proposal ? state : { proposal: next };
       });
     },
@@ -174,16 +177,21 @@ export function createViewingSlice(set: Set<Store>, _get: Get<Store>): ViewingSl
   };
 }
 
+// Whether a proposal is open and not declined: the one a new proposal has to yield to.
+function live(state: Pick<ViewingSlice, "peers" | "proposal">): boolean {
+  return state.proposal !== undefined && !isDeclined(tallyOf(state));
+}
+
 // The earlier of two proposals, by time then by id, so every screen keeps
-// the same one when two were made at once; the one held on a repeat.
+// the same one when two were made at once.
 function earlier(held: Proposal | undefined, heard: Proposal): Proposal {
   if (held === undefined) {
     return heard;
   }
-  if (held.id === heard.id || held.at < heard.at) {
-    return held;
+  if (held.at !== heard.at) {
+    return held.at < heard.at ? held : heard;
   }
-  return held.at === heard.at && held.id < heard.id ? held : heard;
+  return held.id < heard.id ? held : heard;
 }
 
 /** A proposal's tally: how many count, being here now; how many of them agreed; how many declined, here or gone. */

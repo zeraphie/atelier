@@ -6,9 +6,10 @@
  * from then on every action this screen takes is sent to the peers and
  * every action a peer takes is replayed here by name, marked remote so
  * it is not told again. A peer arriving is handed the gallery whole
- * and the pictures hung in it. Presence goes through presence.ts and
- * pictures through pictures.ts; this is the join, the hello and the
- * replay. Joining the viewing already joined is nothing, so
+ * and the pictures hung in it. Presence goes through presence.ts,
+ * pictures through pictures.ts and putting everything back through
+ * proposal.ts; this is the join, the hello and the replay. Joining
+ * the viewing already joined is nothing, so
  * StrictMode's double mount joins once; a leave during a join cancels
  * it, and the store switches in order whatever the timing.
  * Decision: DECISIONS.md, everyone is in a viewing.
@@ -35,6 +36,7 @@ import {
   receivePresence,
   sayPresenceAgain,
 } from "./presence/presence.js";
+import { bindProposal, receiveProposal, sayProposalAgain } from "./proposal.js";
 import { snapshotOf } from "./snapshot.js";
 import { connect, type Transport } from "./transport.js";
 
@@ -108,6 +110,7 @@ async function join(joined: Joined, previous: Joined | undefined): Promise<void>
 function bind(joined: Joined, transport: Transport): void {
   joined.transport = transport;
   bindPresence(transport);
+  bindProposal(transport);
   transport.onMessage((data, from, metadata) => {
     receive(data, from, metadata);
   });
@@ -117,6 +120,7 @@ function bind(joined: Joined, transport: Transport): void {
     useStore.getState().peerJoined(peerId);
     sayHello(transport, peerId);
     sayPresenceAgain();
+    sayProposalAgain(peerId);
     const state = useStore.getState();
     const message: SnapshotMessage = { kind: "snapshot", state: snapshotOf(state) };
     transport.send(message, peerId);
@@ -153,7 +157,11 @@ function bind(joined: Joined, transport: Transport): void {
 // What a peer sent: a picture or its bytes, its presence, a hello with its
 // name, a snapshot to merge, or an action to replay.
 function receive(data: unknown, from: string, metadata: unknown): void {
-  if (receivePicture(data, metadata) || receivePresence(data, from)) {
+  if (
+    receivePicture(data, metadata) ||
+    receivePresence(data, from) ||
+    receiveProposal(data, from)
+  ) {
     return;
   }
   if (isHelloMessage(data)) {
@@ -187,6 +195,7 @@ async function leave(joined: Joined): Promise<void> {
   joined.stopNaming();
   useStore.getState().leftViewing();
   bindPresence(undefined);
+  bindProposal(undefined);
   clearPresence();
   await joined.transport?.leave().catch(reportError);
 }

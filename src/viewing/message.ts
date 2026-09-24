@@ -221,22 +221,37 @@ export function isFollowMessage(data: unknown): data is FollowMessage {
   return kind === "follow" && typeof is === "boolean";
 }
 
-/** A screen proposing to put everything back: the proposal's id, and the time the reset would be made at. */
+/** A screen proposing to put everything back: the proposal's id, the time the reset would be made at, and, said again to a peer who arrived while it was open, the answers so far by peer id. */
 export interface ResetAskMessage {
   readonly kind: "reset-ask";
   readonly id: string;
   readonly at: number;
+  readonly answers?: Readonly<Record<string, boolean>>;
 }
 
-/** Whether `data` is a proposal to put everything back, with an id and a whole time. */
+/** Whether `data` is a proposal to put everything back, with an id, a whole time and, if any, answers that are yes or no. */
 export function isResetAskMessage(data: unknown): data is ResetAskMessage {
   if (!isRecord(data)) {
     return false;
   }
-  const { kind, id, at } = data as { kind?: unknown; id?: unknown; at?: unknown };
+  const { kind, id, at, answers } = data as {
+    kind?: unknown;
+    id?: unknown;
+    at?: unknown;
+    answers?: unknown;
+  };
   return (
-    kind === "reset-ask" && typeof id === "string" && typeof at === "number" && Number.isFinite(at)
+    kind === "reset-ask" &&
+    typeof id === "string" &&
+    typeof at === "number" &&
+    Number.isFinite(at) &&
+    (answers === undefined || isAnswers(answers))
   );
+}
+
+// Answers by peer id, each yes or no.
+function isAnswers(value: unknown): value is Readonly<Record<string, boolean>> {
+  return isRecord(value) && Object.values(value).every((is) => typeof is === "boolean");
 }
 
 /** A screen's answer to a proposal: yes to put everything back, no to keep it as it is. */

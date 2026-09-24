@@ -88,7 +88,7 @@ describe("a proposal to put everything back", () => {
     expect(state().proposal?.id).toBe("p1");
   });
 
-  test("a peer's proposal opens it as theirs, with them agreed; one from before the reset is nothing", () => {
+  test("a peer's proposal opens it as theirs, with them agreed and the answers it carries; one from before the reset is nothing", () => {
     const { state } = galleryStore();
     state().reset({ at: 10 });
     state().proposedBy("a", "p0", 10);
@@ -101,6 +101,9 @@ describe("a proposal to put everything back", () => {
       answers: { a: true },
       mine: undefined,
     });
+    state().closeProposal();
+    state().proposedBy("a", "p2", 12, { a: false, b: false });
+    expect(state().proposal?.answers).toEqual({ a: true, b: false });
   });
 
   test("two proposals made at once: every screen keeps the earlier, by time then by id", () => {
@@ -114,6 +117,22 @@ describe("a proposal to put everything back", () => {
     expect(state().proposal?.id).toBe("p0");
     state().proposedBy("a", "p0", 5);
     expect(state().proposal?.by).toBe("b");
+  });
+
+  test("a declined proposal is over: a new one, a peer's or yours, takes its place", () => {
+    const { state } = galleryStore();
+    state().peerJoined("a");
+    state().propose("p1", 5);
+    state().proposedBy("a", "p2", 9);
+    expect(state().proposal?.id).toBe("p1");
+    state().answeredBy("a", "p1", false);
+    state().proposedBy("a", "p2", 9);
+    expect(state().proposal?.id).toBe("p2");
+    state().propose("p3", 12);
+    expect(state().proposal?.id).toBe("p2");
+    state().answerProposal(false);
+    state().propose("p3", 12);
+    expect(state().proposal?.id).toBe("p3");
   });
 
   test("answers are kept by peer, and only to the proposal that is open", () => {

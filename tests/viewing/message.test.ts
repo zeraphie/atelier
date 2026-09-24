@@ -114,6 +114,12 @@ describe("the reset messages", () => {
     expect(isResetAskMessage({ kind: "reset-ask", id: "p1", at: Number.NaN })).toBe(false);
     expect(isResetAskMessage({ kind: "reset-ask", id: "p1" })).toBe(false);
     expect(isResetAskMessage({ kind: "reset-answer", id: "p1", at: 5 })).toBe(false);
+    expect(isResetAskMessage({ kind: "reset-ask", id: "p1", at: 5, answers: { a: true } })).toBe(
+      true
+    );
+    expect(isResetAskMessage({ kind: "reset-ask", id: "p1", at: 5, answers: { a: "yes" } })).toBe(
+      false
+    );
     expect(isResetAnswerMessage({ kind: "reset-answer", id: "p1", is: false })).toBe(true);
     expect(isResetAnswerMessage({ kind: "reset-answer", id: "p1", is: "no" })).toBe(false);
     expect(isResetAnswerMessage({ kind: "reset-answer", is: true })).toBe(false);

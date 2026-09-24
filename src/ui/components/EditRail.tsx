@@ -14,6 +14,7 @@ import { AlertDialog, Toolbar, Tooltip } from "radix-ui";
 import type { ReactNode } from "react";
 import type { Tool } from "../../state/slices/interface.js";
 import { useStore } from "../../state/store.js";
+import { proposeReset } from "../../viewing/proposal.js";
 import { Card, DIALOG_CONTENT, DIALOG_OVERLAY, DIALOG_TITLE } from "../atoms/Card.js";
 import { DoorIcon, MoveIcon, PictureIcon, ResetIcon, RoomIcon } from "../atoms/icons.js";
 import { TextButton } from "../atoms/TextButton.js";
@@ -71,9 +72,9 @@ export function EditRail() {
   );
 }
 
-// The reset, behind a question: it clears every edit, for everyone in a room.
+// The reset, behind a question: alone, it clears every edit here; with peers, it
+// proposes clearing everyone's, which takes every one of them.
 function PutEverythingBack() {
-  const reset = useStore((store) => store.reset);
   return (
     <AlertDialog.Root>
       <Tooltip.Root>
@@ -99,7 +100,7 @@ function PutEverythingBack() {
               <TextButton>Cancel</TextButton>
             </AlertDialog.Cancel>
             <AlertDialog.Action asChild>
-              <TextButton tone="primary" onClick={() => reset()}>
+              <TextButton tone="primary" onClick={() => proposeReset()}>
                 Put back
               </TextButton>
             </AlertDialog.Action>
