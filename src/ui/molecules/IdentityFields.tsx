@@ -13,8 +13,11 @@
 
 import type { KeyboardEvent } from "react";
 import { FIELD, FieldLabel, Input } from "../atoms/Field.js";
-import { TextButton } from "../atoms/TextButton.js";
+import { FOCUS_RING } from "../atoms/styles.js";
 import { ColorPicker } from "./ColorPicker.js";
+
+// New code stands beside the code's input as a box of the same height, so the two read as one row.
+const NEW_CODE = `${FOCUS_RING} rounded border border-line bg-surface px-2 py-1 font-sans text-xs whitespace-nowrap text-ink hover:bg-canvas`;
 
 const doneOnEnter = (event: KeyboardEvent<HTMLInputElement>): void => {
   if (event.key === "Enter") {
@@ -58,9 +61,9 @@ export function CodeField({
             onBlur={onCodeDone}
           />
         </span>
-        <TextButton type="button" className="whitespace-nowrap" onClick={onNewCode}>
+        <button type="button" className={NEW_CODE} onClick={onNewCode}>
           New code
-        </TextButton>
+        </button>
       </span>
       {note !== undefined && <span>{note}</span>}
     </div>

@@ -13,7 +13,7 @@
  */
 
 import { Dialog } from "radix-ui";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useOwnStore } from "../../state/own-store.js";
 import { arrive, offeredCode } from "../../viewing/identity/arrival.js";
 import { newViewingCode } from "../../viewing/identity/code.js";
@@ -29,13 +29,14 @@ import { whenLoaderDone } from "../utils/curtain.js";
 // Above the curtain, which sits at 999, and under its mark: the mark is centred in the
 // window and min(70vw, 440px) wide by 0.235 of that tall, so its foot is 0.1175 of its
 // width below the middle. The card is as wide as its line, and wider once it holds the
-// fields; the width eases between the two, and the rows fold and unfold below.
+// fields; the width eases between the two where the browser can interpolate from a
+// fitted width, and jumps where it cannot; the rows fold and unfold below.
 // Written out in full, since Tailwind reads the classes off the source.
 const CONTENT =
   `${CARD} fixed left-1/2 z-[1000] -translate-x-1/2 max-w-[calc(100vw-2rem)] p-3 ` +
-  "top-[calc(50%_+_min(70vw,440px)_*_0.1175_+_1.5rem)] " +
+  "top-[calc(50%_+_min(70vw,440px)_*_0.1175_+_1.5rem)] [interpolate-size:allow-keywords] " +
   "transition-[width] duration-200 ease-out motion-reduce:transition-none " +
-  "data-[editing=false]:w-[23rem] data-[editing=true]:w-[33rem]";
+  "data-[editing=false]:w-fit data-[editing=true]:w-[33rem]";
 // A region of the card that folds to nothing or unfolds to its height.
 const FOLD =
   "grid transition-[grid-template-rows] duration-200 ease-out motion-reduce:transition-none " +
@@ -81,6 +82,8 @@ function ArrivalCard({
   const [color, setColor] = useState(givenColor);
   const [isEditing, setEditing] = useState(false);
   const [isGoing, setGoing] = useState(false);
+  // Focused as the card opens, so Enter comes in.
+  const comeInOnLine = useRef<HTMLButtonElement>(null);
   const trimmed = code.trim().toLowerCase();
   const isValid = trimmed !== "" && name.trim() !== "";
   const submit = (event: FormEvent<HTMLFormElement>): void => {
@@ -91,15 +94,15 @@ function ArrivalCard({
     setGoing(true);
     onComeIn({ code: trimmed, name: name.trim(), color });
   };
-  const comeIn = (
-    <TextButton tone="primary" type="submit" disabled={!isValid || isGoing}>
-      Come in
-    </TextButton>
-  );
+  const isDisabled = !isValid || isGoing;
   return (
     <Dialog.Content
       className={CONTENT}
       data-editing={isEditing}
+      onOpenAutoFocus={(event) => {
+        event.preventDefault();
+        comeInOnLine.current?.focus();
+      }}
       onEscapeKeyDown={(event) => event.preventDefault()}
       onPointerDownOutside={(event) => event.preventDefault()}
       onInteractOutside={(event) => event.preventDefault()}
@@ -112,7 +115,10 @@ function ArrivalCard({
         <div className={FOLD} data-shown={!isEditing} inert={isEditing}>
           <div className="flex min-h-0 items-center gap-3 overflow-hidden pl-2">
             <span className={DOT} style={personStyle(colorOf(color))} aria-hidden="true" />
-            <span className="truncate font-serif text-lg text-ink">{name.trim() || "Visitor"}</span>
+            {/* A name up to twenty characters shows whole; a longer one is cut with a mark. */}
+            <span className="max-w-[20ch] truncate font-serif text-lg text-ink">
+              {name.trim() || "Visitor"}
+            </span>
             <span className="text-line" aria-hidden="true">
               ·
             </span>
@@ -127,12 +133,15 @@ function ArrivalCard({
             >
               <PenIcon />
             </button>
-            {comeIn}
+            <TextButton ref={comeInOnLine} tone="primary" type="submit" disabled={isDisabled}>
+              Come in
+            </TextButton>
           </div>
         </div>
-        <div className={FOLD} data-shown={isEditing} inert={!isEditing}>
+        {/* Its inline size contained, so the folded rows never widen the card's fitted line. */}
+        <div className={`${FOLD} contain-inline-size`} data-shown={isEditing} inert={!isEditing}>
           <div className="flex min-h-0 flex-col gap-3 overflow-hidden px-1 pt-1">
-            <div className="flex flex-wrap items-end gap-3">
+            <div className="flex flex-wrap items-start gap-3">
               <NameField
                 idPrefix="arrive"
                 name={name}
@@ -149,7 +158,9 @@ function ArrivalCard({
             <div className="flex flex-wrap items-end gap-3 pb-1">
               <ColourField color={color} onColor={setColor} />
               <span className="flex-1" />
-              {comeIn}
+              <TextButton tone="primary" type="submit" className="mb-0.5" disabled={isDisabled}>
+                Come in
+              </TextButton>
             </div>
           </div>
         </div>
